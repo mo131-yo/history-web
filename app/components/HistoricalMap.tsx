@@ -92,7 +92,7 @@ const HistoricalMap = forwardRef((props: Props, ref) => {
           "line-width": 0.5,
         },
       });
-
+      
       m.addLayer({
         id: "borders-highlight",
         type: "fill",
