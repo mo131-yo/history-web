@@ -9,36 +9,56 @@ import React, {
 import maplibregl from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 
-interface Props {
-  year: number;
+
+export interface MapHandle {
+  flyToLocation: (center: [number, number], zoom?: number) => void;
+  highlightFeature: (name: string) => void;
+  startQuiz: () => void;
 }
 
-const HistoricalMap = forwardRef((props: Props, ref) => {
+interface Props {
+  year: number;
+  isWhatIf: boolean;
+  onSelectFeature: (feature: any) => void;
+}
+
+const HistoricalMap = forwardRef<MapHandle, Props>(({ year, isWhatIf, onSelectFeature }, ref) => {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<maplibregl.Map | null>(null);
   const isReady = useRef(false);
   const animationRef = useRef<number | null>(null);
 
   useImperativeHandle(ref, () => ({
-    flyToLocation: (center: [number, number], zoom = 4) => {
-      map.current?.flyTo({
-        center,
-        zoom,
-        speed: 0.8,
-        curve: 1.4,
-        essential: true,
-      });
+    flyToLocation: (center, zoom = 4) => {
+      map.current?.flyTo({ center, zoom, speed: 0.8, curve: 1.4, essential: true });
     },
-
     highlightFeature: (name: string) => {
       if (!isReady.current) return;
-      map.current?.setFilter("borders-highlight", [
-        "==",
-        ["get", "name"],
-        name,
-      ]);
+      map.current?.setFilter("borders-highlight", ["all", ["==", ["geometry-type"], "Polygon"], ["==", ["get", "name"], name]]);
     },
+    startQuiz: () => {
+      console.log("Quiz started for year:", year);
+    }
   }));
+
+  const loadData = useCallback((m: maplibregl.Map, currentYear: number, alternate: boolean) => {
+    const src = m.getSource("historical-borders") as maplibregl.GeoJSONSource;
+    if (!src) return;
+
+    const dataPath = alternate && currentYear === 1206 
+      ? `/data/${currentYear}_alternate.json` 
+      : `/data/${currentYear}.json`;
+
+    fetch(dataPath)
+      .then((r) => r.json())
+      .then((data) => {
+        src.setData(data);
+      })
+      .catch((err) => {
+        console.error("Data load error:", err);
+        src.setData({ type: "FeatureCollection", features: [] });
+      });
+  }, []);
 
   useEffect(() => {
     if (!mapContainer.current || map.current) return;
@@ -46,40 +66,31 @@ const HistoricalMap = forwardRef((props: Props, ref) => {
     map.current = new maplibregl.Map({
       container: mapContainer.current,
       style: "https://basemaps.cartocdn.com/gl/dark-matter-nolabels-gl-style/style.json",
-      center: [45, 15],
-      zoom: 2.5, 
+      center: [105, 45],
+      zoom: 3,
       attributionControl: false,
-    } as any);
+    });
 
     map.current.on("load", () => {
-      const m = map.current as any;
+      const m = map.current!;
 
-      if (typeof m.setProjection === "function") {
+      if (m.setProjection) {
         m.setProjection({ type: "globe" });
-      }
-
-      if (typeof m.setFog === "function") {
-        m.setFog({
-          color: "#0b1621",
-          "high-color": "#010509",
-          "space-color": "#000000",
-          "star-intensity": 0.8,
-          "horizon-blend": 0.05,
-        });
       }
 
       m.addSource("historical-borders", {
         type: "geojson",
         data: { type: "FeatureCollection", features: [] },
-      }); 
+      });
 
       m.addLayer({
         id: "borders-fill",
         type: "fill",
         source: "historical-borders",
+        filter: ["==", ["geometry-type"], "Polygon"],
         paint: {
           "fill-color": ["coalesce", ["get", "color"], "#C5A059"],
-          "fill-opacity": 0.4,
+          "fill-opacity": 0.35,
         },
       });
 
@@ -87,46 +98,72 @@ const HistoricalMap = forwardRef((props: Props, ref) => {
         id: "borders-line",
         type: "line",
         source: "historical-borders",
+        filter: ["==", ["geometry-type"], "Polygon"],
         paint: {
-          "line-color": "rgba(255,255,255,0.2)",
-          "line-width": 0.5,
+          "line-color": ["coalesce", ["get", "color"], "#ffffff"],
+          "line-width": 0.8,
+          "line-opacity": 0.4,
         },
       });
-      
+
       m.addLayer({
         id: "borders-highlight",
-        type: "fill",
+        type: "line", 
         source: "historical-borders",
+        filter: ["all", ["==", ["geometry-type"], "Polygon"], ["==", ["get", "name"], ""]],
         paint: {
-          "fill-color": ["coalesce", ["get", "color"], "#C5A059"],
-          "fill-opacity": 0.8,
+          "line-color": "#C5A059",
+          "line-width": 3,
+          "line-opacity": 0.8,
         },
-        filter: ["==", ["get", "name"], ""],
+      });
+
+      m.addLayer({
+        id: "attack-lines",
+        type: "line",
+        source: "historical-borders",
+        filter: ["==", ["geometry-type"], "LineString"],
+        paint: {
+          "line-color": ["coalesce", ["get", "color"], "#ff3300"],
+          "line-width": 3,
+        },
+      });
+
+      m.on("click", "borders-fill", (e) => {
+        if (e.features && e.features.length > 0) {
+          const clickedFeature = e.features[0];
+          
+          onSelectFeature(clickedFeature);
+
+          const name = clickedFeature.properties?.name;
+          m.setFilter("borders-highlight", ["all", ["==", ["geometry-type"], "Polygon"], ["==", ["get", "name"], name]]);
+
+          const coords = e.lngLat;
+          m.flyTo({ center: coords, zoom: 4.5, speed: 0.8 });
+        }
+      });
+
+      m.on("mouseenter", "borders-fill", () => {
+        m.getCanvas().style.cursor = "pointer";
+      });
+      m.on("mouseleave", "borders-fill", () => {
+        m.getCanvas().style.cursor = "";
       });
 
       isReady.current = true;
-      loadData(m, props.year);
+      loadData(m, year, isWhatIf);
 
       const rotate = () => {
+        if (!m.isStyleLoaded()) return;
         const center = m.getCenter();
-        center.lng += 0.1;
+        center.lng += 0.01;
         m.setCenter(center);
         animationRef.current = requestAnimationFrame(rotate);
       };
       rotate();
-
       setTimeout(() => {
         if (animationRef.current) cancelAnimationFrame(animationRef.current);
-        m.flyTo({
-          center: [105, 45],
-          zoom: 3.8,
-          speed: 0.5,
-          curve: 1.5,
-          essential: true
-        });
-        
-        m.setFilter("borders-highlight", ["==", ["get", "name"], "Их Монгол Улс"]);
-      }, 3000);
+      }, 1500);
     });
 
     return () => {
@@ -135,32 +172,22 @@ const HistoricalMap = forwardRef((props: Props, ref) => {
     };
   }, []);
 
-  const loadData = useCallback((m: maplibregl.Map, year: number) => {
-    const src = m.getSource("historical-borders") as maplibregl.GeoJSONSource;
-    if (!src) return;
-
-    fetch(`/data/${year}.json`)
-      .then((r) => r.json())
-      .then((data) => src.setData(data))
-      .catch(() => src.setData({ type: "FeatureCollection", features: [] }));
-  }, []);
-
   useEffect(() => {
     if (isReady.current && map.current) {
-      loadData(map.current, props.year);
+      loadData(map.current, year, isWhatIf);
+      map.current.setFilter("borders-highlight", ["all", ["==", ["geometry-type"], "Polygon"], ["==", ["get", "name"], ""]]);
     }
-  }, [props.year, loadData]);
+  }, [year, isWhatIf, loadData]);
 
   return (
-    <div className="relative w-full h-full overflow-hidden bg-black">
+    <div className="relative w-full h-full overflow-hidden bg-[#0a0a0a]">
       <div ref={mapContainer} className="w-full h-full" />
-      
-      <div 
-        className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[80%] h-[80%] opacity-20"
-        style={{ 
-          background: "radial-gradient(circle, #245cdf 0%, transparent 70%)",
-          filter: "blur(80px)"
-        }} 
+      <div
+        className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full opacity-5"
+        style={{
+          background: "radial-gradient(circle, #C5A059 0%, transparent 80%)",
+          filter: "blur(80px)",
+        }}
       />
     </div>
   );
