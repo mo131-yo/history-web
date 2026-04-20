@@ -45,7 +45,7 @@ export const Sidebar = ({
       <div className="px-6 pt-8 pb-4 space-y-4">
         <div className="flex items-center justify-between">
           <div className="space-y-1">
-            <h1 className="text-4xl font-black tracking-tighter text-[#C5A059] font-serif">{year} <span className="text-lg font-normal opacity-50">A.D</span></h1>
+            <h1 className="text-4xl font-black tracking-tighter text-[#C5A059] font-serif">{year} <span className="text-lg font-normal opacity-50">он</span></h1>
             {isWhatIf && (
               <div className="flex items-center gap-2 px-2 py-0.5 bg-red-500/10 border border-red-500/20 rounded">
                 {/* <Activity size={10} className="text-red-500 animate-pulse" /> */}
@@ -74,7 +74,7 @@ export const Sidebar = ({
           <div className="space-y-6 animate-in fade-in slide-in-from-right-8 duration-500">
             <div className="space-y-4">
               <button onClick={() => setSelectedFeature(null)} className="flex items-center gap-2 text-[10px] text-white/30 hover:text-[#C5A059] uppercase tracking-[0.2em] transition-all">
-                <ChevronRight size={14} className="rotate-180" /> Газрын зураг руу
+                <ChevronRight size={14} className="rotate-180" /> Буцах
               </button>
               
               <div className="relative p-6 rounded-2xl border border-white/10 bg-white/[0.02] overflow-hidden">
