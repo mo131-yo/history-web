@@ -3,7 +3,10 @@
   "version": "0.0.1",
   "private": true,
   "dependencies": {
+    "lucide-react": "^1.8.0",
+    "maplibre-gl": "^5.23.0",
     "next": "~16.1.6",
+    "openai": "^6.34.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
   }
