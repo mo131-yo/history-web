@@ -1,14 +1,9 @@
 "use client";
-import React, {
-  useEffect,
-  useRef,
-  useImperativeHandle,
-  forwardRef,
-  useCallback,
-} from "react";
+// components/HistoricalMap.tsx — DB API-аас өгөгдөл татна
+
+import React, { useEffect, useRef, useImperativeHandle, forwardRef, useCallback } from "react";
 import maplibregl from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
-
 
 export interface MapHandle {
   flyToLocation: (center: [number, number], zoom?: number) => void;
@@ -34,28 +29,22 @@ const HistoricalMap = forwardRef<MapHandle, Props>(({ year, isWhatIf, onSelectFe
     },
     highlightFeature: (name: string) => {
       if (!isReady.current) return;
-      map.current?.setFilter("borders-highlight", ["all", ["==", ["geometry-type"], "Polygon"], ["==", ["get", "name"], name]]);
+      map.current?.setFilter("borders-highlight", [
+        "all", ["==", ["geometry-type"], "Polygon"], ["==", ["get", "name"], name],
+      ]);
     },
-    startQuiz: () => {
-      console.log("Quiz started for year:", year);
-    }
+    startQuiz: () => console.log("Quiz started for year:", year),
   }));
 
   const loadData = useCallback((m: maplibregl.Map, currentYear: number, alternate: boolean) => {
     const src = m.getSource("historical-borders") as maplibregl.GeoJSONSource;
     if (!src) return;
-
-    const dataPath = alternate && currentYear === 1206 
-      ? `/data/${currentYear}_alternate.json` 
-      : `/data/${currentYear}.json`;
-
-    fetch(dataPath)
-      .then((r) => r.json())
-      .then((data) => {
-        src.setData(data);
-      })
-      .catch((err) => {
-        console.error("Data load error:", err);
+    const url = `/api/map/${currentYear}${alternate ? "?whatif=1" : ""}`;
+    fetch(url)
+      .then(r => r.json())
+      .then(data => src.setData(data))
+      .catch(err => {
+        console.error("DB data load error:", err);
         src.setData({ type: "FeatureCollection", features: [] });
       });
   }, []);
@@ -73,10 +62,7 @@ const HistoricalMap = forwardRef<MapHandle, Props>(({ year, isWhatIf, onSelectFe
 
     map.current.on("load", () => {
       const m = map.current!;
-
-      if (m.setProjection) {
-        m.setProjection({ type: "globe" });
-      }
+      if ((m as any).setProjection) (m as any).setProjection({ type: "globe" });
 
       m.addSource("historical-borders", {
         type: "geojson",
@@ -84,98 +70,62 @@ const HistoricalMap = forwardRef<MapHandle, Props>(({ year, isWhatIf, onSelectFe
       });
 
       m.addLayer({
-        id: "borders-fill",
-        type: "fill",
-        source: "historical-borders",
+        id: "borders-fill", type: "fill", source: "historical-borders",
         filter: ["==", ["geometry-type"], "Polygon"],
-        paint: {
-          "fill-color": ["coalesce", ["get", "color"], "#C5A059"],
-          "fill-opacity": 0.35,
-        },
+        paint: { "fill-color": ["coalesce", ["get", "color"], "#C5A059"], "fill-opacity": 0.35 },
       });
-
       m.addLayer({
-        id: "borders-line",
-        type: "line",
-        source: "historical-borders",
+        id: "borders-line", type: "line", source: "historical-borders",
         filter: ["==", ["geometry-type"], "Polygon"],
-        paint: {
-          "line-color": ["coalesce", ["get", "color"], "#ffffff"],
-          "line-width": 0.8,
-          "line-opacity": 0.4,
-        },
+        paint: { "line-color": ["coalesce", ["get", "color"], "#ffffff"], "line-width": 0.8, "line-opacity": 0.4 },
       });
-
       m.addLayer({
-        id: "borders-highlight",
-        type: "line", 
-        source: "historical-borders",
+        id: "borders-highlight", type: "line", source: "historical-borders",
         filter: ["all", ["==", ["geometry-type"], "Polygon"], ["==", ["get", "name"], ""]],
-        paint: {
-          "line-color": "#C5A059",
-          "line-width": 3,
-          "line-opacity": 0.8,
-        },
+        paint: { "line-color": "#C5A059", "line-width": 3, "line-opacity": 0.8 },
       });
-
       m.addLayer({
-        id: "attack-lines",
-        type: "line",
-        source: "historical-borders",
+        id: "attack-lines", type: "line", source: "historical-borders",
         filter: ["==", ["geometry-type"], "LineString"],
-        paint: {
-          "line-color": ["coalesce", ["get", "color"], "#ff3300"],
-          "line-width": 3,
-        },
+        paint: { "line-color": ["coalesce", ["get", "color"], "#ff3300"], "line-width": 3 },
       });
 
       m.on("click", "borders-fill", (e) => {
         if (e.features && e.features.length > 0) {
-          const clickedFeature = e.features[0];
-          
-          onSelectFeature(clickedFeature);
-
-          const name = clickedFeature.properties?.name;
-          m.setFilter("borders-highlight", ["all", ["==", ["geometry-type"], "Polygon"], ["==", ["get", "name"], name]]);
-
-          const coords = e.lngLat;
-          m.flyTo({ center: coords, zoom: 4.5, speed: 0.8 });
+          const f = e.features[0];
+          onSelectFeature(f);
+          m.setFilter("borders-highlight", ["all", ["==", ["geometry-type"], "Polygon"], ["==", ["get", "name"], f.properties?.name]]);
+          m.flyTo({ center: e.lngLat, zoom: 4.5, speed: 0.8 });
         }
       });
-
-      m.on("mouseenter", "borders-fill", () => {
-        m.getCanvas().style.cursor = "pointer";
-      });
-      m.on("mouseleave", "borders-fill", () => {
-        m.getCanvas().style.cursor = "";
-      });
+      m.on("mouseenter", "borders-fill", () => { m.getCanvas().style.cursor = "pointer"; });
+      m.on("mouseleave", "borders-fill", () => { m.getCanvas().style.cursor = ""; });
 
       isReady.current = true;
       loadData(m, year, isWhatIf);
 
       const rotate = () => {
         if (!m.isStyleLoaded()) return;
-        const center = m.getCenter();
-        center.lng += 0.01;
-        m.setCenter(center);
+        const c = m.getCenter(); c.lng += 0.01; m.setCenter(c);
         animationRef.current = requestAnimationFrame(rotate);
       };
       rotate();
-      setTimeout(() => {
-        if (animationRef.current) cancelAnimationFrame(animationRef.current);
-      }, 1500);
+      setTimeout(() => { if (animationRef.current) cancelAnimationFrame(animationRef.current); }, 1500);
     });
 
     return () => {
       if (animationRef.current) cancelAnimationFrame(animationRef.current);
       map.current?.remove();
+      map.current = null;
     };
   }, []);
 
   useEffect(() => {
     if (isReady.current && map.current) {
       loadData(map.current, year, isWhatIf);
-      map.current.setFilter("borders-highlight", ["all", ["==", ["geometry-type"], "Polygon"], ["==", ["get", "name"], ""]]);
+      map.current.setFilter("borders-highlight", [
+        "all", ["==", ["geometry-type"], "Polygon"], ["==", ["get", "name"], ""],
+      ]);
     }
   }, [year, isWhatIf, loadData]);
 
@@ -184,10 +134,7 @@ const HistoricalMap = forwardRef<MapHandle, Props>(({ year, isWhatIf, onSelectFe
       <div ref={mapContainer} className="w-full h-full" />
       <div
         className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full opacity-5"
-        style={{
-          background: "radial-gradient(circle, #C5A059 0%, transparent 80%)",
-          filter: "blur(80px)",
-        }}
+        style={{ background: "radial-gradient(circle, #C5A059 0%, transparent 80%)", filter: "blur(80px)" }}
       />
     </div>
   );
