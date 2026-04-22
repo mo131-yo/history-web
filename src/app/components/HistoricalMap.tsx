@@ -1,4 +1,5 @@
 'use client';
+
 import React, {
   useEffect,
   useRef,
@@ -36,14 +37,17 @@ const HistoricalMap = forwardRef<MapHandle, Props>(
           essential: true,
         });
       },
+
       highlightFeature: (name: string) => {
         if (!isReady.current) return;
+
         map.current?.setFilter('borders-highlight', [
           'all',
           ['==', ['geometry-type'], 'Polygon'],
           ['==', ['get', 'name'], name],
         ]);
       },
+
       startQuiz: () => {
         console.log('Quiz started for year:', year);
       },
@@ -86,14 +90,18 @@ const HistoricalMap = forwardRef<MapHandle, Props>(
 
       map.current.on('load', () => {
         const m = map.current!;
+        if (!m) return;
 
-        // Ганц эх сурвалж (Source) ашиглана
+
+        if (m.getLayer('water')) {
+          m.setPaintProperty('water', 'fill-color', '#4DA6FF');
+        }
+
         m.addSource('historical-data', {
           type: 'geojson',
           data: { type: 'FeatureCollection', features: [] },
         });
 
-        // 1. Улсуудын хил (Polygons)
         m.addLayer({
           id: 'borders-fill',
           type: 'fill',
@@ -116,8 +124,6 @@ const HistoricalMap = forwardRef<MapHandle, Props>(
             'line-opacity': 0.5,
           },
         });
-
-        // 2. Цэгүүд (Points - Нийслэл, Аймгууд)
         m.addLayer({
           id: 'historical-points',
           type: 'circle',
@@ -130,8 +136,6 @@ const HistoricalMap = forwardRef<MapHandle, Props>(
             'circle-stroke-color': '#ffffff',
           },
         });
-
-        // 3. Бичвэр (Labels)
         m.addLayer({
           id: 'points-labels',
           type: 'symbol',
@@ -149,7 +153,6 @@ const HistoricalMap = forwardRef<MapHandle, Props>(
           },
         });
 
-        // 4. Тодруулагч (Highlight Layer)
         m.addLayer({
           id: 'borders-highlight',
           type: 'line',
@@ -164,48 +167,55 @@ const HistoricalMap = forwardRef<MapHandle, Props>(
             'line-width': 3,
           },
         });
-
-        // Click Event - Polygon болон Point аль алин дээр ажиллана
         const interactiveLayers = ['borders-fill', 'historical-points'];
+
         m.on('click', interactiveLayers, (e) => {
-          if (e.features && e.features.length > 0) {
-            const clickedFeature = e.features[0];
-            onSelectFeature(clickedFeature);
+          if (!e.features?.length) return;
 
-            const name = clickedFeature.properties?.name;
-            if (clickedFeature.geometry.type === 'Polygon') {
-              m.setFilter('borders-highlight', [
-                'all',
-                ['==', ['geometry-type'], 'Polygon'],
-                ['==', ['get', 'name'], name],
-              ]);
-            }
+          const clickedFeature = e.features[0];
+          onSelectFeature(clickedFeature);
 
-            m.flyTo({ center: e.lngLat, zoom: 4.5, speed: 0.8 });
+          const name = clickedFeature.properties?.name;
+
+          if (clickedFeature.geometry.type === 'Polygon') {
+            m.setFilter('borders-highlight', [
+              'all',
+              ['==', ['geometry-type'], 'Polygon'],
+              ['==', ['get', 'name'], name],
+            ]);
           }
+
+          m.flyTo({
+            center: e.lngLat,
+            zoom: 4.5,
+            speed: 0.8,
+          });
         });
 
-        // Cursor change
         interactiveLayers.forEach((layer) => {
-          m.on(
-            'mouseenter',
-            layer,
-            () => (m.getCanvas().style.cursor = 'pointer'),
-          );
-          m.on('mouseleave', layer, () => (m.getCanvas().style.cursor = ''));
+          m.on('mouseenter', layer, () => {
+            m.getCanvas().style.cursor = 'pointer';
+          });
+
+          m.on('mouseleave', layer, () => {
+            m.getCanvas().style.cursor = '';
+          });
         });
 
         isReady.current = true;
         loadData(m, year, isWhatIf);
       });
 
-      return () => map.current?.remove();
+      return () => {
+        map.current?.remove();
+        map.current = null;
+      };
     }, []);
 
     useEffect(() => {
       if (isReady.current && map.current) {
         loadData(map.current, year, isWhatIf);
-        // Он солигдоход тодруулгыг арилгана
+
         map.current.setFilter('borders-highlight', [
           'all',
           ['==', ['geometry-type'], 'Polygon'],
@@ -223,4 +233,5 @@ const HistoricalMap = forwardRef<MapHandle, Props>(
 );
 
 HistoricalMap.displayName = 'HistoricalMap';
+
 export default HistoricalMap;

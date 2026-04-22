@@ -15,11 +15,9 @@ export const QuizModal = ({ isOpen, onClose, year, geoData, onFlyTo }: any) => {
   const [currentStep, setCurrentStep] = useState(0);
   const [score, setScore] = useState(0);
   const [isFinished, setIsFinished] = useState(false);
-
   useEffect(() => {
     if (isOpen && geoData) fetchQuestions();
   }, [isOpen]);
-
   const fetchQuestions = async () => {
     setLoading(true);
     try {
