@@ -3,6 +3,10 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
+  --font-sans: "Inter", "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  --font-mono: "SFMono-Regular", "Menlo", "Monaco", "Consolas", monospace;
+  --font-cinzel: "Palatino Linotype", "Book Antiqua", Georgia, serif;
+  --font-cinzel-decorative: "Trajan Pro", "Palatino Linotype", Georgia, serif;
 }
 
 @theme inline {
@@ -25,17 +29,18 @@
 
 html, body {
   height: 100%;
-  overflow: hidden;
-  background: #080A12;
+  overflow: auto;
+  background: #05070d;
   color: #fff;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  margin: 0;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: var(--font-cinzel), Arial, Helvetica, sans-serif;
+  font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
 }
 
 input[type='range']::-webkit-slider-thumb {
@@ -65,8 +70,8 @@ input[type='range']::-webkit-slider-thumb {
 }
 
 .maplibregl-ctrl-group {
-  background: rgba(10, 12, 22, 0.92) !important;
-  border: 1px solid rgba(197, 160, 89, 0.2) !important;
+  background: rgba(15, 23, 42, 0.9) !important;
+  border: 1px solid rgba(148, 163, 184, 0.2) !important;
   backdrop-filter: blur(16px) !important;
   border-radius: 10px !important;
   overflow: hidden;
@@ -76,18 +81,18 @@ input[type='range']::-webkit-slider-thumb {
 .maplibregl-ctrl-group button {
   background: transparent !important;
   border-color: rgba(255, 255, 255, 0.08) !important;
-  color: rgba(197, 160, 89, 0.7) !important;
+  color: rgba(226, 232, 240, 0.78) !important;
   width: 34px !important;
   height: 34px !important;
 }
 
 .maplibregl-ctrl-group button:hover {
-  background: rgba(197, 160, 89, 0.08) !important;
-  color: #C5A059 !important;
+  background: rgba(125, 211, 252, 0.12) !important;
+  color: #38bdf8 !important;
 }
 
 .maplibregl-ctrl-icon {
-  filter: invert(70%) sepia(20%) saturate(400%) hue-rotate(5deg) !important;
+  filter: invert(90%) sepia(15%) saturate(200%) hue-rotate(165deg) !important;
 }
 
 .maplibregl-popup-content {
@@ -109,7 +114,7 @@ input[type='range']::-webkit-slider-thumb {
 }
 
 .maplibregl-ctrl-attrib a {
-  color: rgba(197, 160, 89, 0.4) !important;
+  color: rgba(125, 211, 252, 0.6) !important;
 }
 
 .maplibregl-canvas {
@@ -142,4 +147,14 @@ input[type='range']::-webkit-slider-thumb {
 ::selection {
   background: rgba(197, 160, 89, 0.25);
   color: #E8D5A3;
+}
+
+.prose {
+  color: #e2e8f0;
+}
+
+.prose p,
+.prose ul,
+.prose ol {
+  margin: 0;
 }
