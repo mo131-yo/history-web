@@ -58,16 +58,16 @@ export default function HistoryChat({ currentContext }: { currentContext: any })
                 )}
               </div>
             </div>
-            <button onClick={() => setIsOpen(false)} className="text-white/20 hover:text-white transition-colors p-1">
+            <button onClick={() => setIsOpen(false)} className="p-1 transition-colors text-white/20 hover:text-white">
               <MinusCircle size={20} />
             </button>
           </div>
 
           <div ref={scrollRef} className="flex-1 overflow-y-auto p-6 space-y-6 custom-scrollbar bg-[url('/grid.svg')] bg-center">
             {messages.length === 0 && (
-              <div className="h-full flex flex-col items-center justify-center text-center space-y-3 opacity-30 px-10">
+              <div className="flex flex-col items-center justify-center h-full px-10 space-y-3 text-center opacity-30">
                 <Bot size={40} strokeWidth={1} />
-                <p className="text-xs leading-relaxed italic font-serif">
+                <p className="font-serif text-xs italic leading-relaxed">
                   Монгол гүрний түүх болон тухайн цаг үеийн талаар юуг ч хамаагүй асууж болно.
                 </p>
               </div>
@@ -126,7 +126,7 @@ export default function HistoryChat({ currentContext }: { currentContext: any })
                 <Send size={16} />
               </button>
             </div>
-            <p className="text-[9px] text-white/10 mt-3 text-center uppercase tracking-[0.2em]">Powered by GPT-4o-Mini • Historical Core</p>
+            <p className="text-[9px] text-white/10 mt-3 text-center uppercase tracking-[0.2em]">Powered by • Mongol Atlas</p>
           </div>
         </div>
       ) : (
@@ -134,7 +134,7 @@ export default function HistoryChat({ currentContext }: { currentContext: any })
           onClick={() => setIsOpen(true)}
           className="group relative p-5 bg-gradient-to-br from-[#C5A059] to-[#9A7B3E] text-black rounded-full shadow-[0_10px_30px_rgba(197,160,89,0.3)] hover:scale-110 active:scale-95 transition-all duration-300"
         >
-          <div className="absolute inset-0 rounded-full border border-white/20 scale-100 group-hover:scale-125 opacity-0 group-hover:opacity-100 transition-all duration-500" />
+          <div className="absolute inset-0 transition-all duration-500 scale-100 border rounded-full opacity-0 border-white/20 group-hover:scale-125 group-hover:opacity-100" />
           <MessageCircle size={26} strokeWidth={2.5} />
         </button>
       )}
