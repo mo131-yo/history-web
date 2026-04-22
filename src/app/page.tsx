@@ -1,11 +1,11 @@
-"use client";
-import React, { useState, useEffect, useRef, useCallback } from "react";
-import HistoricalMap, { MapHandle } from "./components/HistoricalMap";
-import TimelineSlider from "./components/TimelineSlider";
-import HistoryChat from "./components/HistoryChat";
-import { Sidebar } from "./components/Sidebar";
-import { QuizModal } from "./components/QuizModal";
-import { Globe, Flame } from "lucide-react";
+'use client';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
+import HistoricalMap, { MapHandle } from './components/HistoricalMap';
+import TimelineSlider from './components/TimelineSlider';
+import HistoryChat from './components/HistoryChat';
+import { Sidebar } from './components/Sidebar';
+import { QuizModal } from './components/QuizModal';
+import { Globe, Flame } from 'lucide-react';
 export default function Home() {
   const [year, setYear] = useState(1206);
   const [isWhatIf, setIsWhatIf] = useState(false);
@@ -15,6 +15,7 @@ export default function Home() {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [isQuizOpen, setIsQuizOpen] = useState(false);
   const mapRef = useRef<MapHandle>(null);
+  const [dark, setDark] = useState(false);
   useEffect(() => {
     const root = document.documentElement;
 
@@ -43,10 +44,14 @@ export default function Home() {
       .then(setGeoData)
       .catch(() => setGeoData(null));
   }, [year, isWhatIf]);
-  const searchResults = geoData?.features?.filter((f: any) => {
-    if (f.properties.type === "battle-line") return false;
-    return searchQuery === "" || f.properties.name.toLowerCase().includes(searchQuery.toLowerCase());
-  }) ?? [];
+  const searchResults =
+    geoData?.features?.filter((f: any) => {
+      if (f.properties.type === 'battle-line') return false;
+      return (
+        searchQuery === '' ||
+        f.properties.name.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+    }) ?? [];
   const handleFlyTo = useCallback((feature: any) => {
     setSelectedFeature(feature);
     let coords;
@@ -61,7 +66,6 @@ export default function Home() {
     // if (coords && mapRef.current) {
     //   mapRef.current.flyToLocation(coords, 4);
     // }
-    
   }, []);
   return (
     <main
