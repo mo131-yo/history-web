@@ -6,7 +6,6 @@ import HistoryChat from "./components/HistoryChat";
 import { Sidebar } from "./components/Sidebar";
 import { QuizModal } from "./components/QuizModal";
 import { Globe, Flame } from "lucide-react";
-
 export default function Home() {
   const [year, setYear] = useState(1206);
   const [isWhatIf, setIsWhatIf] = useState(false);
@@ -16,7 +15,6 @@ export default function Home() {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [isQuizOpen, setIsQuizOpen] = useState(false);
   const mapRef = useRef<MapHandle>(null);
-
   useEffect(() => {
     const dataPath = isWhatIf && year === 1206 ? `/data/${year}_alternate.json` : `/data/${year}.json`;
     fetch(dataPath)
@@ -24,12 +22,10 @@ export default function Home() {
       .then(setGeoData)
       .catch(() => setGeoData(null));
   }, [year, isWhatIf]);
-
   const searchResults = geoData?.features?.filter((f: any) => {
     if (f.properties.type === "battle-line") return false;
     return searchQuery === "" || f.properties.name.toLowerCase().includes(searchQuery.toLowerCase());
   }) ?? [];
-
   const handleFlyTo = useCallback((feature: any) => {
     setSelectedFeature(feature);
     let coords;
@@ -38,12 +34,11 @@ export default function Home() {
     } else if (feature.geometry.type === "Point" || feature.geometry.type === "LineString") {
       coords = feature.geometry.coordinates;
     }
-
-    if (coords && mapRef.current) {
-      mapRef.current.flyToLocation(coords, 4);
-    }
+    // if (coords && mapRef.current) {
+    //   mapRef.current.flyToLocation(coords, 4);
+    // }
+    
   }, []);
-
   return (
     <main className="relative h-screen w-full overflow-hidden bg-[#080A12] text-slate-200 font-sans">
       {year === 1206 && (
@@ -67,7 +62,6 @@ export default function Home() {
         geoData={geoData}
         onFlyTo={handleFlyTo}
       />
-
       <div className="relative z-10 flex h-full">
         <Sidebar 
           year={year} 
@@ -82,7 +76,6 @@ export default function Home() {
           onFlyTo={handleFlyTo}
           onStartQuiz={() => setIsQuizOpen(true)}
         />
-
         <div className="relative flex-1 h-full">
           {sidebarCollapsed && (
             <button 
