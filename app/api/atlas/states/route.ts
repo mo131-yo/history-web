@@ -1,7 +1,6 @@
 import { z } from "zod";
 import { createAtlasState, getAtlasForYear } from "@/lib/db";
 import { normalizeClosedRing } from "@/lib/geometry";
-import { ADMIN_COOKIE_NAME, isValidAdminSession } from "@/lib/admin-auth";
 
 const querySchema = z.object({
   year: z.coerce.number().int().min(1100).max(1400),
@@ -35,11 +34,6 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
-  const session = request.headers.get("cookie")?.match(new RegExp(`${ADMIN_COOKIE_NAME}=([^;]+)`))?.[1];
-
-  if (!isValidAdminSession(session)) {
-    return Response.json({ error: "Admin эрх шаардлагатай." }, { status: 403 });
-  }
 
   const payload = await request.json();
   const parsed = bodySchema.safeParse(payload);
@@ -67,6 +61,7 @@ export async function POST(request: Request) {
       coordinates: [ring],
     },
   });
+  const collection = await getAtlasForYear(parsed.data.year);
 
-  return Response.json({ feature }, { status: 201 });
+  return Response.json({ feature, collection }, { status: 201 });
 }

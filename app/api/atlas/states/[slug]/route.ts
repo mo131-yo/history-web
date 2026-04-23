@@ -1,7 +1,6 @@
 import { z } from "zod";
 import { deleteAtlasState, updateAtlasState } from "@/lib/db";
 import { normalizeClosedRing } from "@/lib/geometry";
-import { ADMIN_COOKIE_NAME, isValidAdminSession } from "@/lib/admin-auth";
 
 const querySchema = z.object({
   year: z.coerce.number().int().min(1100).max(1400),
@@ -24,11 +23,7 @@ export async function PATCH(
   request: Request,
   context: { params: Promise<{ slug: string }> },
 ) {
-  const session = request.headers.get("cookie")?.match(new RegExp(`${ADMIN_COOKIE_NAME}=([^;]+)`))?.[1];
-
-  if (!isValidAdminSession(session)) {
-    return Response.json({ error: "Admin эрх шаардлагатай." }, { status: 403 });
-  }
+  
 
   const { slug } = await context.params;
   const payload = await request.json();
@@ -68,12 +63,7 @@ export async function DELETE(
   request: Request,
   context: { params: Promise<{ slug: string }> },
 ) {
-  const session = request.headers.get("cookie")?.match(new RegExp(`${ADMIN_COOKIE_NAME}=([^;]+)`))?.[1];
-
-  if (!isValidAdminSession(session)) {
-    return Response.json({ error: "Admin эрх шаардлагатай." }, { status: 403 });
-  }
-
+  
   const { slug } = await context.params;
   const { searchParams } = new URL(request.url);
   const parsed = querySchema.safeParse({

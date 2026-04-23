@@ -193,8 +193,58 @@ export async function getAtlasForYear(year: number): Promise<AtlasFeatureCollect
   };
 }
 
+async function ensureYearBaseline(year: number) {
+  const current = (await sql`
+    SELECT COUNT(*)::int AS count
+    FROM atlas_states
+    WHERE year = ${year}
+  `) as Array<{ count: number }>;
+  const currentCount = current[0]?.count ?? 0;
+
+  const source = (await sql`
+    SELECT year, COUNT(*)::int AS count
+    FROM atlas_states
+    WHERE year < ${year}
+    GROUP BY year
+    HAVING COUNT(*)::int > ${currentCount}
+    ORDER BY year DESC
+    LIMIT 1
+  `) as Array<{ year: number; count: number }>;
+  const sourceYear = source[0]?.year;
+
+  if (!sourceYear) {
+    return;
+  }
+
+  await sql`
+    INSERT INTO atlas_states (
+      slug, year, name, leader, capital, color, summary, metadata, geometry
+    )
+    SELECT
+      source.slug,
+      ${year},
+      source.name,
+      source.leader,
+      source.capital,
+      source.color,
+      source.summary,
+      source.metadata,
+      source.geometry
+    FROM atlas_states AS source
+    WHERE source.year = ${sourceYear}
+      AND NOT EXISTS (
+        SELECT 1
+        FROM atlas_states AS cur
+        WHERE cur.year = ${year}
+          AND cur.slug = source.slug
+      )
+    ON CONFLICT (year, slug) DO NOTHING
+  `;
+}
+
 export async function updateStateGeometry(year: number, slug: string, geometry: GeoJSON.Polygon) {
   await ensureAtlasDatabase();
+  await ensureYearBaseline(year);
 
   const rows = (await sql`
     UPDATE atlas_states
@@ -230,6 +280,7 @@ export async function updateAtlasState(
   input: Omit<AtlasStateInput, "year">,
 ) {
   await ensureAtlasDatabase();
+  await ensureYearBaseline(year);
 
   const rows = (await sql`
     UPDATE atlas_states
@@ -267,6 +318,7 @@ export async function updateAtlasState(
 
 export async function createAtlasState(input: AtlasStateInput) {
   await ensureAtlasDatabase();
+  await ensureYearBaseline(input.year);
 
   const baseSlug = slugify(input.name) || `state-${input.year}`;
   let slug = baseSlug;
@@ -321,6 +373,7 @@ export async function createAtlasState(input: AtlasStateInput) {
 
 export async function deleteAtlasState(year: number, slug: string) {
   await ensureAtlasDatabase();
+  await ensureYearBaseline(year);
 
   const rows = (await sql`
     DELETE FROM atlas_states
