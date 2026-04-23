@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 'use client';
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import HistoricalMap, { MapHandle } from './components/HistoricalMap';
@@ -162,6 +163,22 @@ font-sans transition-colors duration-500"
           </div>
         </div>
       </div>
+=======
+import { Show, SignInButton, UserButton } from '@clerk/nextjs';
+
+export default function HomePage() {
+  return (
+    <main className="p-6">
+      <h1>mongol-atlas</h1>
+
+      <Show when="signed-out">
+        <SignInButton />
+      </Show>
+
+      <Show when="signed-in">
+        <UserButton />
+      </Show>
+>>>>>>> 851760007639138b44e613779fcba54fae0bb692
     </main>
   );
 }
