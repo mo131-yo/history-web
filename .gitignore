@@ -3,4 +3,8 @@
 /.clerk/
 /node_modules
 /.env
+<<<<<<< Updated upstream
 /.env.local
+=======
+/.env.local
+>>>>>>> Stashed changes
