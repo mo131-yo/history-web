@@ -96,11 +96,11 @@ export default function CoordEditor({
 
   return (
     <aside
-      className="flex h-full min-h-[420px] flex-col rounded-[28px] overflow-hidden"
+      className="flex h-full min-h-105 flex-col rounded-[28px] overflow-hidden"
       style={{
         background: BG,
         border: `1px solid ${BORDER}`,
-        boxShadow: `0 0 40px rgba(0,0,0,0.8), inset 0 0 40px rgba(201,164,93,0.02)`,
+        boxShadow: `0 0 40px rgba(  0,0,0,0.8), inset 0 0 40px rgba(201,164,93,0.02)`,
         fontFamily: "Georgia, serif",
       }}
     >

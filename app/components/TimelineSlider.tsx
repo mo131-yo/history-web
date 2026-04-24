@@ -109,8 +109,8 @@ export default function TimelineSlider({
       </div>
 
       <div className="relative mt-4">
-        <div className="pointer-events-none absolute inset-y-0 left-0 z-10 w-8 bg-gradient-to-r from-slate-950/95 to-transparent" />
-        <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-8 bg-gradient-to-l from-slate-950/95 to-transparent" />
+        <div className="pointer-events-none absolute inset-y-0 left-0 z-10 w-8 bg-linear-to-r from-slate-950/95 to-transparent" />
+        <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-8 bg-linear-to-l from-slate-950/95 to-transparent" />
 
         <div ref={scrollRef} className="timeline-years-scroll overflow-x-auto pb-2">
           <div className="flex min-w-max gap-2 px-1">
