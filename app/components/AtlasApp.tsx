@@ -3056,132 +3056,326 @@ export default function AtlasApp() {
     setSaveError(null);
   }
 
+  // async function handleSaveGeometry() {
+  //   if (draftRing.length < 4) return;
+
+  //   if (!form.name || form.name.length < 2) {
+  //     setSaveError("Нэр дор хаяж 2 тэмдэгт байна.");
+  //     setSaveState("error");
+  //     return;
+  //   }
+
+  //   if (!form.summary || form.summary.length < 8) {
+  //     setSaveError("Тайлбар дор хаяж 8 тэмдэгт байна.");
+  //     setSaveState("error");
+  //     return;
+  //   }
+
+  //   try {
+  //     setSaveState("saving");
+  //     setSaveError(null);
+
+  //     if (isCreating) {
+  //       const res = await fetch("/api/atlas/states", {
+  //         method: "POST",
+  //         headers: { "Content-Type": "application/json" },
+  //         body: JSON.stringify({
+  //           year,
+  //           name: form.name,
+  //           leader: form.leader,
+  //           capital: form.capital,
+  //           color: form.color,
+  //           summary: form.summary,
+  //           metadata: { periodName: form.periodName },
+  //           coordinates: draftRing,
+  //         }),
+  //       });
+
+  //       if (!res.ok) {
+  //         const b = await res.json().catch(() => ({}));
+  //         throw new Error((b as { error?: string }).error ?? "create-failed");
+  //       }
+
+  //       const { feature: cf, collection: nextCollection } =
+  //         (await res.json()) as {
+  //           feature: AtlasStateFeature;
+  //           collection?: AtlasFeatureCollection;
+  //         };
+
+  //       setCollection((c) => {
+  //         if (nextCollection) return nextCollection;
+
+  //         return c
+  //           ? { ...c, features: [...c.features, cf] }
+  //           : { type: "FeatureCollection", year, features: [cf] };
+  //       });
+
+  //       setSelectedSlug(cf.properties.slug);
+  //       setIsCreating(false);
+  //       setIsEditing(false);
+  //       setSelectedVertexIndex(null);
+  //       setDraftRing(cf.geometry.coordinates[0] as Array<[number, number]>);
+  //       setForm({
+  //         name: cf.properties.name,
+  //         leader: cf.properties.leader,
+  //         capital: cf.properties.capital,
+  //         color: cf.properties.color,
+  //         summary: cf.properties.summary,
+  //         periodName: String(cf.properties.metadata?.periodName ?? ""),
+  //       });
+  //       setSaveState("saved");
+  //       setTimeout(() => setSaveState("idle"), 1800);
+  //       return;
+  //     }
+
+  //     if (!selectedFeature) throw new Error("no-feature");
+
+  //     const res = await fetch(
+  //       `/api/atlas/states/${selectedFeature.properties.slug}`,
+  //       {
+  //         method: "PATCH",
+  //         headers: { "Content-Type": "application/json" },
+  //         body: JSON.stringify({
+  //           year,
+  //           name: form.name,
+  //           leader: form.leader,
+  //           capital: form.capital,
+  //           color: form.color,
+  //           summary: form.summary,
+  //           metadata: {
+  //             ...(selectedFeature.properties.metadata ?? {}),
+  //             periodName: form.periodName,
+  //           },
+  //           coordinates: draftRing,
+  //         }),
+  //       }
+  //     );
+
+  //     if (!res.ok) {
+  //       const b = await res.json().catch(() => ({}));
+  //       throw new Error((b as { error?: string }).error ?? "save-failed");
+  //     }
+
+  //     const { feature: uf } = (await res.json()) as {
+  //       feature: AtlasStateFeature;
+  //     };
+
+  //     setCollection((c) =>
+  //       c
+  //         ? {
+  //             ...c,
+  //             features: c.features.map((f) =>
+  //               f.properties.slug === uf.properties.slug ? uf : f
+  //             ),
+  //           }
+  //         : c
+  //     );
+
+  //     setDraftRing(uf.geometry.coordinates[0] as Array<[number, number]>);
+  //     setSelectedVertexIndex(null);
+  //     setSaveState("saved");
+  //     setTimeout(() => setSaveState("idle"), 1800);
+  //   } catch (err) {
+  //     setSaveState("error");
+  //     setSaveError(
+  //       err instanceof Error ? err.message : "Хадгалахад алдаа гарлаа."
+  //     );
+  //   }
+  // }
+
   async function handleSaveGeometry() {
-    if (draftRing.length < 4) return;
+  const cleanedCoordinates = draftRing
+    .map((point) => [Number(point[0]), Number(point[1])] as [number, number])
+    .filter(
+      ([lng, lat]) =>
+        Number.isFinite(lng) &&
+        Number.isFinite(lat) &&
+        lng >= -180 &&
+        lng <= 180 &&
+        lat >= -90 &&
+        lat <= 90
+    );
 
-    if (!form.name || form.name.length < 2) {
-      setSaveError("Нэр дор хаяж 2 тэмдэгт байна.");
-      setSaveState("error");
-      return;
-    }
+  if (cleanedCoordinates.length < 4) {
+    setSaveError(
+      "Polygon үүсгэхийн тулд газрын зураг дээр дор хаяж 3 цэг дарна уу."
+    );
+    setSaveState("error");
+    return;
+  }
 
-    if (!form.summary || form.summary.length < 8) {
-      setSaveError("Тайлбар дор хаяж 8 тэмдэгт байна.");
-      setSaveState("error");
-      return;
-    }
+  const cleanedName = form.name.trim();
+  const cleanedLeader = form.leader.trim() || "Тодорхойгүй";
+  const cleanedCapital = form.capital.trim() || "Тодорхойгүй";
+  const cleanedColor = form.color.trim() || "#c9a45d";
+  const cleanedSummary = form.summary.trim();
+  const cleanedPeriodName = form.periodName.trim();
 
-    try {
-      setSaveState("saving");
-      setSaveError(null);
+  if (cleanedName.length < 2) {
+    setSaveError("Нэр дор хаяж 2 тэмдэгт байна.");
+    setSaveState("error");
+    return;
+  }
 
-      if (isCreating) {
-        const res = await fetch("/api/atlas/states", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            year,
-            name: form.name,
-            leader: form.leader,
-            capital: form.capital,
-            color: form.color,
-            summary: form.summary,
-            metadata: { periodName: form.periodName },
-            coordinates: draftRing,
-          }),
-        });
+  if (cleanedSummary.length < 8) {
+    setSaveError("Тайлбар дор хаяж 8 тэмдэгт байна.");
+    setSaveState("error");
+    return;
+  }
 
-        if (!res.ok) {
-          const b = await res.json().catch(() => ({}));
-          throw new Error((b as { error?: string }).error ?? "create-failed");
-        }
+  try {
+    setSaveState("saving");
+    setSaveError(null);
 
-        const { feature: cf, collection: nextCollection } =
-          (await res.json()) as {
-            feature: AtlasStateFeature;
-            collection?: AtlasFeatureCollection;
-          };
+    if (isCreating) {
+      const payload = {
+        year: Number(year),
+        name: cleanedName,
+        leader: cleanedLeader,
+        capital: cleanedCapital,
+        color: cleanedColor,
+        summary: cleanedSummary,
+        metadata: {
+          periodName: cleanedPeriodName,
+        },
+        coordinates: cleanedCoordinates,
+      };
 
-        setCollection((c) => {
-          if (nextCollection) return nextCollection;
-
-          return c
-            ? { ...c, features: [...c.features, cf] }
-            : { type: "FeatureCollection", year, features: [cf] };
-        });
-
-        setSelectedSlug(cf.properties.slug);
-        setIsCreating(false);
-        setIsEditing(false);
-        setSelectedVertexIndex(null);
-        setDraftRing(cf.geometry.coordinates[0] as Array<[number, number]>);
-        setForm({
-          name: cf.properties.name,
-          leader: cf.properties.leader,
-          capital: cf.properties.capital,
-          color: cf.properties.color,
-          summary: cf.properties.summary,
-          periodName: String(cf.properties.metadata?.periodName ?? ""),
-        });
-        setSaveState("saved");
-        setTimeout(() => setSaveState("idle"), 1800);
-        return;
-      }
-
-      if (!selectedFeature) throw new Error("no-feature");
-
-      const res = await fetch(
-        `/api/atlas/states/${selectedFeature.properties.slug}`,
-        {
-          method: "PATCH",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            year,
-            name: form.name,
-            leader: form.leader,
-            capital: form.capital,
-            color: form.color,
-            summary: form.summary,
-            metadata: {
-              ...(selectedFeature.properties.metadata ?? {}),
-              periodName: form.periodName,
-            },
-            coordinates: draftRing,
-          }),
-        }
-      );
+      const res = await fetch("/api/atlas/states", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
 
       if (!res.ok) {
         const b = await res.json().catch(() => ({}));
-        throw new Error((b as { error?: string }).error ?? "save-failed");
+
+        console.error("[create atlas state failed]", b);
+
+        throw new Error(
+          b?.details?.fieldErrors
+            ? Object.entries(b.details.fieldErrors)
+                .map(([key, value]) => `${key}: ${(value as string[]).join(", ")}`)
+                .join(" | ")
+            : b?.error ?? "create-failed"
+        );
       }
 
-      const { feature: uf } = (await res.json()) as {
-        feature: AtlasStateFeature;
-      };
+      const { feature: cf, collection: nextCollection } =
+        (await res.json()) as {
+          feature: AtlasStateFeature;
+          collection?: AtlasFeatureCollection;
+        };
 
-      setCollection((c) =>
-        c
+      setCollection((c) => {
+        if (nextCollection) return nextCollection;
+
+        return c
           ? {
               ...c,
-              features: c.features.map((f) =>
-                f.properties.slug === uf.properties.slug ? uf : f
-              ),
+              features: [...c.features, cf],
             }
-          : c
-      );
+          : {
+              type: "FeatureCollection",
+              year,
+              features: [cf],
+            };
+      });
 
-      setDraftRing(uf.geometry.coordinates[0] as Array<[number, number]>);
+      setSelectedSlug(cf.properties.slug);
+      setIsCreating(false);
+      setIsEditing(false);
+      setAddPointMode(false);
       setSelectedVertexIndex(null);
+      setDraftRing(cf.geometry.coordinates[0] as Array<[number, number]>);
+
+      setForm({
+        name: cf.properties.name,
+        leader: cf.properties.leader,
+        capital: cf.properties.capital,
+        color: cf.properties.color,
+        summary: cf.properties.summary,
+        periodName: String(cf.properties.metadata?.periodName ?? ""),
+      });
+
       setSaveState("saved");
       setTimeout(() => setSaveState("idle"), 1800);
-    } catch (err) {
-      setSaveState("error");
-      setSaveError(
-        err instanceof Error ? err.message : "Хадгалахад алдаа гарлаа."
+      return;
+    }
+
+    if (!selectedFeature) {
+      throw new Error("no-feature");
+    }
+
+    const payload = {
+      year: Number(year),
+      name: cleanedName,
+      leader: cleanedLeader,
+      capital: cleanedCapital,
+      color: cleanedColor,
+      summary: cleanedSummary,
+      metadata: {
+        ...(selectedFeature.properties.metadata ?? {}),
+        periodName: cleanedPeriodName,
+      },
+      coordinates: cleanedCoordinates,
+    };
+
+    const res = await fetch(
+      `/api/atlas/states/${selectedFeature.properties.slug}`,
+      {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      }
+    );
+
+    if (!res.ok) {
+      const b = await res.json().catch(() => ({}));
+
+      console.error("[update atlas state failed]", b);
+
+      throw new Error(
+        b?.details?.fieldErrors
+          ? Object.entries(b.details.fieldErrors)
+              .map(([key, value]) => `${key}: ${(value as string[]).join(", ")}`)
+              .join(" | ")
+          : b?.error ?? "save-failed"
       );
     }
+
+    const { feature: uf } = (await res.json()) as {
+      feature: AtlasStateFeature;
+    };
+
+    setCollection((c) =>
+      c
+        ? {
+            ...c,
+            features: c.features.map((f) =>
+              f.properties.slug === uf.properties.slug ? uf : f
+            ),
+          }
+        : c
+    );
+
+    setDraftRing(uf.geometry.coordinates[0] as Array<[number, number]>);
+    setSelectedVertexIndex(null);
+    setSaveState("saved");
+    setTimeout(() => setSaveState("idle"), 1800);
+  } catch (err) {
+    console.error("[handleSaveGeometry]", err);
+
+    setSaveState("error");
+    setSaveError(
+      err instanceof Error ? err.message : "Хадгалахад алдаа гарлаа."
+    );
   }
+}
 
   async function handleDeleteState() {
     if (!selectedFeature || isCreating) return;
