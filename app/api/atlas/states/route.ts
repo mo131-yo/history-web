@@ -1,4 +1,5 @@
 import { handleAtlasStatesGet, handleAtlasStatesPost } from "./atlasStatesHandlers";
+import { atlasApiErrorResponse } from "../atlasApiErrors";
 
 export const dynamic = "force-dynamic";
 
@@ -7,7 +8,7 @@ export async function GET(request: Request) {
     return await handleAtlasStatesGet(request);
   } catch (err) {
     console.error("[atlas/states GET]", err);
-    return Response.json({ error: "Газрын зураг ачаалахад серверийн алдаа гарлаа." }, { status: 500 });
+    return atlasApiErrorResponse(err, "Газрын зураг ачаалахад серверийн алдаа гарлаа.");
   }
 }
 
@@ -16,6 +17,6 @@ export async function POST(request: Request) {
     return await handleAtlasStatesPost(request);
   } catch (err) {
     console.error("[atlas/states POST]", err);
-    return Response.json({ error: "Шинэ улс хадгалахад серверийн алдаа гарлаа." }, { status: 500 });
+    return atlasApiErrorResponse(err, "Шинэ улс хадгалахад серверийн алдаа гарлаа.");
   }
 }

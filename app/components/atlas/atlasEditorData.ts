@@ -7,6 +7,10 @@ import type { AtlasFormState, SaveState } from "./types";
 export function useAtlasYears(year: number, years: number[], setYears: (years: number[]) => void, setLoadError: (value: string | null) => void) {
   useEffect(() => {
     fetch("/api/atlas/years")
+      .then((response) => {
+        if (!response.ok) throw new Error();
+        return response;
+      })
       .then((response) => response.json())
       .then((data) => setYears(data.years as number[]))
       .catch(() => setLoadError("Timeline ачаалахад алдаа гарлаа."));

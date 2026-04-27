@@ -9,7 +9,9 @@ import { AtlasCharacterRpgModal } from "./atlas/AtlasCharacterRpgModal";
 import { AtlasCharacterSummary } from "./atlas/AtlasCharacterSummary";
 import { AtlasHeader } from "./atlas/AtlasHeader";
 import { MapLoader } from "./atlas/AtlasMapControls";
+import { AtlasQuizLauncher } from "./atlas/AtlasQuizLauncher";
 import { AtlasTimelineFooter } from "./atlas/AtlasTimelineFooter";
+import { QuizModal } from "./QuizModal";
 import { CHARACTER_STORAGE_KEY, T } from "./atlas/constants";
 import { useAtlasEditor } from "./atlas/useAtlasEditor";
 import type { CoordEditorProps, SavedCharacterResult } from "./atlas/types";
@@ -36,6 +38,7 @@ export default function AtlasApp() {
   const [mapMode, setMapMode] = useState<"globe" | "historical">("historical");
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [characterOpen, setCharacterOpen] = useState(false);
+  const [quizOpen, setQuizOpen] = useState(false);
   const [liveCharacterResult, setLiveCharacterResult] = useState<SavedCharacterResult | null>(null);
   const storedCharacterResultRaw = useSyncExternalStore(
     subscribeCharacterResult,
@@ -79,6 +82,24 @@ export default function AtlasApp() {
     />
   );
 
+  function handleQuizFlyTo(target: { coords?: [number, number] }) {
+    if (!collection || !target.coords) return;
+    const [targetLng, targetLat] = target.coords;
+    let bestSlug: string | null = null;
+    let bestDistance = Number.POSITIVE_INFINITY;
+
+    for (const feature of collection.features) {
+      const [lng, lat] = feature.properties.center;
+      const distance = Math.hypot(lng - targetLng, lat - targetLat);
+      if (distance < bestDistance) {
+        bestDistance = distance;
+        bestSlug = feature.properties.slug;
+      }
+    }
+
+    if (bestSlug) setSelectedSlug(bestSlug);
+  }
+
   return (
     <main
       className="min-h-screen overflow-hidden"
@@ -92,6 +113,14 @@ export default function AtlasApp() {
           onResult={setLiveCharacterResult}
         />
       )}
+
+      <QuizModal
+        isOpen={quizOpen}
+        onClose={() => setQuizOpen(false)}
+        year={year}
+        geoData={collection}
+        onFlyTo={handleQuizFlyTo}
+      />
 
       <div className="flex min-h-screen flex-col lg:h-screen lg:flex-row lg:overflow-hidden">
         <Sidebar
@@ -129,9 +158,15 @@ export default function AtlasApp() {
             />
           )}
 
+          <AtlasQuizLauncher
+            enabled={!!collection?.features.length}
+            hasCharacter={!!characterResult}
+            onOpen={() => setQuizOpen(true)}
+          />
+
           {loadError && (
             <div
-              className="absolute left-4 top-16 z-30 flex items-center gap-2 rounded-lg px-4 py-2.5 text-xs"
+              className="absolute left-4 top-16 z-30 flex items-center gap-2 rounded-lg px-4 py-2.5 text-xs lg:left-auto lg:right-4"
               style={{
                 background: "rgba(20,4,4,0.96)",
                 border: "1px solid rgba(150,40,40,0.5)",

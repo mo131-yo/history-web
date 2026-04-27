@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { deleteAtlasState, updateAtlasState } from "@/lib/db";
 import { normalizeClosedRing } from "@/lib/geometry";
+import { atlasApiErrorResponse } from "../../atlasApiErrors";
 
 const querySchema = z.object({
   year: z.coerce.number().int().min(1100).max(1400),
@@ -23,65 +24,75 @@ export async function PATCH(
   request: Request,
   context: { params: Promise<{ slug: string }> },
 ) {
-  const { slug } = await context.params;
-  const payload = await request.json().catch(() => null);
-  if (!payload) {
-    return Response.json(
-      { error: "JSON body хоосон эсвэл буруу байна." },
-      { status: 400 },
-    );
+  try {
+    const { slug } = await context.params;
+    const payload = await request.json().catch(() => null);
+    if (!payload) {
+      return Response.json(
+        { error: "JSON body хоосон эсвэл буруу байна." },
+        { status: 400 },
+      );
+    }
+    const parsed = patchBodySchema.safeParse(payload);
+
+    if (!parsed.success) {
+      return Response.json({ error: "Шинэчлэх өгөгдөл дутуу эсвэл буруу байна." }, { status: 400 });
+    }
+
+    const ring = normalizeClosedRing(parsed.data.coordinates);
+
+    if (ring.length < 4) {
+      return Response.json({ error: "Polygon дор хаяж 3 оройтой байна." }, { status: 400 });
+    }
+
+    const feature = await updateAtlasState(parsed.data.year, slug, {
+      name: parsed.data.name,
+      leader: parsed.data.leader,
+      capital: parsed.data.capital,
+      color: parsed.data.color,
+      summary: parsed.data.summary,
+      metadata: parsed.data.metadata,
+      geometry: {
+        type: "Polygon",
+        coordinates: [ring],
+      },
+    });
+
+    if (!feature) {
+      return Response.json({ error: "Шинэчлэх бичлэг олдсонгүй." }, { status: 404 });
+    }
+
+    return Response.json({ feature });
+  } catch (err) {
+    console.error("[atlas/states PATCH]", err);
+    return atlasApiErrorResponse(err, "Улс шинэчлэхэд серверийн алдаа гарлаа.");
   }
-  const parsed = patchBodySchema.safeParse(payload);
-
-  if (!parsed.success) {
-    return Response.json({ error: "Шинэчлэх өгөгдөл дутуу эсвэл буруу байна." }, { status: 400 });
-  }
-
-  const ring = normalizeClosedRing(parsed.data.coordinates);
-
-  if (ring.length < 4) {
-    return Response.json({ error: "Polygon дор хаяж 3 оройтой байна." }, { status: 400 });
-  }
-
-  const feature = await updateAtlasState(parsed.data.year, slug, {
-    name: parsed.data.name,
-    leader: parsed.data.leader,
-    capital: parsed.data.capital,
-    color: parsed.data.color,
-    summary: parsed.data.summary,
-    metadata: parsed.data.metadata,
-    geometry: {
-      type: "Polygon",
-      coordinates: [ring],
-    },
-  });
-
-  if (!feature) {
-    return Response.json({ error: "Шинэчлэх бичлэг олдсонгүй." }, { status: 404 });
-  }
-
-  return Response.json({ feature });
 }
 
 export async function DELETE(
   request: Request,
   context: { params: Promise<{ slug: string }> },
 ) {
-  const { slug } = await context.params;
-  const { searchParams } = new URL(request.url);
-  const parsed = querySchema.safeParse({
-    year: searchParams.get("year"),
-  });
+  try {
+    const { slug } = await context.params;
+    const { searchParams } = new URL(request.url);
+    const parsed = querySchema.safeParse({
+      year: searchParams.get("year"),
+    });
 
-  if (!parsed.success) {
-    return Response.json({ error: "Устгах үед year параметр шаардлагатай." }, { status: 400 });
+    if (!parsed.success) {
+      return Response.json({ error: "Устгах үед year параметр шаардлагатай." }, { status: 400 });
+    }
+
+    const deleted = await deleteAtlasState(parsed.data.year, slug);
+
+    if (!deleted) {
+      return Response.json({ error: "Устгах бичлэг олдсонгүй." }, { status: 404 });
+    }
+
+    return Response.json({ ok: true });
+  } catch (err) {
+    console.error("[atlas/states DELETE]", err);
+    return atlasApiErrorResponse(err, "Улс устгахад серверийн алдаа гарлаа.");
   }
-
-  const deleted = await deleteAtlasState(parsed.data.year, slug);
-
-  if (!deleted) {
-    return Response.json({ error: "Устгах бичлэг олдсонгүй." }, { status: 404 });
-  }
-
-  return Response.json({ ok: true });
 }
