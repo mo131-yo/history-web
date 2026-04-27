@@ -35,7 +35,7 @@
     ".next/types/**/*.ts",
     ".next/dev/types/**/*.ts",
     "**/*.mts"
-  ],
+, "../old_seed_backup/seed-rings.ts", "../old_seed_backup/seed-rings-b.ts", "../old_seed_backup/seed-rings-a.ts", "../old_seed_backup/seed-data.ts", "../old_seed_backup/seed-data-d2.ts", "../old_seed_backup/seed-data-d1.ts", "../old_seed_backup/seed-data-d.ts", "../old_seed_backup/seed-data-c2.ts", "../old_seed_backup/seed-data-c1.ts", "../old_seed_backup/seed-data-c.ts", "../old_seed_backup/seed-data-b2.ts", "../old_seed_backup/seed-data-b1.ts", "../old_seed_backup/seed-data-a2.ts", "../old_seed_backup/seed-data-a1.ts", "../old_seed_backup/seed-data-a.ts"  ],
   "exclude": [
     "node_modules"
   ]

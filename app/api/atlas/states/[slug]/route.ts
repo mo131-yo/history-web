@@ -23,10 +23,14 @@ export async function PATCH(
   request: Request,
   context: { params: Promise<{ slug: string }> },
 ) {
-  
-
   const { slug } = await context.params;
-  const payload = await request.json();
+  const payload = await request.json().catch(() => null);
+  if (!payload) {
+    return Response.json(
+      { error: "JSON body хоосон эсвэл буруу байна." },
+      { status: 400 },
+    );
+  }
   const parsed = patchBodySchema.safeParse(payload);
 
   if (!parsed.success) {
@@ -63,7 +67,6 @@ export async function DELETE(
   request: Request,
   context: { params: Promise<{ slug: string }> },
 ) {
-  
   const { slug } = await context.params;
   const { searchParams } = new URL(request.url);
   const parsed = querySchema.safeParse({
