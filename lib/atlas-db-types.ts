@@ -1,4 +1,3 @@
-import { getAtlasSeedState } from "@/lib/seed-data";
 import type { AtlasStateFeature } from "@/lib/types";
 
 export type AtlasRow = {
@@ -29,16 +28,31 @@ export function getCenterFromRing(ring: [number, number][]) {
 
 export function toFeature(row: AtlasRow): AtlasStateFeature {
   const ring = row.geometry.coordinates[0] as [number, number][];
-  const seedState = getAtlasSeedState(row.year, row.slug);
-  const name = shouldRestoreSeedText(row.name) ? seedState?.name ?? row.name : row.name;
+  // const seedState = getAtlasSeedState(row.year, row.slug);
+  // const name = shouldRestoreSeedText(row.name) ? seedState?.name ?? row.name : row.name;
 
+  // return {
+  //   type: "Feature",
+  //   geometry: row.geometry,
+  //   properties: {
+  //     slug: row.slug,
+  //     year: row.year,
+  //     name,
+  //     leader: row.leader,
+  //     capital: row.capital,
+  //     color: row.color,
+  //     summary: row.summary,
+  //     metadata: row.metadata ?? {},
+  //     center: getCenterFromRing(ring),
+  //     updatedAt: row.updated_at,
+  //   },
   return {
     type: "Feature",
     geometry: row.geometry,
     properties: {
       slug: row.slug,
       year: row.year,
-      name,
+      name: row.name,
       leader: row.leader,
       capital: row.capital,
       color: row.color,
@@ -60,8 +74,8 @@ export function slugify(value: string) {
     .replace(/^-+|-+$/g, "");
 }
 
-function shouldRestoreSeedText(value: string) {
-  const normalized = value.trim();
-  if (!normalized) return true;
-  return /^[?\uFFFD\s]+$/.test(normalized);
-}
+// function shouldRestoreSeedText(value: string) {
+//   const normalized = value.trim();
+//   if (!normalized) return true;
+//   return /^[?\uFFFD\s]+$/.test(normalized);
+// }
