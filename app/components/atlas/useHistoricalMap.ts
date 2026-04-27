@@ -51,6 +51,7 @@ export function useHistoricalMap({
 
   useEffect(() => {
     if (!containerRef.current || mapRef.current) return;
+    const globeMode = view?.mode === "globe";
     const map = new maplibregl.Map({
       container: containerRef.current,
       style: MAPTILER_HYBRID_STYLE,
@@ -60,14 +61,28 @@ export function useHistoricalMap({
       bearing: view?.bearing ?? 0,
       maxPitch: view?.maxPitch ?? 85,
       attributionControl: false,
-      renderWorldCopies: true,
+      renderWorldCopies: !globeMode,
     });
-    map.addControl(new maplibregl.NavigationControl({ visualizePitch: true }), "bottom-right");
+    map.addControl(
+      new maplibregl.NavigationControl({ visualizePitch: globeMode }),
+      "bottom-right"
+    );
     let stopDraggingFromWindow: (() => void) | null = null;
 
     map.on("load", () => {
       mapReadyRef.current = true;
-      if (view?.mode === "globe") applyGlobeScene(map);
+      if (globeMode) {
+        applyGlobeScene(map, view.projection === "vertical-perspective" ? "vertical-perspective" : "globe");
+        map.jumpTo({
+          center: view?.center ?? MAPTILER_DEFAULT_CENTER,
+          zoom: view?.zoom ?? MAPTILER_DEFAULT_ZOOM,
+          pitch: view?.pitch ?? 0,
+          bearing: view?.bearing ?? 0,
+        });
+        map.resize();
+      } else {
+        map.setProjection({ type: "mercator" });
+      }
       addHistoricalMapSources(map, collectionRef.current ?? { type: "FeatureCollection", features: [] });
       addHistoricalMapLayers(map, selectedSlugRef.current);
       if (collectionRef.current) {
@@ -111,7 +126,7 @@ export function useHistoricalMap({
       mapReadyRef.current = false;
       resizeObserver?.disconnect();
       if (stopDraggingFromWindow) window.removeEventListener("mouseup", stopDraggingFromWindow);
-      if (view?.mode === "globe") {
+      if (globeMode) {
         try {
           clearGlobeScene(map);
         } catch {}
@@ -119,7 +134,7 @@ export function useHistoricalMap({
       map.remove();
       mapRef.current = null;
     };
-  }, [onDraftRingChange, onSelectSlug, view?.bearing, viewCenterLat, viewCenterLng, view?.maxPitch, view?.mode, view?.pitch, view?.zoom]);
+  }, [onDraftRingChange, onSelectSlug, view?.bearing, viewCenterLat, viewCenterLng, view?.maxPitch, view?.mode, view?.pitch, view?.projection, view?.zoom]);
 
   useEffect(() => syncCollection(mapRef.current, mapReadyRef.current, collection, selectedSlug, focusPaddingRef.current), [collection, selectedSlug]);
   useEffect(() => syncSelection(mapRef.current, mapReadyRef.current, selectedSlug), [selectedSlug]);

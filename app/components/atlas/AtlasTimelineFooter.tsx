@@ -13,7 +13,7 @@ export function AtlasTimelineFooter({
   onYearChange: (year: number) => void;
 }) {
   return (
-    <div className="absolute bottom-0 left-0 right-0 z-30 px-4 pb-4">
+    <div className="absolute bottom-0 left-0 right-0 z-30 px-3 pb-3 sm:px-4 sm:pb-4">
       <div
         className="overflow-hidden rounded-2xl"
         style={{
@@ -24,7 +24,7 @@ export function AtlasTimelineFooter({
         }}
       >
         <div
-          className="flex px-5 pb-1 pt-2.5 text-[8px] uppercase tracking-[0.28em]"
+          className="flex px-3 pb-1 pt-2 text-[7px] uppercase tracking-[0.18em] sm:px-5 sm:pt-2.5 sm:text-[8px] sm:tracking-[0.28em]"
           style={{ borderBottom: `1px solid ${T.border}` }}
         >
           {[
@@ -49,7 +49,7 @@ export function AtlasTimelineFooter({
           ))}
         </div>
 
-        <div className="flex items-center gap-4 px-5 pb-3 pt-2">
+        <div className="flex items-center gap-3 px-3 pb-3 pt-2 sm:gap-4 sm:px-5">
           <div
             className="flex shrink-0 flex-col items-center justify-center rounded-lg px-3 py-1.5 tabular-nums"
             style={{
@@ -62,7 +62,7 @@ export function AtlasTimelineFooter({
             <span
               style={{
                 color: T.amberBright,
-                fontSize: 18,
+                fontSize: 16,
                 fontWeight: 700,
                 fontFamily: "Georgia, serif",
                 lineHeight: 1.1,
@@ -74,7 +74,7 @@ export function AtlasTimelineFooter({
             <span
               style={{
                 color: T.textMuted,
-                fontSize: 8,
+                fontSize: 7,
                 letterSpacing: "0.25em",
                 textTransform: "uppercase",
                 fontFamily: "Georgia, serif",

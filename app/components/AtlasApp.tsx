@@ -33,7 +33,8 @@ export default function AtlasApp() {
   const { user, isLoaded } = useUser();
   const adminMode = isLoaded && !!user;
   const [year, setYear] = useState(1206);
-  const [mapMode, setMapMode] = useState<"globe" | "historical">("globe");
+  const [mapMode, setMapMode] = useState<"globe" | "historical">("historical");
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [characterOpen, setCharacterOpen] = useState(false);
   const [liveCharacterResult, setLiveCharacterResult] = useState<SavedCharacterResult | null>(null);
   const storedCharacterResultRaw = useSyncExternalStore(
@@ -102,10 +103,12 @@ export default function AtlasApp() {
           onSearchChange={setSearch}
           adminMode={adminMode}
           user={user}
+          collapsed={sidebarCollapsed}
+          onToggleCollapsed={() => setSidebarCollapsed((value) => !value)}
         />
 
-        <section className="relative flex min-h-[70vh] flex-1 flex-col overflow-hidden lg:h-screen lg:min-h-0">
-          <div className="absolute inset-x-0 top-0 bottom-32 z-0 lg:bottom-36">
+        <section className="relative flex min-h-[620px] flex-1 flex-col overflow-hidden md:min-h-[720px] lg:h-screen lg:min-h-0">
+          <div className="absolute inset-x-0 top-0 bottom-44 z-0 md:bottom-48 lg:bottom-44">
             {mapMode === "globe" && <GlobeMap {...sharedMapProps} />}
             {mapMode === "historical" && <HistoricalMap {...sharedMapProps} />}
           </div>
@@ -143,7 +146,7 @@ export default function AtlasApp() {
           )}
 
           <div
-            className="absolute bottom-36 right-4 top-16 z-20 hidden w-[340px] flex-col xl:flex"
+            className="absolute bottom-44 right-4 top-16 z-20 hidden w-[340px] flex-col xl:flex"
             style={{ pointerEvents: selectedFeature || adminMode ? "auto" : "none" }}
           >
             {drawer}
@@ -151,7 +154,9 @@ export default function AtlasApp() {
 
           <AtlasTimelineFooter year={year} years={years} onYearChange={setYear} />
 
-          <div className="relative z-10 px-4 pb-4 pt-[calc(70vh+1rem)] xl:hidden">{drawer}</div>
+          <div className="relative z-10 px-3 pb-4 pt-[calc(100vw*0.62+15rem)] sm:px-4 md:pt-[calc(100vw*0.5+16rem)] lg:pt-[calc(70vh+1rem)] xl:hidden">
+            {drawer}
+          </div>
         </section>
       </div>
     </main>

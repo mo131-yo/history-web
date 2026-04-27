@@ -20,9 +20,9 @@ export function AtlasHeader({
   collectionCount: number | null;
 }) {
   return (
-    <div className="pointer-events-none relative z-20 flex items-start justify-between gap-3 px-4 pt-3">
+    <div className="pointer-events-none relative z-20 flex flex-col gap-3 px-3 pt-3 sm:px-4 lg:flex-row lg:items-start lg:justify-between">
       <div
-        className="pointer-events-auto flex items-center gap-3 rounded-xl py-2.5 pl-3 pr-4"
+        className="pointer-events-auto flex w-full items-center gap-3 rounded-xl py-2.5 pl-3 pr-4 lg:w-auto"
         style={{
           background: T.panel,
           border: `1px solid ${T.border}`,
@@ -49,7 +49,7 @@ export function AtlasHeader({
 
         <div>
           <h1
-            className="text-sm font-bold uppercase leading-none tracking-widest"
+            className="text-xs font-bold uppercase leading-none tracking-[0.1em] sm:text-sm"
             style={{
               color: T.amber,
               letterSpacing: "0.12em",
@@ -60,7 +60,7 @@ export function AtlasHeader({
             Монгол · Төв Азийн Атлас
           </h1>
           <p
-            className="mt-1 text-[8px] uppercase tracking-[0.45em]"
+            className="mt-1 text-[7px] uppercase tracking-[0.35em] sm:text-[8px] sm:tracking-[0.45em]"
             style={{ color: T.textMuted, fontFamily: "Georgia, serif" }}
           >
             1162 — 1300 · Дундад зуун
@@ -68,11 +68,11 @@ export function AtlasHeader({
         </div>
       </div>
 
-      <div className="pointer-events-auto flex flex-wrap items-center justify-end gap-2">
+      <div className="pointer-events-auto flex w-full flex-wrap items-center justify-start gap-2 lg:w-auto lg:justify-end">
         <button
           type="button"
           onClick={onOpenCharacter}
-          className="rounded-xl px-3 py-2 text-[10px] uppercase tracking-widest"
+          className="min-h-10 rounded-xl px-3 py-2 text-[10px] uppercase tracking-widest"
           style={{
             background: "linear-gradient(135deg, rgba(201,164,93,0.20), rgba(139,108,53,0.08))",
             border: "1px solid rgba(201,164,93,0.42)",
@@ -89,7 +89,7 @@ export function AtlasHeader({
 
         {adminMode && (
           <div
-            className="flex items-center gap-1.5 rounded-xl px-3 py-2 text-[10px] uppercase tracking-widest"
+            className="flex min-h-10 items-center gap-1.5 rounded-xl px-3 py-2 text-[10px] uppercase tracking-widest"
             style={{
               background: T.panel,
               border: "1px solid rgba(201,164,93,0.38)",
@@ -112,7 +112,7 @@ export function AtlasHeader({
 
         {collectionCount !== null && (
           <div
-            className="rounded-xl px-3 py-2 text-[10px] uppercase tracking-widest tabular-nums"
+            className="min-h-10 rounded-xl px-3 py-2 text-[10px] uppercase tracking-widest tabular-nums"
             style={{
               background: "rgba(8,5,2,0.88)",
               border: `1px solid ${T.border}`,

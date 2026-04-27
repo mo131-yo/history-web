@@ -3,52 +3,84 @@
 import type { RpgQuestion } from "./types";
 
 export const RPG_QUESTIONS: RpgQuestion[] = [
-  { id: "q1", question: "Аян замд хамгийн түрүүнд чи юуг шалгах вэ?", options: [
-    { label: "Морьдын хүч, эмээл хазаар, замын хурдыг шалгана.", scores: { aduuchin: 3, aravt: 1, zuut: 1 } },
-    { label: "Хүнс, ус, өвс бэлчээр хүрэлцэх эсэхийг тооцно.", scores: { malchin: 2, tariachin: 2, myangat: 2 } },
-    { label: "Хэний нутаг, хэний хэл, ямар ёстойг асууна.", scores: { helmerch: 3, hudaldaachin: 2, bicheech: 1 } },
-    { label: "Тэмдэглэл, зарлиг, тооцоогоо эмхэлнэ.", scores: { bicheech: 3, myangatiin_noyon: 1 } },
-  ] },
-  { id: "q2", question: "Маргаан гарвал чи яаж шийдэх вэ?", options: [
-    { label: "Хоёр талын үгийг сонсоод эвлэрүүлэх гарц хайна.", scores: { helmerch: 3, boo_udgan: 1, myangatiin_noyon: 1 } },
-    { label: "Дүрэм, тушаал, сахилга батыг баримтална.", scores: { aravt: 2, zuut: 3, myangat: 1 } },
-    { label: "Ашиг, алдагдлыг тооцож тохиролцоо санал болгоно.", scores: { hudaldaachin: 3, bicheech: 1 } },
-    { label: "Ахмадын ёс, тэнгэр шүтлэг, зан үйлийг сануулна.", scores: { boo_udgan: 3, malchin: 1 } },
-  ] },
-  { id: "q3", question: "Чиний хамгийн их дуртай ажил юу вэ?", options: [
-    { label: "Гараар юм урлах, засах, гоё болгох.", scores: { oydolchin: 3, darkhan: 3 } },
-    { label: "Газраа арчлах, ургацаа тооцох.", scores: { tariachin: 4 } },
-    { label: "Мал сүрэг, бэлчээр, улирлын нүүдэл төлөвлөх.", scores: { malchin: 4, aduuchin: 1 } },
-    { label: "Хүмүүсийг зохион байгуулж, үүрэг хуваарилах.", scores: { zuut: 2, myangat: 3, myangatiin_noyon: 3 } },
-  ] },
-  { id: "q4", question: "Дайсны мэдээ ирвэл чи юу хийх вэ?", options: [
-    { label: "Тагнуулын мөр, газрын байдал, салхины чигийг ажиглана.", scores: { anchin: 3, aravt: 1 } },
-    { label: "Цэргүүдийг бүлэглэж, тушаал дамжуулах бэлтгэл хийнэ.", scores: { zuut: 3, myangat: 3, myangatiin_noyon: 1 } },
-    { label: "Хэлэлцээ хийх боломж байгаа эсэхийг судална.", scores: { helmerch: 3, hudaldaachin: 1 } },
-    { label: "Морь, сум, тоног хэрэгслийг бэлэн болгоно.", scores: { aduuchin: 2, darkhan: 2, aravt: 2 } },
-  ] },
-  { id: "q5", question: "Чамд нэг өдөр чөлөө өгвөл чи юу хийх вэ?", options: [
-    { label: "Морь унаж, тал нутгаар давхина.", scores: { aduuchin: 4, anchin: 1 } },
-    { label: "Юм оёж, засаж, хэрэгтэй эдлэл бүтээнэ.", scores: { oydolchin: 3, darkhan: 2 } },
-    { label: "Худалдаачидтай уулзаж сонин мэдээ сонсоно.", scores: { hudaldaachin: 3, helmerch: 2 } },
-    { label: "Тэмдэглэл уншиж, хуучин явдлыг эргэцүүлнэ.", scores: { bicheech: 3, boo_udgan: 1 } },
-  ] },
-  { id: "q6", question: "Хүмүүс чамайг юугаар хамгийн их үнэлдэг вэ?", options: [
-    { label: "Найдвартай, чимээгүй ч ажлаа хийдэг.", scores: { malchin: 2, tariachin: 2, aravt: 2 } },
-    { label: "Удирдаж чаддаг, шийдвэр хурдан гаргадаг.", scores: { zuut: 2, myangat: 3, myangatiin_noyon: 3 } },
-    { label: "Ухаантай ярьж, хүмүүсийг ойлгуулж чаддаг.", scores: { helmerch: 3, hudaldaachin: 2 } },
-    { label: "Гарын уртай, нарийн мэдрэмжтэй.", scores: { oydolchin: 3, darkhan: 3 } },
-  ] },
-  { id: "q7", question: "Чи ямар зүйлээс хамгийн их хүч авдаг вэ?", options: [
-    { label: "Тал нутаг, сүрэг мал, гэр бүлээс.", scores: { malchin: 3, aduuchin: 1 } },
-    { label: "Эмх журам, туг сүлд, хамт олноос.", scores: { aravt: 2, zuut: 2, myangat: 2 } },
-    { label: "Мэдлэг, бичиг, ой санамжаас.", scores: { bicheech: 3, helmerch: 1 } },
-    { label: "Ёс заншил, билэг тэмдэг, сэтгэлийн хүчнээс.", scores: { boo_udgan: 4 } },
-  ] },
-  { id: "q8", question: "Чи аль үүргийг өөртөө хамгийн ойр гэж мэдрэх вэ?", options: [
-    { label: "Амьдралыг тэтгэгч хүн.", scores: { malchin: 2, tariachin: 3 } },
-    { label: "Зам, мэдээ, солилцоог холбогч хүн.", scores: { helmerch: 2, hudaldaachin: 3, bicheech: 1 } },
-    { label: "Дайн, хамгаалалт, сахилгын хүн.", scores: { aravt: 2, zuut: 2, myangat: 2, myangatiin_noyon: 1 } },
-    { label: "Урлал, хэрэгсэл, бүтээлийн хүн.", scores: { oydolchin: 2, darkhan: 3 } },
-  ] },
+  {
+    id: "q1",
+    question: "Олон аймаг хоорондоо зөрчилдөөд, нэгдэх эсэх нь эргэлзээтэй байвал чи юу хийх вэ?",
+    options: [
+      { label: "Нэг том зорилго дэвшүүлж, бүгдийг түүний дор зангидахыг оролдоно.", scores: { chinggis_khaan: 4, orlog_zovloh: 1 } },
+      { label: "Хамгийн хүчтэй хүмүүсийг зохион байгуулж, сахилга журам тогтооно.", scores: { janjin: 3, urtuu_zahiragch: 1 } },
+      { label: "Аль тал юунаас эмээж, юунд итгэж байгааг сонсоод эвийн гарц хайна.", scores: { khaanii_elch: 3, udgan: 1 } },
+      { label: "Баримт, ам тангараг, дүрэм журмыг эмхлэн бичиж, ойлгомжтой болгоно.", scores: { bicheech: 3, orlog_zovloh: 1 } },
+    ],
+  },
+  {
+    id: "q2",
+    question: "Аян дайнд гарахын өмнө чиний хамгийн түрүүнд бодох зүйл юу вэ?",
+    options: [
+      { label: "Ямар чиглэлээр довтолж, хаанаас бүслэх вэ гэдгээ бодно.", scores: { janjin: 4, turshuul: 1 } },
+      { label: "Сэлгээ морь, хүнс, мэдээ дамжуулалт тасалдахгүй эсэхийг шалгана.", scores: { urtuu_zahiragch: 4, chinggis_khaan: 1 } },
+      { label: "Дайсныхаа дотоод сул тал, хөдөлгөөнийг эхэлж олж мэднэ.", scores: { turshuul: 4, janjin: 1 } },
+      { label: "Энэ аян урт хугацаанд ашигтай юу гэдгийг нухацтай тооцно.", scores: { orlog_zovloh: 3, chinggis_khaan: 1 } },
+    ],
+  },
+  {
+    id: "q3",
+    question: "Харь улсын төлөөлөгч танай өргөөнд ирвэл чи хэрхэн харьцах вэ?",
+    options: [
+      { label: "Нэр хүндээ хадгалж, үг бүрийн цаадах зорилгыг нь танина.", scores: { khaanii_elch: 4, hudaldaanii_noen: 1 } },
+      { label: "Тэднээс ямар мэдээ, ямар аюул нууж байгааг ажиглана.", scores: { turshuul: 3, orlog_zovloh: 1 } },
+      { label: "Худалдаа, зам харилцааны боломж нээгдэх эсэхийг бодно.", scores: { hudaldaanii_noen: 4, khaanii_elch: 1 } },
+      { label: "Тэднийг төрийн жаягт нийцүүлэн бүртгэж, хэлсэн үгийг нь тэмдэглэнэ.", scores: { bicheech: 4 } },
+    ],
+  },
+  {
+    id: "q4",
+    question: "Чамайг хүмүүс ямар үед хамгийн их түшдэг вэ?",
+    options: [
+      { label: "Хэцүү мөчид зориг өгч, бүгдийг нэг чигт хөдөлгөх үед.", scores: { chinggis_khaan: 4, janjin: 1 } },
+      { label: "Эмх замбараагүй байдлыг богино хугацаанд цэгцлэх үед.", scores: { janjin: 3, urtuu_zahiragch: 2 } },
+      { label: "Эргэлзээтэй шийдвэрт урт хугацааны зөв гарц санал болгох үед.", scores: { orlog_zovloh: 4 } },
+      { label: "Хүмүүсийн сэтгэлийг тэнцвэржүүлж, зоригийг нь сэргээх үед.", scores: { udgan: 4, khaanii_elch: 1 } },
+    ],
+  },
+  {
+    id: "q5",
+    question: "Чи ямар ажил хийхдээ хамгийн их төвлөрч чаддаг вэ?",
+    options: [
+      { label: "Зэвсэг, тоног, эд хэрэгсэл урлаж сайжруулах.", scores: { darkhan: 4 } },
+      { label: "Нууцаар ажиглаж, бусдын анзаараагүй зүйлийг олох.", scores: { turshuul: 4, janjin: 1 } },
+      { label: "Зарлиг, хууль, тооцоог алдаагүй эмхэтгэх.", scores: { bicheech: 4, orlog_zovloh: 1 } },
+      { label: "Хүмүүс, бараа, мэдээ хоёрыг зөв газарт нь холбох.", scores: { hudaldaanii_noen: 3, khaanii_elch: 2, urtuu_zahiragch: 1 } },
+    ],
+  },
+  {
+    id: "q6",
+    question: "Шинэ эзлэгдсэн нутагт хамгийн зөв эхний алхам юу гэж боддог вэ?",
+    options: [
+      { label: "Айдас биш дэг журам тогтоож, хүмүүсийг нэгдсэн зорилгод оруулах.", scores: { chinggis_khaan: 3, orlog_zovloh: 2 } },
+      { label: "Цэрэг, харуул, зам харилцааг нэн даруй цэгцлэх.", scores: { janjin: 3, urtuu_zahiragch: 2 } },
+      { label: "Орон нутгийн ноёд, элч нартай ярилцаж тогтвортой харилцаа тогтоох.", scores: { khaanii_elch: 3, hudaldaanii_noen: 2 } },
+      { label: "Хүн ам, татвар, нөөц, газрын мэдээллийг нэгтгэн бүртгэх.", scores: { bicheech: 3, orlog_zovloh: 2 } },
+    ],
+  },
+  {
+    id: "q7",
+    question: "Чиний хувьд хүч гэдэг юунаас бүрддэг вэ?",
+    options: [
+      { label: "Нэгэн зорилгын дор нэгдсэн хүмүүсээс.", scores: { chinggis_khaan: 4 } },
+      { label: "Сахилга баттай цэрэг, зөв тушаалаас.", scores: { janjin: 4 } },
+      { label: "Алсыг харсан бодлого, мэдээллийн давуу талаас.", scores: { orlog_zovloh: 3, turshuul: 2 } },
+      { label: "Зам, солилцоо, урсгал тасрахгүй байх тогтолцооноос.", scores: { urtuu_zahiragch: 3, hudaldaanii_noen: 2 } },
+    ],
+  },
+  {
+    id: "q8",
+    question: "Хаан чамаас ганц чадвараа сонгож үлдээ гэвэл чи юуг үлдээх вэ?",
+    options: [
+      { label: "Хүмүүсийг зоригжуулж, дагуулж чадах нөлөөгөө.", scores: { chinggis_khaan: 4, khaanii_elch: 1 } },
+      { label: "Тулааны үед яг зөв шийдвэр гаргах мэдрэмжээ.", scores: { janjin: 4 } },
+      { label: "Үгийг баримт болгож, баримтыг дэг журам болгох чадвараа.", scores: { bicheech: 4 } },
+      { label: "Хэн ч анзаараагүй зам, боломж, дохиог мэдрэх чадвараа.", scores: { turshuul: 3, udgan: 2, orlog_zovloh: 1 } },
+    ],
+  },
 ];

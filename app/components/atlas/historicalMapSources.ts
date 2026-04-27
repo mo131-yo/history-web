@@ -34,18 +34,23 @@ export function addHistoricalMapLayers(map: maplibregl.Map, selectedSlug: string
     source: "atlas-states",
     layout: {
       "text-field": ["get", "name"],
-      "text-font": ["Open Sans Semibold"],
-      "text-size": ["interpolate", ["linear"], ["zoom"], 2, 10, 4, 12, 6, 15],
-      "text-letter-spacing": 0.04,
-      "text-max-width": 10,
-      "text-allow-overlap": false,
+      "text-font": ["Open Sans Bold"],
+      "text-size": ["interpolate", ["linear"], ["zoom"], 2, 11, 4, 13.5, 6, 17],
+      "text-letter-spacing": 0.03,
+      "text-max-width": 11,
+      "text-allow-overlap": true,
       "symbol-placement": "point",
     },
     paint: {
-      "text-color": "#1e293b",
-      "text-halo-color": "rgba(255,255,255,0.85)",
-      "text-halo-width": 1.6,
-      "text-halo-blur": 0.4,
+      "text-color": [
+        "case",
+        ["==", ["get", "slug"], selectedSlug ?? ""],
+        "#fff4db",
+        ["coalesce", ["get", "color"], "#c9a45d"],
+      ],
+      "text-halo-color": "rgba(5,6,8,0.9)",
+      "text-halo-width": 1.9,
+      "text-halo-blur": 0.8,
     },
   });
 
