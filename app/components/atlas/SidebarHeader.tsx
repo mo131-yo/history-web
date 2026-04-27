@@ -1,12 +1,20 @@
 "use client";
 
-import { Globe } from "lucide-react";
+import { ChevronRight, Globe } from "lucide-react";
 import { sidebarTheme as T } from "./sidebarTheme";
 
-export function SidebarHeader({ year }: { year: number }) {
+export function SidebarHeader({
+  year,
+  collapsed,
+  onToggleCollapsed,
+}: {
+  year: number;
+  collapsed: boolean;
+  onToggleCollapsed: () => void;
+}) {
   return (
-    <div className="shrink-0 px-5 py-5" style={{ borderBottom: `1px solid ${T.border}` }}>
-      <div className="mb-5 flex items-center gap-3">
+    <div className="shrink-0 px-4 py-4 sm:px-5 sm:py-5" style={{ borderBottom: `1px solid ${T.border}` }}>
+      <div className="mb-4 flex items-center gap-3 sm:mb-5">
         <div className="h-px flex-1" style={{ background: `linear-gradient(90deg, transparent, ${T.amber}66)` }} />
         <svg width="16" height="16" viewBox="0 0 16 16">
           <polygon points="8,1 9.5,5.5 14.5,5.5 10.3,8.8 11.8,13.5 8,10.8 4.2,13.5 5.7,8.8 1.5,5.5 6.5,5.5" fill={T.amber} opacity="0.8" />
@@ -14,15 +22,38 @@ export function SidebarHeader({ year }: { year: number }) {
         <div className="h-px flex-1" style={{ background: `linear-gradient(90deg, ${T.amber}66, transparent)` }} />
       </div>
 
-      <div className="flex items-start justify-between gap-2">
-        <div>
-          <p className="mb-1 text-[8px] uppercase tracking-[0.6em]" style={{ color: T.textMuted }}>Монгол Атлас</p>
-          <h2 className="text-4xl font-bold leading-none" style={{ color: T.amber, textShadow: `0 0 30px ${T.amberGlow}, 0 0 60px ${T.amberGlow}` }}>{year}</h2>
-          <p className="mt-1 text-[9px] uppercase tracking-[0.4em]" style={{ color: T.textMuted }}>он · Дундад Зуун</p>
-        </div>
-        <div className="mt-1 flex h-10 w-10 shrink-0 items-center justify-center rounded-lg" style={{ background: T.amberGlow, border: `1px solid ${T.amber}33` }}>
-          <Globe className="size-5" style={{ color: T.amberDim }} />
-        </div>
+      <div className={`flex gap-3 ${collapsed ? "items-center justify-center lg:flex-col" : "items-start justify-between"}`}>
+        {!collapsed && (
+          <div>
+            <p className="mb-1 text-[7px] uppercase tracking-[0.45em] sm:text-[8px] sm:tracking-[0.6em]" style={{ color: T.textMuted }}>Монгол Атлас</p>
+            <h2 className="text-3xl font-bold leading-none sm:text-4xl" style={{ color: T.amber, textShadow: `0 0 30px ${T.amberGlow}, 0 0 60px ${T.amberGlow}` }}>{year}</h2>
+            <p className="mt-1 text-[8px] uppercase tracking-[0.28em] sm:text-[9px] sm:tracking-[0.4em]" style={{ color: T.textMuted }}>он · Дундад Зуун</p>
+          </div>
+        )}
+        {collapsed && (
+          <div className="text-center lg:block">
+            <p className="text-[7px] uppercase tracking-[0.35em]" style={{ color: T.textMuted }}>Атлас</p>
+            <h2 className="mt-2 text-2xl font-bold leading-none" style={{ color: T.amber, textShadow: `0 0 20px ${T.amberGlow}` }}>{year}</h2>
+          </div>
+        )}
+        <button
+          type="button"
+          onClick={onToggleCollapsed}
+          className="mt-1 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg transition-all duration-200 hover:scale-105 sm:h-10 sm:w-10"
+          style={{ background: T.amberGlow, border: `1px solid ${T.amber}33` }}
+          title={collapsed ? "Sidebar нээх" : "Sidebar хураах"}
+        >
+          <div className="relative flex items-center justify-center">
+            <Globe className="size-4 sm:size-5" style={{ color: T.amberDim }} />
+            <ChevronRight
+              className="absolute -right-3 size-3 transition-transform duration-300"
+              style={{
+                color: T.amber,
+                transform: collapsed ? "rotate(180deg)" : "rotate(0deg)",
+              }}
+            />
+          </div>
+        </button>
       </div>
 
       <div className="mt-4 flex items-center gap-2">

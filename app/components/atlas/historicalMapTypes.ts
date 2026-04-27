@@ -18,6 +18,7 @@ export interface HistoricalMapView {
   bearing?: number;
   maxPitch?: number;
   mode?: "flat" | "globe";
+  projection?: "mercator" | "globe" | "vertical-perspective";
 }
 
 export type HistoricalMapFocusPadding = {

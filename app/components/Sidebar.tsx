@@ -17,6 +17,8 @@ export function Sidebar({
   onSearchChange,
   adminMode,
   user,
+  collapsed,
+  onToggleCollapsed,
 }: {
   year: number;
   features: AtlasStateFeature[];
@@ -25,6 +27,8 @@ export function Sidebar({
   search: string;
   onSearchChange: (value: string) => void;
   adminMode: boolean;
+  collapsed: boolean;
+  onToggleCollapsed: () => void;
   user:
     | {
         fullName?: string | null;
@@ -38,19 +42,29 @@ export function Sidebar({
 
   return (
     <aside
-      className="flex min-h-screen shrink-0 flex-col lg:h-screen lg:min-h-0 lg:w-[320px]"
+      className={`flex w-full shrink-0 flex-col border-b transition-[width] duration-300 lg:h-screen lg:min-h-0 lg:border-b-0 lg:border-r ${
+        collapsed ? "lg:w-[96px]" : "lg:w-[320px]"
+      }`}
       style={{ background: T.bgCard, borderRight: `1px solid ${T.border}`, fontFamily: "'Georgia', 'Times New Roman', serif" }}
     >
-      <SidebarHeader year={year} />
-      <SidebarSearch search={search} onSearchChange={onSearchChange} featureCount={features.length} />
-      <SidebarFeatureList features={features} selectedFeature={selectedFeature} onSelectSlug={onSelectSlug} />
-      <SidebarUserPanel
-        adminMode={adminMode}
-        user={user}
-        onSignIn={() => openSignIn()}
-        onSignUp={() => openSignUp()}
-        onSignOut={() => signOut()}
+      <SidebarHeader
+        year={year}
+        collapsed={collapsed}
+        onToggleCollapsed={onToggleCollapsed}
       />
+      {!collapsed && (
+        <>
+          <SidebarSearch search={search} onSearchChange={onSearchChange} featureCount={features.length} />
+          <SidebarFeatureList features={features} selectedFeature={selectedFeature} onSelectSlug={onSelectSlug} />
+          <SidebarUserPanel
+            adminMode={adminMode}
+            user={user}
+            onSignIn={() => openSignIn()}
+            onSignUp={() => openSignUp()}
+            onSignOut={() => signOut()}
+          />
+        </>
+      )}
     </aside>
   );
 }

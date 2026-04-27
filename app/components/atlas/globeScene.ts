@@ -3,9 +3,12 @@ import { MAPTILER_TERRAIN_SOURCE } from "./maptiler";
 
 const GLOBE_TERRAIN_SOURCE_ID = "maptiler-terrain";
 
-export function applyGlobeScene(map: maplibregl.Map) {
+export function applyGlobeScene(
+  map: maplibregl.Map,
+  projection: "globe" | "vertical-perspective" = "globe"
+) {
   if (!map.isStyleLoaded()) return;
-  map.setProjection({ type: "globe" });
+  map.setProjection({ type: projection });
 
   if (!map.getSource(GLOBE_TERRAIN_SOURCE_ID)) {
     map.addSource(GLOBE_TERRAIN_SOURCE_ID, {

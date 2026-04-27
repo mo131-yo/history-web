@@ -59,6 +59,33 @@ export function getDynamicLabelColor(data: object, selectedSlug: string | null, 
   return lighten(label.color, 0.05);
 }
 
+export function renderGlobeStaticLabel(
+  data: object,
+  selectedSlug: string | null,
+  hoveredSlug: string | null,
+) {
+  const label = data as GlobeLabel;
+  const element = document.createElement("div");
+  const isSelected = label.slug === selectedSlug;
+  const isHovered = label.slug === hoveredSlug;
+  const color = isSelected ? "#fff4db" : isHovered ? lighten(label.color, 0.26) : lighten(label.color, 0.14);
+
+  element.textContent = label.text;
+  element.style.color = color;
+  element.style.fontFamily = "Georgia, serif";
+  element.style.fontSize = isSelected ? "20px" : "17px";
+  element.style.fontWeight = isSelected ? "700" : "600";
+  element.style.letterSpacing = "0.03em";
+  element.style.whiteSpace = "nowrap";
+  element.style.textShadow =
+    "0 0 2px rgba(5,6,8,0.95), 0 0 8px rgba(5,6,8,0.78), 0 1px 10px rgba(0,0,0,0.82)";
+  element.style.pointerEvents = "none";
+  element.style.userSelect = "none";
+  element.style.transform = "translate(-50%, -50%)";
+
+  return element;
+}
+
 export function syncHoveredSlug(
   data: object | null,
   hoveredSlugRef: MutableRefObject<string | null>,

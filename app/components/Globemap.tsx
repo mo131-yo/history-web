@@ -1,33 +1,213 @@
 "use client";
 
-import "maplibre-gl/dist/maplibre-gl.css";
-import { useHistoricalMap } from "./atlas/useHistoricalMap";
-import type { HistoricalMapProps } from "./atlas/historicalMapTypes";
+import { useMemo } from "react";
+import { Globe } from "./history/GlobeLoader";
+import {
+  handleGlobeClick,
+  toggleSelectedPoint,
+} from "./history/globeEventHandlers";
+import {
+  getPolygonAltitude,
+  getPolygonFill,
+  getPolygonSide,
+  getPolygonStroke,
+  renderGlobeStaticLabel,
+  renderEditingHud,
+  renderPointLabel,
+  renderPolygonLabel,
+  renderSelectedBadge,
+  STAR_BACKGROUND,
+  syncHoveredSlug,
+} from "./history/globeView";
+import {
+  getPointAltitude,
+  getPointColor,
+  getPointRadius,
+} from "./history/globeMath";
+import { useGlobeData } from "./history/useGlobeData";
+import { useGlobeEditor } from "./history/useGlobeEditor";
+import { useGlobePointerEditing } from "./history/useGlobePointerEditing";
+import type { SharedMapProps } from "./atlas/types";
 
-const GLOBE_VIEW = {
-  center: [0, 26] as [number, number],
-  zoom: 1.28,
-  pitch: 68,
-  bearing: -16,
-  maxPitch: 85,
-  mode: "globe" as const,
-};
+const MAPTILER_HYBRID_TILE = (x: number, y: number, level: number) =>
+  `https://api.maptiler.com/maps/hybrid-v4/256/${level}/${x}/${y}@2x.png?key=UDHwVf5wxc04GFo8f0PC`;
 
-export default function GlobeMap(props: HistoricalMapProps) {
-  // Previous react-globe.gl implementation has been retired in favor of MapTiler Hybrid + globe terrain.
-  const containerRef = useHistoricalMap(props, GLOBE_VIEW);
-  const { isEditing, isCreating } = props;
+export default function GlobeMap(props: SharedMapProps) {
+  const globeEditor = useGlobeEditor(props);
+  const { allPolygons, labelsData, vertexPoints } = useGlobeData({
+    collection: props.collection,
+    draftRing: props.draftRing,
+    hoveredVertexIndex: globeEditor.hoveredVertexIndex,
+    isEditing: props.isEditing,
+    selectedVertexIndex: props.selectedVertexIndex ?? null,
+  });
+
+  useGlobePointerEditing({
+    draftRingRef: globeEditor.draftRingRef,
+    dragVertexIndexRef: globeEditor.dragVertexIndexRef,
+    globeRef: globeEditor.globeRef,
+    isDraggingRef: globeEditor.isDraggingRef,
+    isEditingRef: globeEditor.isEditingRef,
+    mounted: globeEditor.mounted,
+    onDraftRingChange: props.onDraftRingChange,
+    onSelectVertex: props.onSelectVertex,
+    setHoveredVertexIndex: globeEditor.setHoveredVertexIndex,
+    setIsDraggingVertex: globeEditor.setIsDraggingVertex,
+  });
+
+  const globeProps = useMemo(
+    () => ({
+      animateIn: true,
+      atmosphereAltitude: 0.12,
+      atmosphereColor: "#b7d4ff",
+      backgroundColor: "rgba(0,0,0,0)",
+      bumpImageUrl: null,
+      enablePointerInteraction: true,
+      globeImageUrl: null,
+      globeTileEngineUrl: MAPTILER_HYBRID_TILE,
+      height: globeEditor.dimensions.height,
+      htmlAltitude: 0.02,
+      htmlElement: (data: object) =>
+        renderGlobeStaticLabel(
+          data,
+          props.selectedSlug,
+          globeEditor.hoveredSlugRef.current
+        ),
+      htmlElementsData: labelsData,
+      htmlLat: "lat",
+      htmlLng: "lng",
+      onGlobeClick: (coords: { lat: number; lng: number }) =>
+        handleGlobeClick(
+          coords,
+          globeEditor.isDraggingRef.current,
+          props.isEditing,
+          globeEditor.addPointModeRef,
+          globeEditor.draftRingRef,
+          globeEditor.isCreatingRef,
+          props.onDraftRingChange,
+          props.onSelectVertex,
+          props.selectedVertexIndex ?? null
+        ),
+      onGlobeReady: () => {
+        globeEditor.globeRef.current?.pointOfView(
+          { lat: 22, lng: 0, altitude: 1.65 },
+          0
+        );
+      },
+      onPointClick: (point: object) =>
+        toggleSelectedPoint(
+          point,
+          props.selectedVertexIndex ?? null,
+          props.onSelectVertex
+        ),
+      onPointHover: (point: object | null) =>
+        globeEditor.setHoveredVertexIndex(
+          point ? (point as { index: number }).index : null
+        ),
+      onPolygonClick: (polygon: object) => {
+        const slug = (polygon as { properties?: { slug?: string } }).properties?.slug;
+        if (!slug || slug === "__draft__") return;
+        props.onSelectSlug(slug);
+      },
+      onPolygonHover: (polygon: object | null) =>
+        syncHoveredSlug(
+          polygon,
+          globeEditor.hoveredSlugRef,
+          globeEditor.setHoverTick
+        ),
+      pointAltitude: (data: object) => getPointAltitude(data),
+      pointColor: (data: object) => getPointColor(data),
+      pointLabel: (data: object) => renderPointLabel(data),
+      pointLat: "lat",
+      pointLng: "lng",
+      pointRadius: (data: object) => getPointRadius(data),
+      pointsData: vertexPoints,
+      polygonAltitude: (data: object) =>
+        getPolygonAltitude(
+          data,
+          props.selectedSlug,
+          globeEditor.hoveredSlugRef.current
+        ),
+      polygonCapColor: (data: object) =>
+        getPolygonFill(
+          data,
+          props.selectedSlug,
+          globeEditor.hoveredSlugRef.current
+        ),
+      polygonGeoJsonGeometry: "geometry",
+      polygonLabel: (data: object) =>
+        renderPolygonLabel(data, props.selectedSlug),
+      polygonsData: allPolygons,
+      polygonSideColor: (data: object) =>
+        getPolygonSide(
+          data,
+          props.selectedSlug,
+          globeEditor.hoveredSlugRef.current
+        ),
+      polygonStrokeColor: (data: object) =>
+        getPolygonStroke(
+          data,
+          props.selectedSlug,
+          globeEditor.hoveredSlugRef.current
+        ),
+      pointOfView: { lat: 22, lng: 0, altitude: 1.65 },
+      showAtmosphere: true,
+      showGlobe: true,
+      showGraticules: false,
+      width: globeEditor.dimensions.width,
+    }),
+    [
+      allPolygons,
+      globeEditor.addPointModeRef,
+      globeEditor.dimensions.height,
+      globeEditor.dimensions.width,
+      globeEditor.draftRingRef,
+      globeEditor.hoveredSlugRef,
+      globeEditor.isCreatingRef,
+      globeEditor.isDraggingRef,
+      globeEditor.setHoverTick,
+      globeEditor.setHoveredVertexIndex,
+      labelsData,
+      props,
+      vertexPoints,
+    ]
+  );
 
   return (
-    <div className="relative h-full w-full overflow-hidden bg-[radial-gradient(circle_at_50%_18%,rgba(201,164,93,0.16),transparent_24%),radial-gradient(circle_at_15%_20%,rgba(70,120,180,0.18),transparent_28%),#050608]">
-      <div ref={containerRef} className="absolute inset-x-0 -top-10 bottom-0" />
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_40%,rgba(5,6,8,0.42)_72%,rgba(5,6,8,0.88)_100%)]" />
-      <div className="pointer-events-none absolute bottom-4 left-4 rounded-2xl border border-white/10 bg-black/45 px-4 py-3 text-xs text-stone-200 shadow-lg backdrop-blur lg:bottom-8">
-        {isEditing
-          ? isCreating
+    <div
+      className="relative h-full w-full overflow-hidden"
+      style={{
+        background: `${STAR_BACKGROUND}, radial-gradient(circle at 50% 32%, rgba(41,72,118,0.22), transparent 38%), #050608`,
+      }}
+    >
+      <div
+        ref={globeEditor.containerRef}
+        className="absolute inset-x-0 -top-2 bottom-6 lg:-top-4 lg:bottom-8"
+      >
+        <Globe
+          {...(globeProps as Record<string, unknown>)}
+          ref={globeEditor.globeRef}
+        />
+      </div>
+
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_38%,transparent_18%,rgba(5,6,8,0.16)_48%,rgba(5,6,8,0.9)_100%)]" />
+
+      {props.isEditing &&
+        renderEditingHud(
+          props,
+          props.selectedVertexIndex ?? null,
+          globeEditor.isDraggingVertex
+        )}
+
+      {props.selectedSlug &&
+        renderSelectedBadge(props.collection, props.selectedSlug)}
+
+      <div className="pointer-events-none absolute bottom-6 left-4 rounded-2xl border border-white/10 bg-black/45 px-4 py-3 text-xs text-stone-200 shadow-lg backdrop-blur lg:bottom-10">
+        {props.isEditing
+          ? props.isCreating
             ? "Create mode: 3D globe дээр дарж шинэ оройнууд нэм."
             : "Edit mode: 3D globe дээр цэгийг чирж зөөж хилээ зас."
-          : "3D globe view: улс сонгоод хил, өндөршил, газарзүйг илүү амьд харагдуулж хар."}
+          : "3D globe view: улс сонгоод хил, түүх, газарзүйг бөмбөрцөг дээр хар."}
       </div>
     </div>
   );

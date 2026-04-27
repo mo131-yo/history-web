@@ -5,20 +5,16 @@ import type { AtlasFeatureCollection, AtlasStateFeature } from "@/lib/types";
 export type MapMode = "globe" | "historical";
 
 export type RoleId =
-  | "malchin"
-  | "aduuchin"
-  | "helmerch"
-  | "oydolchin"
-  | "tariachin"
-  | "aravt"
-  | "zuut"
-  | "myangat"
-  | "myangatiin_noyon"
+  | "chinggis_khaan"
+  | "janjin"
+  | "orlog_zovloh"
+  | "khaanii_elch"
   | "bicheech"
   | "darkhan"
-  | "anchin"
-  | "hudaldaachin"
-  | "boo_udgan";
+  | "turshuul"
+  | "urtuu_zahiragch"
+  | "hudaldaanii_noen"
+  | "udgan";
 
 export type RoleScore = Partial<Record<RoleId, number>>;
 
