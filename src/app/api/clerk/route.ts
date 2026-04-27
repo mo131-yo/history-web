@@ -3,6 +3,7 @@ import { headers } from 'next/headers';
 import { sql } from '../../../lib/db';
 
 type ClerkEmail = {
+  id: string;
   email_address: string;
 };
 
@@ -11,6 +12,7 @@ type ClerkUserData = {
   first_name?: string | null;
   last_name?: string | null;
   image_url?: string | null;
+  primary_email_address_id?: string | null;
   email_addresses?: ClerkEmail[];
 };
 
@@ -56,7 +58,13 @@ export async function POST(req: Request) {
 
   const eventType = evt.type;
   const user = evt.data;
-  const email = user.email_addresses?.[0]?.email_address ?? null;
+
+  const email =
+    user.email_addresses?.find(
+      (item) => item.id === user.primary_email_address_id,
+    )?.email_address ??
+    user.email_addresses?.[0]?.email_address ??
+    null;
 
   try {
     if (eventType === 'user.created' || eventType === 'user.updated') {
