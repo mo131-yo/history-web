@@ -28,24 +28,6 @@ export function getCenterFromRing(ring: [number, number][]) {
 
 export function toFeature(row: AtlasRow): AtlasStateFeature {
   const ring = row.geometry.coordinates[0] as [number, number][];
-  // const seedState = getAtlasSeedState(row.year, row.slug);
-  // const name = shouldRestoreSeedText(row.name) ? seedState?.name ?? row.name : row.name;
-
-  // return {
-  //   type: "Feature",
-  //   geometry: row.geometry,
-  //   properties: {
-  //     slug: row.slug,
-  //     year: row.year,
-  //     name,
-  //     leader: row.leader,
-  //     capital: row.capital,
-  //     color: row.color,
-  //     summary: row.summary,
-  //     metadata: row.metadata ?? {},
-  //     center: getCenterFromRing(ring),
-  //     updatedAt: row.updated_at,
-  //   },
   return {
     type: "Feature",
     geometry: row.geometry,
@@ -73,9 +55,3 @@ export function slugify(value: string) {
     .replace(/[\s_-]+/g, "-")
     .replace(/^-+|-+$/g, "");
 }
-
-// function shouldRestoreSeedText(value: string) {
-//   const normalized = value.trim();
-//   if (!normalized) return true;
-//   return /^[?\uFFFD\s]+$/.test(normalized);
-// }
