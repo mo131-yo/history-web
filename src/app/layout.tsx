@@ -7,18 +7,51 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-<<<<<<< HEAD
-    <html
-      lang="en"
-      className={`light ${geistSans.variable} ${geistMono.variable} ${cinzel.variable} ${cinzelDecorative.variable} h-full antialiased`}
-    >
-      <body className="flex flex-col min-h-full">{children}</body>
-=======
     <html lang="en">
       <body>
         <ClerkProvider>{children}</ClerkProvider>
       </body>
->>>>>>> 851760007639138b44e613779fcba54fae0bb692
     </html>
   );
 }
+
+// ORGILAS LAYOUT
+// import type { Metadata } from "next";
+// import { Cinzel, Cinzel_Decorative } from "next/font/google";
+// import { ClerkProvider } from "@clerk/nextjs";
+// import "./globals.css";
+
+// const cinzel = Cinzel({
+//   subsets: ["latin"],
+//   variable: "--font-cinzel",
+//   weight: ["400", "600", "700"],
+// });
+
+// const cinzelDecorative = Cinzel_Decorative({
+//   subsets: ["latin"],
+//   variable: "--font-cinzel-decorative",
+//   weight: ["400", "700"],
+// });
+
+// export const metadata: Metadata = {
+//   title: "Монгол Атлас · 1162–1300",
+//   description:
+//     "Монгол болон Төв Азийн дундад зууны түүхэн хил, улс орнуудын атлас.",
+// };
+
+// export default function RootLayout({
+//   children,
+// }: {
+//   children: React.ReactNode;
+// }) {
+//   return (
+//     <ClerkProvider>
+//       <html
+//         lang="mn"
+//         className={`${cinzel.variable} ${cinzelDecorative.variable}`}
+//       >
+//         <body className="antialiased">{children}</body>
+//       </html>
+//     </ClerkProvider>
+//   );
+// }
