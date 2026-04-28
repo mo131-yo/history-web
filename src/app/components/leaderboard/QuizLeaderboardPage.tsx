@@ -3,8 +3,9 @@
 import { useEffect, useMemo, useState } from "react";
 import { Loader2, Medal, RefreshCw, Trophy } from "lucide-react";
 import { T } from "./constants";
+import { OlympicPodium } from "./OlympicPodium";
 
-type LeaderboardScore = {
+export type LeaderboardScore = {
   userId: string;
   userName: string;
   year: number;
@@ -47,10 +48,12 @@ export function QuizLeaderboardPage({
   }, [reloadKey, version]);
 
   const bestScore = useMemo(() => scores[0], [scores]);
+  const remainingScores = scores.slice(3);
 
   return (
     <div className="relative flex h-full min-h-screen flex-col overflow-y-auto px-4 py-5 sm:px-6 lg:min-h-0 lg:px-8">
       <div className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-5">
+
         <div
           className="rounded-xl px-5 py-5"
           style={{
@@ -80,7 +83,7 @@ export function QuizLeaderboardPage({
             <div className="flex gap-2">
               <button
                 type="button"
-                onClick={() => setReloadKey((value) => value + 1)}
+                onClick={() => setReloadKey((v) => v + 1)}
                 className="flex h-10 items-center gap-2 rounded-lg px-3 text-xs font-semibold uppercase tracking-widest"
                 style={{ background: "rgba(15,23,42,0.5)", border: `1px solid ${T.border}`, color: T.textSub }}
               >
@@ -102,16 +105,17 @@ export function QuizLeaderboardPage({
             <div className="mt-5 grid gap-3 sm:grid-cols-3">
               <Stat label="Тэргүүлэгч" value={bestScore.userName} />
               <Stat label="Шилдэг оноо" value={`${bestScore.score}/${bestScore.total}`} />
+              <Stat label="Нийт тоглогч" value={String(scores.length)} />
             </div>
           )}
         </div>
 
         <div
-          className="min-h-105 overflow-hidden rounded-xl"
+          className="overflow-hidden rounded-xl"
           style={{ background: "rgba(8,5,2,0.82)", border: `1px solid ${T.border}` }}
         >
           {status === "loading" && (
-            <div className="flex min-h-105 flex-col items-center justify-center gap-4">
+            <div className="flex min-h-[420px] flex-col items-center justify-center gap-4">
               <Loader2 className="size-8 animate-spin" style={{ color: T.amber }} />
               <p className="text-xs uppercase tracking-[0.22em]" style={{ color: T.textMuted }}>
                 Leaderboard ачаалж байна
@@ -120,7 +124,7 @@ export function QuizLeaderboardPage({
           )}
 
           {status === "error" && (
-            <div className="flex min-h-105 items-center justify-center px-6 text-center">
+            <div className="flex min-h-[420px] items-center justify-center px-6 text-center">
               <p className="text-sm" style={{ color: "#f08080" }}>
                 Leaderboard ачаалахад алдаа гарлаа.
               </p>
@@ -128,7 +132,7 @@ export function QuizLeaderboardPage({
           )}
 
           {status === "idle" && scores.length === 0 && (
-            <div className="flex min-h-105 flex-col items-center justify-center gap-3 px-6 text-center">
+            <div className="flex min-h-[420px] flex-col items-center justify-center gap-3 px-6 text-center">
               <Medal className="size-10" style={{ color: T.textMuted }} />
               <p className="text-sm" style={{ color: T.text }}>
                 Одоогоор оноо алга.
@@ -140,54 +144,87 @@ export function QuizLeaderboardPage({
           )}
 
           {status === "idle" && scores.length > 0 && (
-            <div className="divide-y" style={{ borderColor: T.border }}>
-              <div
-                className="grid grid-cols-[56px_1fr_90px_80px] gap-3 px-4 py-3 text-[10px] font-bold uppercase tracking-[0.18em] sm:grid-cols-[72px_1fr_110px_100px]"
-                style={{ color: T.textMuted, borderBottom: `1px solid ${T.border}` }}
-              >
-                <span>Rank</span>
-                <span>User</span>
-                <span>Year</span>
-                <span className="text-right">Score</span>
-              </div>
-              {scores.map((entry, index) => (
-                <div
-                  key={`${entry.userId}-${entry.createdAt}-${index}`}
-                  className="grid grid-cols-[56px_1fr_90px_80px] items-center gap-3 px-4 py-4 sm:grid-cols-[72px_1fr_110px_100px]"
-                  style={{ background: index < 3 ? "rgba(201,164,93,0.08)" : "transparent", borderBottom: `1px solid ${T.border}` }}
-                >
-                  <span className="text-sm font-bold tabular-nums" style={{ color: index < 3 ? T.amber : T.textMuted }}>
-                    #{index + 1}
-                  </span>
-                  <span className="min-w-0">
-                    <span className="block truncate text-sm font-semibold" style={{ color: T.text }}>
-                      {entry.userName}
-                    </span>
-                    <span className="mt-0.5 block truncate text-[10px]" style={{ color: T.textMuted }}>
-                      {new Date(entry.createdAt).toLocaleDateString()}
-                    </span>
-                  </span>
-                  <span className="text-xs tabular-nums" style={{ color: T.textSub }}>
-                    {entry.year} он
-                  </span>
-                  <span className="text-right text-sm font-bold tabular-nums" style={{ color: T.amber }}>
-                    {entry.score}/{entry.total}
-                  </span>
-                </div>
-              ))}
+            <div>
+              <OlympicPodium scores={scores.slice(0, 3)} />
+
+              {remainingScores.length > 0 && (
+                <>
+                  <div
+                    className="grid grid-cols-[56px_1fr_90px_80px] gap-3 px-4 py-3 text-[10px] font-bold uppercase tracking-[0.18em] sm:grid-cols-[72px_1fr_110px_100px]"
+                    style={{
+                      color: T.textMuted,
+                      borderTop: `1px solid ${T.border}`,
+                      borderBottom: `1px solid ${T.border}`,
+                    }}
+                  >
+                    <span>Rank</span>
+                    <span>User</span>
+                    <span>Year</span>
+                    <span className="text-right">Score</span>
+                  </div>
+
+                  {remainingScores.map((entry, index) => {
+                    const rank = index + 4;
+                    return (
+                      <div
+                        key={`${entry.userId}-${entry.createdAt}-${rank}`}
+                        className="grid grid-cols-[56px_1fr_90px_80px] items-center gap-3 px-4 py-4 transition-colors hover:bg-white/5 sm:grid-cols-[72px_1fr_110px_100px]"
+                        style={{ borderBottom: `1px solid ${T.border}` }}
+                      >
+                        <span
+                          className="text-sm font-bold tabular-nums"
+                          style={{ color: T.textMuted }}
+                        >
+                          #{rank}
+                        </span>
+                        <span className="min-w-0">
+                          <span
+                            className="block truncate text-sm font-semibold"
+                            style={{ color: T.text }}
+                          >
+                            {entry.userName}
+                          </span>
+                          <span
+                            className="mt-0.5 block truncate text-[10px]"
+                            style={{ color: T.textMuted }}
+                          >
+                            {new Date(entry.createdAt).toLocaleDateString()}
+                          </span>
+                        </span>
+                        <span className="text-xs tabular-nums" style={{ color: T.textSub }}>
+                          {entry.year} он
+                        </span>
+                        <span
+                          className="text-right text-sm font-bold tabular-nums"
+                          style={{ color: T.amber }}
+                        >
+                          {entry.score}/{entry.total}
+                        </span>
+                      </div>
+                    );
+                  })}
+                </>
+              )}
             </div>
           )}
         </div>
-      </div>
+      </div>        
     </div>
   );
 }
 
 function Stat({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-lg px-4 py-3" style={{ background: "rgba(15,23,42,0.42)", border: `1px solid ${T.border}` }}>
-      <p className="text-[10px] uppercase tracking-[0.18em]" style={{ color: T.textMuted }}>{label}</p>
-      <p className="mt-1 truncate text-sm font-bold" style={{ color: T.text }}>{value}</p>
+    <div
+      className="rounded-lg px-4 py-3"
+      style={{ background: "rgba(15,23,42,0.42)", border: `1px solid ${T.border}` }}
+    >
+      <p className="text-[10px] uppercase tracking-[0.18em]" style={{ color: T.textMuted }}>
+        {label}
+      </p>
+      <p className="mt-1 truncate text-sm font-bold" style={{ color: T.text }}>
+        {value}
+      </p>
     </div>
   );
 }
