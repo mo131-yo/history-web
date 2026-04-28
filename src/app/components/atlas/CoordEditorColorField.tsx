@@ -1,91 +1,148 @@
 "use client";
 
-import { Edit3, PlusCircle, RotateCcw, Save, Trash2, WandSparkles } from "lucide-react";
-import { BTN_BASE } from "./coordEditorConfig";
+import { INPUT_STYLE } from "./coordEditorConfig";
 import { editorTheme } from "./editorStyles";
-import type { SaveState } from "./types";
 
-const { BORDER, GOLD, INPUT_BG, TEXT_MAIN, TEXT_MUTED } = editorTheme;
+const COLOR_PRESETS = [
+  "#c9a45d",
+  "#d97706",
+  "#b45309",
+  "#dc2626",
+  "#7f1d1d",
+  "#2563eb",
+  "#1d4ed8",
+  "#0f766e",
+  "#15803d",
+  "#6d28d9",
+];
 
-export function CoordEditorActions({
-  isCreating,
-  isEditing,
-  saveState,
-  hasFeature,
-  canSave,
-  addPointMode,
-  hasTarget,
-  saveError,
-  onStartCreate,
-  onCancelCreate,
-  onDelete,
-  onToggleEditing,
-  onToggleAddPoint,
-  onReset,
-  onSave,
+export function CoordEditorColorField({
+  color,
+  onChange,
 }: {
-  isCreating: boolean;
-  isEditing: boolean;
-  saveState: SaveState;
-  hasFeature: boolean;
-  canSave: boolean;
-  addPointMode: boolean;
-  hasTarget: boolean;
-  saveError: string | null;
-  onStartCreate: () => void;
-  onCancelCreate: () => void;
-  onDelete: () => void;
-  onToggleEditing: () => void;
-  onToggleAddPoint: () => void;
-  onReset: () => void;
-  onSave: () => void;
+  color: string;
+  onChange: (value: string) => void;
 }) {
   return (
-    <>
-      <div className="grid gap-2">
-        <div className="grid grid-cols-2 gap-2">
-          <button type="button" onClick={isCreating ? onCancelCreate : onStartCreate} style={{ ...BTN_BASE, background: isCreating ? `${GOLD}20` : "rgba(139,108,53,0.15)", borderColor: isCreating ? `${GOLD}55` : BORDER, color: isCreating ? GOLD : TEXT_MAIN }}>
-            <WandSparkles className="size-3.5" />
-            {isCreating ? "Цуцлах" : "Шинэ нутаг"}
-          </button>
-          <button type="button" onClick={onDelete} disabled={!hasFeature || isCreating} style={{ ...BTN_BASE, borderColor: "#6b2020", background: "rgba(180,30,30,0.08)", color: "#c06060", opacity: !hasFeature || isCreating ? 0.35 : 1, cursor: !hasFeature || isCreating ? "not-allowed" : "pointer" }}>
-            <Trash2 className="size-3.5" />
-            Устгах
-          </button>
+    <div
+      className="rounded-[18px] p-3"
+      style={{
+        border: `1px solid ${editorTheme.BORDER}`,
+        background:
+          "linear-gradient(180deg, rgba(201,164,93,0.08), rgba(255,200,100,0.02))",
+        boxShadow: "inset 0 1px 0 rgba(255,255,255,0.03)",
+      }}
+    >
+      <div className="flex items-center justify-between gap-3 mb-3">
+        <div>
+          <p
+            className="text-[8px] uppercase tracking-[0.38em]"
+            style={{ color: editorTheme.TEXT_MUTED }}
+          >
+            Polygon өнгө
+          </p>
+          <p
+            className="mt-1 text-[10px] leading-4"
+            style={{ color: editorTheme.TEXT_SUB }}
+          >
+            Сонгосон өнгө map дээр шууд харагдана.
+          </p>
         </div>
 
-        <button type="button" onClick={onToggleEditing} disabled={!hasFeature || isCreating} style={{ ...BTN_BASE, background: isEditing ? "rgba(56,180,220,0.12)" : INPUT_BG, borderColor: isEditing ? "#38bdf855" : BORDER, color: isEditing ? "#7dd3fc" : TEXT_MAIN, opacity: !hasFeature || isCreating ? 0.35 : 1, cursor: !hasFeature || isCreating ? "not-allowed" : "pointer" }}>
-          <Edit3 className="size-3.5" />
-          {isEditing ? "Edit mode унтраах" : "Edit mode асаах"}
-        </button>
-
-        <button type="button" onClick={onToggleAddPoint} disabled={!hasFeature || !isEditing || isCreating} style={{ ...BTN_BASE, background: addPointMode ? `${GOLD}15` : INPUT_BG, borderColor: addPointMode ? `${GOLD}44` : BORDER, color: addPointMode ? GOLD : TEXT_MAIN, opacity: !hasFeature || !isEditing || isCreating ? 0.35 : 1, cursor: !hasFeature || !isEditing || isCreating ? "not-allowed" : "pointer" }}>
-          <PlusCircle className="size-3.5" />
-          {addPointMode ? "Add point идэвхтэй" : "Шинэ цэг нэмэх"}
-        </button>
-
-        <div className="grid grid-cols-2 gap-2">
-          <button type="button" onClick={onReset} disabled={!hasTarget} style={{ ...BTN_BASE, opacity: !hasTarget ? 0.35 : 1, cursor: !hasTarget ? "not-allowed" : "pointer" }}>
-            <RotateCcw className="size-3.5" />
-            Буцаах
-          </button>
-          <button type="button" onClick={onSave} disabled={!canSave} style={{ ...BTN_BASE, background: canSave ? "linear-gradient(135deg, rgba(100,180,80,0.20), rgba(80,160,60,0.12))" : INPUT_BG, borderColor: canSave ? "#4a9040" : BORDER, color: canSave ? "#88c878" : TEXT_MUTED, opacity: !canSave ? 0.4 : 1, cursor: !canSave ? "not-allowed" : "pointer" }}>
-            <Save className="size-3.5" />
-            {saveState === "saving" ? "Хадгалж…" : saveState === "saved" ? "✓ Хадгалагдлаа" : isCreating ? "Үүсгэх" : "Хадгалах"}
-          </button>
-        </div>
-
-        {saveState === "error" && saveError && (
-          <div className="rounded px-3 py-2 text-[10px]" style={{ border: "1px solid #6b2020", background: "rgba(180,30,30,0.08)", color: "#c06060" }}>
-            ⚠ {saveError}
+        <label
+          className="relative block w-16 h-16 overflow-hidden cursor-pointer group shrink-0 rounded-2xl"
+          style={{
+            border: `1px solid ${editorTheme.SELECTED_BORDER}`,
+            background: color,
+            boxShadow: `0 0 0 1px ${editorTheme.BORDER}, 0 10px 24px ${color}33`,
+            transition: "transform 180ms ease, box-shadow 180ms ease",
+          }}
+        >
+          <div
+            className="absolute inset-0 opacity-80"
+            style={{
+              background:
+                "linear-gradient(145deg, rgba(255,255,255,0.28), transparent 45%, rgba(0,0,0,0.14))",
+            }}
+          />
+          <div
+            className="absolute bottom-1.5 left-1/2 -translate-x-1/2 rounded-full px-2 py-0.5 text-[8px] uppercase tracking-[0.28em]"
+            style={{
+              color: "#fff7e8",
+              background: "rgba(12,7,2,0.48)",
+              border: "1px solid rgba(255,255,255,0.12)",
+              backdropFilter: "blur(6px)",
+            }}
+          >
+            live
           </div>
-        )}
-        {saveState === "saved" && (
-          <div className="rounded px-3 py-2 text-[10px]" style={{ border: "1px solid #2a5c1a", background: "rgba(60,140,40,0.08)", color: "#88c878" }}>
-            ✓ DB-д амжилттай хадгалагдлаа
-          </div>
-        )}
+          <input
+            type="color"
+            value={color}
+            onChange={(e) => onChange(e.target.value)}
+            className="absolute inset-0 opacity-0 cursor-pointer"
+            aria-label="Polygon өнгө сонгох"
+          />
+        </label>
       </div>
-    </>
+
+      <div className="grid grid-cols-5 gap-2 mb-3">
+        {COLOR_PRESETS.map((preset) => {
+          const active = preset.toLowerCase() === color.toLowerCase();
+
+          return (
+            <button
+              key={preset}
+              type="button"
+              onClick={() => onChange(preset)}
+              className="relative h-10 rounded-xl transition-all duration-200 hover:-translate-y-0.5 hover:scale-[1.03]"
+              style={{
+                background: preset,
+                border: `1px solid ${
+                  active ? editorTheme.TEXT_MAIN : "rgba(255,255,255,0.08)"
+                }`,
+                boxShadow: active
+                  ? `0 0 0 1px ${editorTheme.GOLD}, 0 8px 18px ${preset}4d`
+                  : `0 4px 12px ${preset}22`,
+                transform: active ? "translateY(-1px) scale(1.04)" : "none",
+              }}
+              title={preset}
+              aria-label={`${preset} өнгө сонгох`}
+            >
+              <span
+                className="absolute h-2 rounded-full inset-x-1 top-1"
+                style={{ background: "rgba(255,255,255,0.24)" }}
+              />
+              {active && (
+                <span
+                  className="absolute bottom-1.5 left-1/2 h-1.5 w-1.5 -translate-x-1/2 rounded-full"
+                  style={{ background: "#fff7e8", boxShadow: "0 0 8px rgba(255,247,232,0.9)" }}
+                />
+              )}
+            </button>
+          );
+        })}
+      </div>
+
+      <div className="grid grid-cols-[1fr_90px] gap-2">
+        <input
+          value={color}
+          onChange={(e) => onChange(e.target.value)}
+          placeholder="#c9a45d"
+          style={INPUT_STYLE}
+        />
+        <div
+          className="flex items-center justify-center rounded-xl text-[10px] uppercase tracking-[0.24em]"
+          style={{
+            border: `1px solid ${editorTheme.BORDER}`,
+            background: "rgba(255,255,255,0.02)",
+            color: editorTheme.TEXT_MAIN,
+            fontFamily: "Georgia, serif",
+          }}
+        >
+          {color}
+        </div>
+      </div>
+    </div>
   );
 }
