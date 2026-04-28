@@ -1,7 +1,7 @@
 "use client";
 
 import { MAP_OPTIONS, T } from "./constants";
-import type { MapMode } from "./types";
+import { MapMode } from "./types";
 
 export function MapLoader({ label }: { label: string }) {
   return (

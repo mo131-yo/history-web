@@ -12,7 +12,7 @@ import {
   persistCharacterResult,
   resolveBestRole,
 } from './characterRpgLogic';
-import type { SavedCharacterResult, RoleScore } from './types';
+import { RoleScore, SavedCharacterResult } from './types';
 
 export function AtlasCharacterRpgModal({
   userName,

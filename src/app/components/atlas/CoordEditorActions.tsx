@@ -3,7 +3,7 @@
 import { Edit3, PlusCircle, RotateCcw, Save, Trash2, WandSparkles } from "lucide-react";
 import { BTN_BASE } from "./coordEditorConfig";
 import { editorTheme } from "./editorStyles";
-import type { SaveState } from "./types";
+import { SaveState } from "./types";
 
 const { BORDER, GOLD, INPUT_BG, TEXT_MAIN, TEXT_MUTED } = editorTheme;
 

@@ -79,8 +79,8 @@ export default function HistoryChat({ currentContext }: { currentContext: unknow
               <textarea
                 ref={textareaRef}
                 value={input}
-                onChange={(e) => setInput(e.target.value)}
-                onKeyDown={(e) => {
+                onChange={(e: any) => setInput(e.target.value)}
+                onKeyDown={(e: any) => {
                   if (e.key === "Enter" && !e.shiftKey) {
                     e.preventDefault();
                     void sendMessage();

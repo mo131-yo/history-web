@@ -106,10 +106,10 @@ export function CoordEditorVertices({
                       cursor: "pointer",
                       outline: "none",
                     }}
-                    onMouseEnter={(e) => {
+                    onMouseEnter={(e: any) => {
                       if (!isSelected) (e.currentTarget as HTMLElement).style.background = editorTheme.HOVER_BG;
                     }}
-                    onMouseLeave={(e) => {
+                    onMouseLeave={(e: any) => {
                       if (!isSelected) (e.currentTarget as HTMLElement).style.background = "transparent";
                     }}
                   >

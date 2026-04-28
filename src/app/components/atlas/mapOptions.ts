@@ -1,6 +1,7 @@
 "use client";
 
-import type { MapMode } from "./types";
+import { MapMode } from "./types";
+
 
 export const MAP_OPTIONS: {
   mode: MapMode;

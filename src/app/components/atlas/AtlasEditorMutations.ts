@@ -2,7 +2,7 @@
 
 import type { AtlasFeatureCollection, AtlasStateFeature } from '@/lib/types';
 import { buildFormFromFeature, emptyAtlasForm } from './form';
-import type { AtlasFormState, SaveState } from './types';
+import { AtlasFormState, SaveState } from './types';
 
 export function validateEditorPayload(
   draftRing: Array<[number, number]>,

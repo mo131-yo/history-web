@@ -1,7 +1,7 @@
 'use client';
 
 import { T } from './constants';
-import type { CharacterRole } from './types';
+import { CharacterRole } from './types';
 
 export function AtlasCharacterResult({
   result,

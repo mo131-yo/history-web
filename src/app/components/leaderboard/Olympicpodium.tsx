@@ -1,7 +1,8 @@
 import type { LeaderboardScore } from "./QuizLeaderboardPage";
-import { T } from "./constants";
+
 import { CrownIcon } from "./CrownIcon";
-import { MedalIcon } from "./MedalIcon";
+import { MedalIcon } from "./Medalicon";
+import { T } from "../atlas/constants";
 
 type PodiumConfig = {
   dataIdx: number;

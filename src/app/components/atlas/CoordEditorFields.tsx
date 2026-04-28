@@ -3,7 +3,7 @@
 import { FORM_FIELDS, INPUT_STYLE } from "./coordEditorConfig";
 import { CoordEditorColorField } from "./CoordEditorColorField";
 import { editorTheme } from "./editorStyles";
-import type { AtlasFormState } from "./types";
+import { AtlasFormState } from "./types";
 
 export function CoordEditorFields({
   form,
@@ -23,14 +23,14 @@ export function CoordEditorFields({
           <input
             key={field}
             value={form[field]}
-            onChange={(e) => onFormChange(field, e.target.value)}
+            onChange={(e: any) => onFormChange(field, e.target.value)}
             placeholder={placeholder}
             style={INPUT_STYLE}
           />
         ))}
         <textarea
           value={form.summary}
-          onChange={(e) => onFormChange("summary", e.target.value)}
+          onChange={(e: any) => onFormChange("summary", e.target.value)}
           placeholder="Товч тайлбар (8+ тэмдэгт)"
           rows={3}
           style={{ ...INPUT_STYLE, resize: "none" }}

@@ -1,7 +1,7 @@
 'use client';
 
 import { RPG_QUESTIONS, T } from './constants';
-import type { RoleScore } from './types';
+import { RoleId, RoleScore } from './types';
 
 export function AtlasCharacterQuiz({
   step,
@@ -43,7 +43,7 @@ export function AtlasCharacterQuiz({
       </h3>
 
       <div className="grid gap-3">
-        {question.options.map((option, idx) => (
+        {question.options.map((option: { scores: Partial<Record<RoleId, number>>; label: any; }, idx: number) => (
           <button
             key={idx}
             type="button"

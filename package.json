@@ -2,17 +2,27 @@
   "name": "@intern-3f/mongol-atlas",
   "version": "0.0.1",
   "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start"
+  },
   "dependencies": {
     "@clerk/nextjs": "^7.2.5",
     "@neondatabase/serverless": "^1.1.0",
     "next": "~16.1.6",
-    "node": "^24.15.0",
     "openai": "^6.34.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "svix": "^1.92.2"
   },
   "devDependencies": {
-    "@types/node": "^25.6.0"
+    "@types/node": "^25.6.0",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "typescript": "^5"
+  },
+  "engines": {
+    "node": ">=22"
   }
 }

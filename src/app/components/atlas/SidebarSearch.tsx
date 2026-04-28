@@ -19,7 +19,7 @@ export function SidebarSearch({
           <Search className="size-3.5 shrink-0" style={{ color: T.textMuted }} />
           <input
             value={search}
-            onChange={(e) => onSearchChange(e.target.value)}
+            onChange={(e: any) => onSearchChange(e.target.value)}
             placeholder="Улс, хаан, нийслэл…"
             className="w-full bg-transparent text-xs outline-none placeholder:opacity-40"
             style={{ color: T.text, fontFamily: "Georgia, serif" }}

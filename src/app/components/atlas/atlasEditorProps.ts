@@ -1,8 +1,8 @@
 "use client";
 
 import { buildFormFromFeature, emptyAtlasForm } from "./form";
-import type { AtlasFormState, CoordEditorProps, SaveState, SharedMapProps } from "./types";
 import type { AtlasFeatureCollection, AtlasStateFeature } from "@/lib/types";
+import { SharedMapProps, SaveState, AtlasFormState, CoordEditorProps } from "./types";
 
 export function buildSharedMapProps(args: {
   adminMode: boolean;

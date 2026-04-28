@@ -3,8 +3,7 @@
 import { Swords } from 'lucide-react';
 import { CoordEditorActions } from './CoordEditorActions';
 import { editorTheme } from './editorStyles';
-import type { SaveState } from './types';
-
+import { SaveState } from './types';
 const { BORDER, GOLD, TEXT_MUTED } = editorTheme;
 
 export function CoordEditorHeader({
