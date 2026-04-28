@@ -1,8 +1,8 @@
 "use client";
 
 import "maplibre-gl/dist/maplibre-gl.css";
-import { useHistoricalMap } from "./atlas/useHistoricalMap";
 import type { HistoricalMapProps } from "./atlas/historicalMapTypes";
+import { useHistoricalMap } from "./atlas/useHistoricalMap";
 
 export default function HistoricalMap(props: HistoricalMapProps) {
   const containerRef = useHistoricalMap(props, {

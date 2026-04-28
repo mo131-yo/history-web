@@ -2,7 +2,7 @@
 
 import { useEffect } from 'react';
 import type { AtlasFeatureCollection } from '@/lib/types';
-import type { AtlasFormState, SaveState } from './types';
+import { SaveState, AtlasFormState } from './types';
 
 export function useAtlasYears(
   year: number,

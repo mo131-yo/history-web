@@ -79,7 +79,7 @@ export function CoordEditorColorField({
           <input
             type="color"
             value={color}
-            onChange={(e) => onChange(e.target.value)}
+            onChange={(e: any) => onChange(e.target.value)}
             className="absolute inset-0 opacity-0 cursor-pointer"
             aria-label="Polygon өнгө сонгох"
           />
@@ -127,7 +127,7 @@ export function CoordEditorColorField({
       <div className="grid grid-cols-[1fr_90px] gap-2">
         <input
           value={color}
-          onChange={(e) => onChange(e.target.value)}
+          onChange={(e: any) => onChange(e.target.value)}
           placeholder="#c9a45d"
           style={INPUT_STYLE}
         />

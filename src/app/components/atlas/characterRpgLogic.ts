@@ -1,7 +1,7 @@
 "use client";
 
-import type { RoleId, RoleScore, SavedCharacterResult } from "./types";
 import { CHARACTER_ROLES, CHARACTER_STORAGE_KEY, RPG_QUESTIONS } from "./constants";
+import { RoleId, RoleScore, SavedCharacterResult } from "./types";
 
 const ROLE_TIER: RoleId[] = [
   "darkhan",

@@ -1,11 +1,11 @@
 "use client";
 
-import type { CoordEditorProps } from "./atlas/types";
 import { CoordEditorFields } from "./atlas/CoordEditorFields";
 import { CoordEditorHeader } from "./atlas/CoordEditorHeader";
-import { CoordEditorVertices } from "./atlas/CoordEditorVertices";
 import { buildFormFromFeature } from "./atlas/form";
 import { editorTheme } from "./atlas/editorStyles";
+import { CoordEditorVertices } from "./atlas/CoordEditorVerticles";
+import { CoordEditorProps } from "./atlas/types";
 
 export default function CoordEditor(props: CoordEditorProps) {
   const {

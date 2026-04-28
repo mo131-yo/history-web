@@ -1,21 +1,11 @@
 "use client";
 
-import { MapSwitcher } from "./AtlasMapControls";
 import { T } from "./constants";
-import type { MapMode, SavedCharacterResult } from "./types";
 
 export function AtlasHeader({
-  mapMode,
-  onMapModeChange,
-  onOpenCharacter,
-  characterResult,
   adminMode,
   collectionCount,
 }: {
-  mapMode: MapMode;
-  onMapModeChange: (mode: MapMode) => void;
-  onOpenCharacter: () => void;
-  characterResult: SavedCharacterResult | null;
   adminMode: boolean;
   collectionCount: number | null;
 }) {
@@ -47,46 +37,10 @@ export function AtlasHeader({
           </svg>
         </div>
 
-        <div>
-          <h1
-            className="text-xs font-bold uppercase leading-none tracking-[0.1em] sm:text-sm"
-            style={{
-              color: T.amber,
-              letterSpacing: "0.12em",
-              textShadow: `0 0 16px ${T.amberGlow}`,
-              fontFamily: "Georgia, serif",
-            }}
-          >
-            Монгол · Төв Азийн Атлас
-          </h1>
-          <p
-            className="mt-1 text-[7px] uppercase tracking-[0.35em] sm:text-[8px] sm:tracking-[0.45em]"
-            style={{ color: T.textMuted, fontFamily: "Georgia, serif" }}
-          >
-            1162 — 1300 · Дундад зуун
-          </p>
-        </div>
+        
       </div>
 
       <div className="pointer-events-auto flex w-full flex-wrap items-center justify-start gap-2 lg:w-auto lg:justify-end">
-        <button
-          type="button"
-          onClick={onOpenCharacter}
-          className="min-h-10 rounded-xl px-3 py-2 text-[10px] uppercase tracking-widest"
-          style={{
-            background: "linear-gradient(135deg, rgba(201,164,93,0.20), rgba(139,108,53,0.08))",
-            border: "1px solid rgba(201,164,93,0.42)",
-            color: T.amberBright,
-            backdropFilter: "blur(16px)",
-            fontFamily: "Georgia, serif",
-            boxShadow: "0 0 16px rgba(201,164,93,0.10)",
-          }}
-        >
-          🎲 {characterResult ? "Дүрээ солих" : "Дүрээ олох"}
-        </button>
-
-        <MapSwitcher current={mapMode} onChange={onMapModeChange} />
-
         {adminMode && (
           <div
             className="flex min-h-10 items-center gap-1.5 rounded-xl px-3 py-2 text-[10px] uppercase tracking-widest"

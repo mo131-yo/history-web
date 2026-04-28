@@ -1,6 +1,7 @@
 "use client";
 
-import type { CharacterRole } from "./types";
+import { CharacterRole } from "./types";
+
 
 export const CHARACTER_ROLES: CharacterRole[] = [
   {

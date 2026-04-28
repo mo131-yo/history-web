@@ -2,8 +2,9 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { Loader2, Medal, RefreshCw, Trophy } from "lucide-react";
-import { T } from "./constants";
-import { OlympicPodium } from "./OlympicPodium";
+import { T } from "../atlas/constants";
+import { OlympicPodium } from "./Olympicpodium";
+
 
 export type LeaderboardScore = {
   userId: string;

@@ -1,7 +1,6 @@
 import type maplibregl from 'maplibre-gl';
-import {createDraftPolygon,
-    createVertexCollection,
-}from "./histtoricalMapGeo"
+import { createDraftPolygon, createVertexCollection } from './historicalMapGeo';
+
 export function addHistoricalMapSources(map: maplibregl.Map,collection:GeoJSON.FeatureCollection){
     map.addSources("atlas-states",{type:"geojson",data:collection})
   map.addSource("draft-polygon", { type: "geojson", data: createDraftPolygon([]) });

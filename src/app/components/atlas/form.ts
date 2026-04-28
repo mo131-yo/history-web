@@ -1,7 +1,7 @@
 "use client";
 
 import type { AtlasStateFeature } from "@/lib/types";
-import type { AtlasFormState } from "./types";
+import { AtlasFormState } from "./types";
 
 export const emptyAtlasForm: AtlasFormState = {
   periodName: "",

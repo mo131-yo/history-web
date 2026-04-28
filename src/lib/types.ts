@@ -21,7 +21,9 @@ export interface AtlasStateRecord {
   geometry: GeoJSON.Polygon;
 }
 
+
 export interface AtlasStateProperties {
+  [key: string]: unknown;
   slug: string;
   year: number;
   name: string;
