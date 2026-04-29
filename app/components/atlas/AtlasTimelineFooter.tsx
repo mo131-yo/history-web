@@ -6,10 +6,14 @@ import { T } from "./constants";
 export function AtlasTimelineFooter({
   year,
   years,
+  isAutoPlaying,
+  onAutoToggle,
   onYearChange,
 }: {
   year: number;
   years: number[];
+  isAutoPlaying: boolean;
+  onAutoToggle: () => void;
   onYearChange: (year: number) => void;
 }) {
   return (
@@ -50,42 +54,14 @@ export function AtlasTimelineFooter({
         </div>
 
         <div className="flex items-center gap-3 px-3 pb-3 pt-2 sm:gap-4 sm:px-5">
-          <div
-            className="flex shrink-0 flex-col items-center justify-center rounded-lg px-3 py-1.5 tabular-nums"
-            style={{
-              background: "linear-gradient(135deg, rgba(201,164,93,0.14), rgba(139,108,53,0.06))",
-              border: "1px solid rgba(201,164,93,0.3)",
-              minWidth: 64,
-              boxShadow: "inset 0 1px 0 rgba(255,255,255,0.04)",
-            }}
-          >
-            <span
-              style={{
-                color: T.amberBright,
-                fontSize: 16,
-                fontWeight: 700,
-                fontFamily: "Georgia, serif",
-                lineHeight: 1.1,
-                letterSpacing: "0.02em",
-              }}
-            >
-              {year}
-            </span>
-            <span
-              style={{
-                color: T.textMuted,
-                fontSize: 7,
-                letterSpacing: "0.25em",
-                textTransform: "uppercase",
-                fontFamily: "Georgia, serif",
-              }}
-            >
-              он
-            </span>
-          </div>
-
           <div className="flex-1">
-            <TimelineSlider years={years} currentYear={year} onYearChange={onYearChange} />
+            <TimelineSlider
+              years={years}
+              currentYear={year}
+              isAutoPlaying={isAutoPlaying}
+              onAutoToggle={onAutoToggle}
+              onYearChange={onYearChange}
+            />
           </div>
         </div>
       </div>

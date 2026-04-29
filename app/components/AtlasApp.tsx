@@ -1,20 +1,19 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { useMemo, useSyncExternalStore, useState } from "react";
+import { useEffect, useMemo, useSyncExternalStore, useState } from "react";
 import { useUser } from "@clerk/nextjs";
 import SelectedStateDrawer from "@/app/components/SelectedStateDrawer";
 import { Sidebar } from "@/app/components/Sidebar";
 import { AtlasCharacterRpgModal } from "./atlas/AtlasCharacterRpgModal";
-import { AtlasCharacterSummary } from "./atlas/AtlasCharacterSummary";
 import { AtlasHeader } from "./atlas/AtlasHeader";
 import { MapLoader } from "./atlas/AtlasMapControls";
-import { AtlasQuizLauncher } from "./atlas/AtlasQuizLauncher";
 import { AtlasTimelineFooter } from "./atlas/AtlasTimelineFooter";
-import { QuizModal } from "./QuizModal";
+import { QuizModal, type QuizMode } from "./QuizModal";
 import { CHARACTER_STORAGE_KEY, T } from "./atlas/constants";
 import { useAtlasEditor } from "./atlas/useAtlasEditor";
 import type { CoordEditorProps, SavedCharacterResult } from "./atlas/types";
+import { QuizLeaderboardPage } from "./leaderboard/QuizLeaderboardPage";
 
 const CoordEditor = dynamic<CoordEditorProps>(
   () => import("@/app/components/CoordEditor"),
@@ -39,7 +38,12 @@ export default function AtlasApp() {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [characterOpen, setCharacterOpen] = useState(false);
   const [quizOpen, setQuizOpen] = useState(false);
+  const [quizMode, setQuizMode] = useState<QuizMode>("knowledge");
+  const [quizSessionKey, setQuizSessionKey] = useState(0);
+  const [leaderboardVersion, setLeaderboardVersion] = useState(0);
+  const [currentView, setCurrentView] = useState<"map" | "leaderboard">("map");
   const [liveCharacterResult, setLiveCharacterResult] = useState<SavedCharacterResult | null>(null);
+  const [autoPlaying, setAutoPlaying] = useState(false);
   const storedCharacterResultRaw = useSyncExternalStore(
     subscribeCharacterResult,
     readCharacterResultRawSnapshot,
@@ -61,7 +65,6 @@ export default function AtlasApp() {
     years,
     collection,
     selectedFeature,
-    filteredFeatures,
     search,
     setSearch,
     setSelectedSlug,
@@ -69,6 +72,58 @@ export default function AtlasApp() {
     sharedMapProps,
     coordEditorProps,
   } = useAtlasEditor(year, adminMode);
+
+  useEffect(() => {
+    if (!autoPlaying || years.length === 0 || currentView !== "map") return;
+
+    const timer = window.setInterval(() => {
+      setYear((currentYear) => {
+        const currentIndex = years.findIndex((item) => item === currentYear);
+        const nextIndex = currentIndex >= 0 ? currentIndex + 1 : 0;
+        return years[nextIndex] ?? years[0] ?? currentYear;
+      });
+    }, 1200);
+
+    return () => window.clearInterval(timer);
+  }, [autoPlaying, currentView, years]);
+
+  const handleAutoToggle = () => {
+    setAutoPlaying((playing) => {
+      if (playing) return false;
+      setCurrentView("map");
+      setYear(years[0] ?? year);
+      return true;
+    });
+  };
+
+  const handleManualYearChange = (nextYear: number) => {
+    setAutoPlaying(false);
+    setYear(nextYear);
+  };
+
+  const openQuiz = (mode: QuizMode) => {
+    setCurrentView("map");
+    setAutoPlaying(false);
+    setQuizMode(mode);
+    setQuizSessionKey((value) => value + 1);
+    setQuizOpen(true);
+  };
+
+  const openMap = () => {
+    setQuizOpen(false);
+    setCurrentView("map");
+  };
+
+  const changeMapMode = (mode: "globe" | "historical") => {
+    setQuizOpen(false);
+    setCurrentView("map");
+    setMapMode(mode);
+  };
+
+  const openLeaderboard = () => {
+    setQuizOpen(false);
+    setCurrentView("leaderboard");
+  };
 
   const drawer = adminMode ? (
     <div className="flex-1 overflow-hidden">
@@ -81,24 +136,6 @@ export default function AtlasApp() {
       onClose={() => setSelectedSlug(null)}
     />
   );
-
-  function handleQuizFlyTo(target: { coords?: [number, number] }) {
-    if (!collection || !target.coords) return;
-    const [targetLng, targetLat] = target.coords;
-    let bestSlug: string | null = null;
-    let bestDistance = Number.POSITIVE_INFINITY;
-
-    for (const feature of collection.features) {
-      const [lng, lat] = feature.properties.center;
-      const distance = Math.hypot(lng - targetLng, lat - targetLat);
-      if (distance < bestDistance) {
-        bestDistance = distance;
-        bestSlug = feature.properties.slug;
-      }
-    }
-
-    if (bestSlug) setSelectedSlug(bestSlug);
-  }
 
   return (
     <main
@@ -114,22 +151,27 @@ export default function AtlasApp() {
         />
       )}
 
-      <QuizModal
-        isOpen={quizOpen}
-        onClose={() => setQuizOpen(false)}
-        year={year}
-        geoData={collection}
-        onFlyTo={handleQuizFlyTo}
-      />
-
       <div className="flex min-h-screen flex-col lg:h-screen lg:flex-row lg:overflow-hidden">
         <Sidebar
-          year={year}
-          features={filteredFeatures}
-          selectedFeature={selectedFeature}
-          onSelectSlug={setSelectedSlug}
           search={search}
           onSearchChange={setSearch}
+          mapMode={mapMode}
+          onMapModeChange={changeMapMode}
+          onOpenCharacter={() => setCharacterOpen(true)}
+          onOpenQuiz={openQuiz}
+          activeQuizMode={quizOpen ? quizMode : null}
+          onOpenMap={openMap}
+          onOpenLeaderboard={openLeaderboard}
+          onSelectSearchResult={(feature) => {
+            setCurrentView("map");
+            setQuizOpen(false);
+            setAutoPlaying(false);
+            setYear(feature.properties.year);
+            setSelectedSlug(feature.properties.slug);
+          }}
+          currentView={currentView}
+          characterResult={characterResult}
+          quizEnabled={!!collection?.features.length}
           adminMode={adminMode}
           user={user}
           collapsed={sidebarCollapsed}
@@ -137,61 +179,68 @@ export default function AtlasApp() {
         />
 
         <section className="relative flex min-h-[620px] flex-1 flex-col overflow-hidden md:min-h-[720px] lg:h-screen lg:min-h-0">
-          <div className="absolute inset-x-0 top-0 bottom-44 z-0 md:bottom-48 lg:bottom-44">
-            {mapMode === "globe" && <GlobeMap {...sharedMapProps} />}
-            {mapMode === "historical" && <HistoricalMap {...sharedMapProps} />}
-          </div>
-
-          <AtlasHeader
-            mapMode={mapMode}
-            onMapModeChange={setMapMode}
-            onOpenCharacter={() => setCharacterOpen(true)}
-            characterResult={characterResult}
-            adminMode={adminMode}
-            collectionCount={collection?.features.length ?? null}
+          <QuizModal
+            key={quizSessionKey}
+            isOpen={quizOpen}
+            mode={quizMode}
+            onClose={() => setQuizOpen(false)}
+            userName={playerName}
+            onScoreSaved={() => setLeaderboardVersion((value) => value + 1)}
           />
 
-          {characterResult && (
-            <AtlasCharacterSummary
-              result={characterResult}
-              onOpen={() => setCharacterOpen(true)}
+          {currentView === "leaderboard" ? (
+            <QuizLeaderboardPage
+              version={leaderboardVersion}
+              onStartQuiz={() => openQuiz("knowledge")}
             />
+          ) : (
+            <>
+              <div className="absolute inset-x-0 top-0 bottom-44 z-0 md:bottom-48 lg:bottom-44">
+                {mapMode === "globe" && <GlobeMap {...sharedMapProps} />}
+                {mapMode === "historical" && <HistoricalMap {...sharedMapProps} />}
+              </div>
+
+              <AtlasHeader
+                adminMode={adminMode}
+                collectionCount={collection?.features.length ?? null}
+              />
+
+              {loadError && (
+                <div
+                  className="absolute left-4 top-16 z-30 flex items-center gap-2 rounded-lg px-4 py-2.5 text-xs lg:left-auto lg:right-4"
+                  style={{
+                    background: "rgba(20,4,4,0.96)",
+                    border: "1px solid rgba(150,40,40,0.5)",
+                    color: "#f08080",
+                    backdropFilter: "blur(12px)",
+                    fontFamily: "Georgia, serif",
+                  }}
+                >
+                  <span style={{ fontSize: 11 }}>⚠</span>
+                  {loadError}
+                </div>
+              )}
+
+              <div
+                className="absolute bottom-44 right-4 top-16 z-20 hidden w-[340px] flex-col xl:flex"
+                style={{ pointerEvents: selectedFeature || adminMode ? "auto" : "none" }}
+              >
+                {drawer}
+              </div>
+
+              <AtlasTimelineFooter
+                year={year}
+                years={years}
+                isAutoPlaying={autoPlaying}
+                onAutoToggle={handleAutoToggle}
+                onYearChange={handleManualYearChange}
+              />
+
+              <div className="relative z-10 px-3 pb-4 pt-[calc(100vw*0.62+15rem)] sm:px-4 md:pt-[calc(100vw*0.5+16rem)] lg:pt-[calc(70vh+1rem)] xl:hidden">
+                {drawer}
+              </div>
+            </>
           )}
-
-          <AtlasQuizLauncher
-            enabled={!!collection?.features.length}
-            hasCharacter={!!characterResult}
-            onOpen={() => setQuizOpen(true)}
-          />
-
-          {loadError && (
-            <div
-              className="absolute left-4 top-16 z-30 flex items-center gap-2 rounded-lg px-4 py-2.5 text-xs lg:left-auto lg:right-4"
-              style={{
-                background: "rgba(20,4,4,0.96)",
-                border: "1px solid rgba(150,40,40,0.5)",
-                color: "#f08080",
-                backdropFilter: "blur(12px)",
-                fontFamily: "Georgia, serif",
-              }}
-            >
-              <span style={{ fontSize: 11 }}>⚠</span>
-              {loadError}
-            </div>
-          )}
-
-          <div
-            className="absolute bottom-44 right-4 top-16 z-20 hidden w-[340px] flex-col xl:flex"
-            style={{ pointerEvents: selectedFeature || adminMode ? "auto" : "none" }}
-          >
-            {drawer}
-          </div>
-
-          <AtlasTimelineFooter year={year} years={years} onYearChange={setYear} />
-
-          <div className="relative z-10 px-3 pb-4 pt-[calc(100vw*0.62+15rem)] sm:px-4 md:pt-[calc(100vw*0.5+16rem)] lg:pt-[calc(70vh+1rem)] xl:hidden">
-            {drawer}
-          </div>
         </section>
       </div>
     </main>

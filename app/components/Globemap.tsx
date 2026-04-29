@@ -138,6 +138,7 @@ export default function GlobeMap(props: SharedMapProps) {
       polygonLabel: (data: object) =>
         renderPolygonLabel(data, props.selectedSlug),
       polygonsData: allPolygons,
+      polygonsTransitionDuration: 320,
       polygonSideColor: (data: object) =>
         getPolygonSide(
           data,

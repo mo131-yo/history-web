@@ -4,21 +4,17 @@ import { useEffect } from "react";
 import type { AtlasFeatureCollection } from "@/lib/types";
 import type { AtlasFormState, SaveState } from "./types";
 
-export function useAtlasYears(year: number, years: number[], setYears: (years: number[]) => void, setLoadError: (value: string | null) => void) {
-  useEffect(() => {
-    fetch("/api/atlas/years")
-      .then((response) => {
-        if (!response.ok) throw new Error();
-        return response;
-      })
-      .then((response) => response.json())
-      .then((data) => setYears(data.years as number[]))
-      .catch(() => setLoadError("Timeline ачаалахад алдаа гарлаа."));
-  }, [setLoadError, setYears]);
+export const ATLAS_TIMELINE_START_YEAR = 1162;
+export const ATLAS_TIMELINE_END_YEAR = 1300;
+export const ATLAS_TIMELINE_YEARS = Array.from(
+  { length: ATLAS_TIMELINE_END_YEAR - ATLAS_TIMELINE_START_YEAR + 1 },
+  (_, index) => ATLAS_TIMELINE_START_YEAR + index,
+);
 
+export function useAtlasYears(setYears: (years: number[]) => void) {
   useEffect(() => {
-    if (years.length > 0 && !years.includes(year)) setYears(years);
-  }, [year, years, setYears]);
+    setYears(ATLAS_TIMELINE_YEARS);
+  }, [setYears]);
 }
 
 export function useAtlasCollection(

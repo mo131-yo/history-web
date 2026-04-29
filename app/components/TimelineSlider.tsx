@@ -1,16 +1,21 @@
 "use client";
 
 import { useEffect, useMemo, useRef, type CSSProperties } from "react";
+import { Pause, Play } from "lucide-react";
 
 interface TimelineSliderProps {
   years: number[];
   currentYear: number;
+  isAutoPlaying: boolean;
+  onAutoToggle: () => void;
   onYearChange: (year: number) => void;
 }
 
 export default function TimelineSlider({
   years,
   currentYear,
+  isAutoPlaying,
+  onAutoToggle,
   onYearChange,
 }: TimelineSliderProps) {
   const scrollRef = useRef<HTMLDivElement | null>(null);
@@ -70,13 +75,29 @@ export default function TimelineSlider({
           </h3>
         </div>
 
-        <div className="rounded-2xl border border-amber-500/20 bg-amber-500/10 px-3 py-2 text-right">
-          <p className="text-[9px] uppercase tracking-[0.22em] text-amber-500">
-            Одоогийн
-          </p>
-          <p className="mt-1 text-sm font-semibold text-stone-200">
-            {currentIndex + 1}/{safeYears.length}
-          </p>
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={onAutoToggle}
+            className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-full border transition ${
+              isAutoPlaying
+                ? "border-amber-300 bg-amber-400 text-slate-950 shadow-[0_0_24px_rgba(245,158,11,0.55)]"
+                : "border-amber-500/25 bg-stone-900/70 text-amber-200 hover:border-amber-400/70 hover:bg-amber-500/15"
+            }`}
+            title={isAutoPlaying ? "Auto зогсоох" : "Auto тоглуулах"}
+            aria-label={isAutoPlaying ? "Auto зогсоох" : "Auto тоглуулах"}
+          >
+            {isAutoPlaying ? <Pause size={18} fill="currentColor" /> : <Play size={18} fill="currentColor" />}
+          </button>
+
+          <div className="rounded-2xl border border-amber-500/20 bg-amber-500/10 px-3 py-2 text-right">
+            <p className="text-[9px] uppercase tracking-[0.22em] text-amber-500">
+              Одоогийн
+            </p>
+            <p className="mt-1 text-sm font-semibold text-stone-200">
+              {currentIndex + 1}/{safeYears.length}
+            </p>
+          </div>
         </div>
       </div>
 

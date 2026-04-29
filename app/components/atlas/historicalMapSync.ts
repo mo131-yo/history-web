@@ -26,8 +26,8 @@ export function syncCollection(
     const shape = selected as GeoJSON.Feature<GeoJSON.Polygon> | undefined;
     const bounds = getFeatureBounds(shape);
     const center = normalizeLngLatLike(selected?.properties.center) || getFeatureCenter(shape);
-    if (bounds) map.fitBounds(bounds, { padding, maxZoom: 4, duration: 700, essential: true });
-    else if (center) map.flyTo({ center, zoom: Math.max(Math.min(map.getZoom(), 3.8), 3), speed: 0.7 });
+    if (bounds) map.fitBounds(bounds, { padding, maxZoom: 4, duration: 260, essential: true });
+    else if (center) map.flyTo({ center, zoom: Math.max(Math.min(map.getZoom(), 3.8), 3), duration: 260, essential: true });
   };
   if (ready && map.isStyleLoaded()) push();
   else map.once("load", push);

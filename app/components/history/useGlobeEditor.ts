@@ -87,7 +87,7 @@ export function useGlobeEditor({
     const points = feature.geometry.coordinates[0].slice(0, -1) as [number, number][];
     if (!points.length) return;
     const center = points.reduce((acc, [lng, lat]) => ({ lng: acc.lng + lng / points.length, lat: acc.lat + lat / points.length }), { lng: 0, lat: 0 });
-    globeRef.current.pointOfView({ lat: center.lat, lng: center.lng, altitude: 1.2 }, 900);
+    globeRef.current.pointOfView({ lat: center.lat, lng: center.lng, altitude: 1.2 }, 320);
   }, [collection, selectedSlug]);
 
   return {

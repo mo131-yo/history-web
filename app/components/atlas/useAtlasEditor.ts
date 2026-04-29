@@ -3,13 +3,13 @@
 import { useCallback, useMemo, useState } from "react";
 import type { AtlasFeatureCollection } from "@/lib/types";
 import { emptyAtlasForm } from "./form";
-import { resetEditorStatus, useAtlasCollection, useAtlasYears } from "./atlasEditorData";
+import { ATLAS_TIMELINE_YEARS, resetEditorStatus, useAtlasCollection, useAtlasYears } from "./atlasEditorData";
 import { buildCoordEditorProps, buildSharedMapProps } from "./atlasEditorProps";
 import { buildDeleteState, buildResetCreateMode, buildSaveGeometry, useSelectedFeatureDraftSync } from "./useAtlasEditorPersistence";
 import type { AtlasFormState, SaveState } from "./types";
 
 export function useAtlasEditor(year: number, adminMode: boolean) {
-  const [years, setYears] = useState<number[]>([]);
+  const [years, setYears] = useState<number[]>(ATLAS_TIMELINE_YEARS);
   const [collection, setCollection] = useState<AtlasFeatureCollection | null>(null);
   const [selectedSlug, setSelectedSlug] = useState<string | null>(null);
   const [search, setSearch] = useState("");
@@ -34,7 +34,7 @@ export function useAtlasEditor(year: number, adminMode: boolean) {
     );
   }, []);
 
-  useAtlasYears(year, years, setYears, setLoadError);
+  useAtlasYears(setYears);
   useAtlasCollection(
     year,
     setCollection,

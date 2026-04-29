@@ -96,8 +96,8 @@ export function useHistoricalMap({
         const center = normalizeLngLatLike(event.features?.[0]?.properties?.center) || getFeatureCenter(feature);
         const bounds = getFeatureBounds(feature);
         if (slug) onSelectSlug(slug);
-        if (bounds) map.fitBounds(bounds, { padding: focusPaddingRef.current, maxZoom: 4.2, duration: 900, essential: true });
-        else if (center) map.flyTo({ center, zoom: Math.max(Math.min(map.getZoom() + 0.4, 4), 3.2), speed: 0.8, curve: 1.2, essential: true });
+        if (bounds) map.fitBounds(bounds, { padding: focusPaddingRef.current, maxZoom: 4.2, duration: 420, essential: true });
+        else if (center) map.flyTo({ center, zoom: Math.max(Math.min(map.getZoom() + 0.4, 4), 3.2), duration: 420, essential: true });
       });
 
       map.on("mousemove", ["states-fill", "states-labels"], (event) => {
