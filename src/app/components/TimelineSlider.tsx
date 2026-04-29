@@ -87,14 +87,14 @@ export default function TimelineSlider({
   } as CSSProperties;
 
   return (
-    <div className="rounded-[28px] border border-amber-500/15 bg-slate-950/85 px-5 py-5 shadow-[0_10px_40px_rgba(0,0,0,0.45)] backdrop-blur-xl">
-      <div className="flex items-start justify-between gap-4">
-        <div>
-          <p className="text-[10px] uppercase tracking-[0.3em] text-stone-500">
+    <div className="rounded-xl border border-amber-500/15 bg-slate-950/88 px-3 py-2 shadow-[0_-8px_28px_rgba(0,0,0,0.36)] backdrop-blur-xl sm:px-4">
+      <div className="flex items-center justify-between gap-3">
+        <div className="shrink-0">
+          <p className="text-[8px] uppercase tracking-[0.22em] text-stone-500">
             Timeline
           </p>
           <h3
-            className="mt-2 text-2xl text-stone-200"
+            className="mt-0.5 text-lg text-stone-200"
             style={{ fontFamily: "var(--font-cinzel-decorative), Georgia, serif" }}
           >
             {currentYear} он
@@ -104,7 +104,7 @@ export default function TimelineSlider({
         <div className="flex items-center gap-2">
           <form
             onSubmit={handleYearSearch}
-            className="hidden h-11 items-center gap-2 rounded-full border border-amber-500/20 bg-stone-900/70 px-3 sm:flex"
+            className="hidden h-8 items-center gap-1.5 rounded-full border border-amber-500/20 bg-stone-900/70 px-2.5 sm:flex"
           >
             <input
               type="number"
@@ -113,7 +113,7 @@ export default function TimelineSlider({
               max={endYear}
               value={yearQuery}
               onChange={(event: { target: { value: string } }) => setYearQuery(event.target.value)}
-              className="h-8 w-20 bg-transparent text-sm font-semibold tabular-nums text-stone-100 outline-none placeholder:text-stone-500"
+              className="h-6 w-16 bg-transparent text-xs font-semibold tabular-nums text-stone-100 outline-none placeholder:text-stone-500"
               style={{ fontFamily: "Georgia, serif" }}
               placeholder="Он хайх"
               aria-label="Оноор хайх"
@@ -121,11 +121,11 @@ export default function TimelineSlider({
             />
             <button
               type="submit"
-              className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-amber-200 transition hover:bg-amber-500/15"
+              className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-amber-200 transition hover:bg-amber-500/15"
               aria-label="Оноор хайх"
               title="Оноор хайх"
             >
-              <Search size={14} />
+              <Search size={12} />
             </button>
             <datalist id="timeline-years">
               {safeYears.map((year) => (
@@ -137,7 +137,7 @@ export default function TimelineSlider({
           <button
             type="button"
             onClick={onAutoToggle}
-            className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-full border transition ${
+            className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full border transition ${
               isAutoPlaying
                 ? "border-amber-300 bg-amber-400 text-slate-950 shadow-[0_0_24px_rgba(245,158,11,0.55)]"
                 : "border-amber-500/25 bg-stone-900/70 text-amber-200 hover:border-amber-400/70 hover:bg-amber-500/15"
@@ -145,24 +145,24 @@ export default function TimelineSlider({
             title={isAutoPlaying ? "Auto зогсоох" : "Auto тоглуулах"}
             aria-label={isAutoPlaying ? "Auto зогсоох" : "Auto тоглуулах"}
           >
-            {isAutoPlaying ? <Pause size={18} fill="currentColor" /> : <Play size={18} fill="currentColor" />}
+            {isAutoPlaying ? <Pause size={14} fill="currentColor" /> : <Play size={14} fill="currentColor" />}
           </button>
 
-          <div className="rounded-2xl border border-amber-500/20 bg-amber-500/10 px-3 py-2 text-right">
-            <p className="text-[9px] uppercase tracking-[0.22em] text-amber-500">
+          <div className="rounded-lg border border-amber-500/20 bg-amber-500/10 px-2.5 py-1 text-right">
+            <p className="text-[7px] uppercase tracking-[0.18em] text-amber-500">
               Одоогийн
             </p>
-            <p className="mt-1 text-sm font-semibold text-stone-200">
+            <p className="text-xs font-semibold text-stone-200">
               {currentIndex + 1}/{safeYears.length}
             </p>
           </div>
         </div>
       </div>
 
-      <div className="mt-5 grid gap-2">
+      <div className="mt-2 grid gap-1.5">
         <form
           onSubmit={handleYearSearch}
-          className="flex h-10 items-center gap-2 rounded-full border border-amber-500/20 bg-stone-900/70 px-3 sm:hidden"
+          className="flex h-8 items-center gap-2 rounded-full border border-amber-500/20 bg-stone-900/70 px-3 sm:hidden"
         >
           <input
             type="number"
@@ -171,7 +171,7 @@ export default function TimelineSlider({
             max={endYear}
             value={yearQuery}
             onChange={(event: { target: { value: string } }) => setYearQuery(event.target.value)}
-            className="min-w-0 flex-1 bg-transparent text-sm font-semibold tabular-nums text-stone-100 outline-none placeholder:text-stone-500"
+            className="min-w-0 flex-1 bg-transparent text-xs font-semibold tabular-nums text-stone-100 outline-none placeholder:text-stone-500"
             style={{ fontFamily: "Georgia, serif" }}
             placeholder="Он хайх"
             aria-label="Оноор хайх"
@@ -179,11 +179,11 @@ export default function TimelineSlider({
           />
           <button
             type="submit"
-            className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-amber-200 transition hover:bg-amber-500/15"
+            className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-amber-200 transition hover:bg-amber-500/15"
             aria-label="Оноор хайх"
             title="Оноор хайх"
           >
-            <Search size={14} />
+            <Search size={12} />
           </button>
           <datalist id="timeline-years-mobile">
             {safeYears.map((year) => (
@@ -192,9 +192,9 @@ export default function TimelineSlider({
           </datalist>
         </form>
 
-        <div className="flex items-center justify-between text-[11px] text-stone-400">
+        <div className="flex items-center justify-between text-[10px] text-stone-400">
           <span>Эхлэл {startYear}</span>
-          <span className="rounded-full bg-amber-500 px-2.5 py-1 font-semibold text-slate-950 shadow-[0_0_18px_rgba(245,158,11,0.45)]">
+          <span className="rounded-full bg-amber-500 px-2 py-0.5 font-semibold text-slate-950 shadow-[0_0_14px_rgba(245,158,11,0.42)]">
             {currentYear}
           </span>
           <span>Төгсгөл {endYear}</span>
@@ -219,12 +219,12 @@ export default function TimelineSlider({
         </div>
       </div>
 
-      <div className="relative mt-4">
-        <div className="pointer-events-none absolute inset-y-0 left-0 z-10 w-8 bg-linear-to-r from-slate-950/95 to-transparent" />
-        <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-8 bg-linear-to-l from-slate-950/95 to-transparent" />
+      <div className="relative mt-1.5">
+        <div className="pointer-events-none absolute inset-y-0 left-0 z-10 w-6 bg-linear-to-r from-slate-950/95 to-transparent" />
+        <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-6 bg-linear-to-l from-slate-950/95 to-transparent" />
 
-        <div ref={scrollRef} className="timeline-years-scroll overflow-x-auto pb-2">
-          <div className="flex min-w-max gap-2 px-1">
+        <div ref={scrollRef} className="timeline-years-scroll overflow-x-auto">
+          <div className="flex min-w-max gap-1.5 px-1">
             {safeYears.map((year) => {
               const active = year === currentYear;
 
@@ -234,7 +234,7 @@ export default function TimelineSlider({
                   ref={active ? activeYearRef : null}
                   type="button"
                   onClick={() => onYearChange(year)}
-                  className={`shrink-0 rounded-full px-3 py-1.5 text-xs transition ${
+                  className={`shrink-0 rounded-full px-2.5 py-1 text-[11px] transition ${
                     active
                       ? "bg-amber-500 text-slate-950 shadow-[0_0_18px_rgba(245,158,11,0.45)]"
                       : "border border-stone-700/60 bg-stone-900/45 text-stone-300 hover:border-amber-500/40 hover:bg-amber-500/10 hover:text-amber-200"
