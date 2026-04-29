@@ -105,6 +105,7 @@ export default function GlobeMap(props: SharedMapProps) {
           point ? (point as { index: number }).index : null
         ),
       onPolygonClick: (polygon: object) => {
+        if (props.isEditing) return;
         const slug = (polygon as { properties?: { slug?: string } }).properties?.slug;
         if (!slug || slug === "__draft__") return;
         props.onSelectSlug(slug, { focus: true });
