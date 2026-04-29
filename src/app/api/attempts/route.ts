@@ -8,6 +8,45 @@ type QuizAnswer = {
   isCorrect: boolean;
 };
 
+export async function GET() {
+  try {
+    const { userId } = await auth();
+
+    if (!userId) {
+      return Response.json(
+        { error: 'Нэвтэрсэн хэрэглэгч олдсонгүй.' },
+        { status: 401 },
+      );
+    }
+
+    await ensureQuizAttemptTables();
+
+    const rows = (await sql`
+      SELECT
+        id,
+        quiz_id,
+        score,
+        total_questions,
+        passed,
+        answers,
+        created_at::text
+      FROM quiz_attempts
+      WHERE clerk_user_id = ${userId}
+      ORDER BY created_at DESC
+      LIMIT 30
+    `) as QuizAttemptRow[];
+
+    return Response.json({ attempts: rows.map(toQuizAttemptHistory) });
+  } catch (error: any) {
+    console.error('Load quiz attempts error:', error);
+
+    return Response.json(
+      { error: error.message || 'Quiz history ачаалахад алдаа гарлаа.' },
+      { status: 500 },
+    );
+  }
+}
+
 export async function POST(req: Request) {
   try {
     const { userId } = await auth();
@@ -88,7 +127,9 @@ export async function POST(req: Request) {
         clerk_user_id,
         quiz_id,
         best_score,
+        last_score,
         total_questions,
+        last_total_questions,
         passed,
         completed_count,
         last_completed_at,
@@ -98,6 +139,8 @@ export async function POST(req: Request) {
         ${userId},
         ${quizId},
         ${score},
+        ${score},
+        ${totalQuestions},
         ${totalQuestions},
         ${passed},
         1,
@@ -107,7 +150,9 @@ export async function POST(req: Request) {
       ON CONFLICT (clerk_user_id, quiz_id)
       DO UPDATE SET
         best_score = GREATEST(quiz_progress.best_score, EXCLUDED.best_score),
+        last_score = EXCLUDED.last_score,
         total_questions = EXCLUDED.total_questions,
+        last_total_questions = EXCLUDED.last_total_questions,
         passed = quiz_progress.passed OR EXCLUDED.passed,
         completed_count = quiz_progress.completed_count + 1,
         last_completed_at = NOW(),
@@ -149,7 +194,9 @@ async function ensureQuizAttemptTables() {
       clerk_user_id TEXT NOT NULL,
       quiz_id TEXT NOT NULL,
       best_score INTEGER NOT NULL DEFAULT 0,
+      last_score INTEGER NOT NULL DEFAULT 0,
       total_questions INTEGER NOT NULL DEFAULT 0,
+      last_total_questions INTEGER NOT NULL DEFAULT 0,
       passed BOOLEAN NOT NULL DEFAULT FALSE,
       completed_count INTEGER NOT NULL DEFAULT 0,
       last_completed_at TIMESTAMPTZ,
@@ -158,5 +205,42 @@ async function ensureQuizAttemptTables() {
     )
   `;
 
+  await sql`ALTER TABLE quiz_progress ADD COLUMN IF NOT EXISTS last_score INTEGER NOT NULL DEFAULT 0`;
+  await sql`ALTER TABLE quiz_progress ADD COLUMN IF NOT EXISTS last_total_questions INTEGER NOT NULL DEFAULT 0`;
   await sql`CREATE INDEX IF NOT EXISTS quiz_attempts_user_idx ON quiz_attempts (clerk_user_id, quiz_id, created_at DESC)`;
+  await sql`CREATE INDEX IF NOT EXISTS quiz_attempts_rank_idx ON quiz_attempts (quiz_id, score DESC, total_questions ASC, created_at DESC)`;
+}
+
+type QuizAttemptRow = {
+  id: string | number;
+  quiz_id: string;
+  score: number;
+  total_questions: number;
+  passed: boolean;
+  answers: {
+    userName?: string | null;
+    period?: string | null;
+    mode?: string | null;
+    selectedGrade?: number | null;
+    answers?: QuizAnswer[];
+  } | null;
+  created_at: string;
+};
+
+function toQuizAttemptHistory(row: QuizAttemptRow) {
+  const mode = row.answers?.mode === 'knowledge' ? 'knowledge' : 'grade';
+  const selectedGrade =
+    typeof row.answers?.selectedGrade === 'number' ? row.answers.selectedGrade : null;
+
+  return {
+    id: String(row.id),
+    quizId: row.quiz_id,
+    mode,
+    selectedGrade,
+    period: row.answers?.period ?? '1162-1300',
+    score: row.score,
+    total: row.total_questions,
+    passed: row.passed,
+    createdAt: row.created_at,
+  };
 }

@@ -279,7 +279,7 @@ export default function AtlasApp() {
         mode={quizMode}
         onClose={() => setQuizOpen(false)}
         userName={user?.fullName ?? undefined}
-        onScoreSaved={() => {}}
+        onScoreSaved={() => setLeaderboardVersion((value) => value + 1)}
       />
 
       <div className="flex flex-col min-h-screen lg:h-screen lg:flex-row lg:overflow-hidden">

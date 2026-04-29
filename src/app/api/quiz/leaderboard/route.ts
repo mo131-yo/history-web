@@ -10,16 +10,18 @@ const scoreSchema = z.object({
   total: z.number().int().min(1).max(50),
 });
 
-export async function GET() {
-  try {
-    await ensureQuizScoresTable();
+const categorySchema = z.enum(["grade", "knowledge", "all"]).default("grade");
 
-    const rows = (await sql`
-      SELECT user_id, user_name, year, score, total, created_at::text
-      FROM quiz_scores
-      ORDER BY score DESC, total ASC, created_at DESC
-      LIMIT 25
-    `) as QuizScoreRow[];
+export async function GET(request: Request) {
+  try {
+    await ensureQuizAttemptTables();
+
+    const { searchParams } = new URL(request.url);
+    const category = categorySchema.parse(searchParams.get("category") ?? "grade");
+    const rows =
+      category === "all"
+        ? await loadAllQuizLeaderboard()
+        : await loadModeLeaderboard(category);
 
     return Response.json({ scores: rows.map(toLeaderboardScore) });
   } catch (err) {
@@ -66,12 +68,140 @@ async function ensureQuizScoresTable() {
   await sql`CREATE INDEX IF NOT EXISTS quiz_scores_rank_idx ON quiz_scores (score DESC, total ASC, created_at DESC)`;
 }
 
+async function ensureQuizAttemptTables() {
+  await sql`
+    CREATE TABLE IF NOT EXISTS quiz_attempts (
+      id BIGSERIAL PRIMARY KEY,
+      clerk_user_id TEXT NOT NULL,
+      quiz_id TEXT NOT NULL,
+      score INTEGER NOT NULL,
+      total_questions INTEGER NOT NULL,
+      passed BOOLEAN NOT NULL DEFAULT FALSE,
+      answers JSONB NOT NULL DEFAULT '[]'::jsonb,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    )
+  `;
+
+  await sql`CREATE INDEX IF NOT EXISTS quiz_attempts_user_idx ON quiz_attempts (clerk_user_id, quiz_id, created_at DESC)`;
+  await sql`CREATE INDEX IF NOT EXISTS quiz_attempts_rank_idx ON quiz_attempts (quiz_id, score DESC, total_questions ASC, created_at DESC)`;
+}
+
+async function loadModeLeaderboard(category: "grade" | "knowledge") {
+  return (await sql`
+    WITH base AS (
+      SELECT
+        clerk_user_id,
+        COALESCE(NULLIF(answers->>'userName', ''), 'Зочин') AS user_name,
+        quiz_id,
+        score,
+        total_questions AS total,
+        answers->>'mode' AS mode,
+        NULLIF(answers->>'selectedGrade', '')::integer AS selected_grade,
+        created_at,
+        COUNT(*) OVER (PARTITION BY clerk_user_id) AS attempts_count,
+        FIRST_VALUE(score) OVER (
+          PARTITION BY clerk_user_id
+          ORDER BY created_at DESC
+        ) AS last_score,
+        FIRST_VALUE(total_questions) OVER (
+          PARTITION BY clerk_user_id
+          ORDER BY created_at DESC
+        ) AS last_total
+      FROM quiz_attempts
+      WHERE
+        CASE
+          WHEN ${category} = 'knowledge'
+            THEN quiz_id = 'history-knowledge' OR answers->>'mode' = 'knowledge'
+          ELSE quiz_id LIKE 'history-grade-%' OR answers->>'mode' = 'grade'
+        END
+    ),
+    ranked AS (
+      SELECT
+        *,
+        ROW_NUMBER() OVER (
+          PARTITION BY clerk_user_id
+          ORDER BY score DESC, total ASC, created_at DESC
+        ) AS rank_in_user
+      FROM base
+    )
+    SELECT
+      clerk_user_id AS user_id,
+      user_name,
+      0 AS year,
+      score,
+      total,
+      last_score,
+      last_total,
+      attempts_count,
+      selected_grade,
+      quiz_id,
+      created_at::text
+    FROM ranked
+    WHERE rank_in_user = 1
+    ORDER BY score DESC, total ASC, created_at DESC
+    LIMIT 25
+  `) as QuizScoreRow[];
+}
+
+async function loadAllQuizLeaderboard() {
+  return (await sql`
+    WITH user_attempts AS (
+      SELECT
+        clerk_user_id,
+        COALESCE(NULLIF(answers->>'userName', ''), 'Зочин') AS user_name,
+        score,
+        total_questions,
+        NULLIF(answers->>'selectedGrade', '')::integer AS selected_grade,
+        quiz_id,
+        created_at,
+        FIRST_VALUE(score) OVER (
+          PARTITION BY clerk_user_id
+          ORDER BY created_at DESC
+        ) AS last_score,
+        FIRST_VALUE(total_questions) OVER (
+          PARTITION BY clerk_user_id
+          ORDER BY created_at DESC
+        ) AS last_total,
+        FIRST_VALUE(quiz_id) OVER (
+          PARTITION BY clerk_user_id
+          ORDER BY created_at DESC
+        ) AS last_quiz_id,
+        FIRST_VALUE(NULLIF(answers->>'selectedGrade', '')::integer) OVER (
+          PARTITION BY clerk_user_id
+          ORDER BY created_at DESC
+        ) AS last_selected_grade
+      FROM quiz_attempts
+    )
+    SELECT
+      clerk_user_id AS user_id,
+      (ARRAY_AGG(user_name ORDER BY created_at DESC))[1] AS user_name,
+      0 AS year,
+      SUM(score)::integer AS score,
+      SUM(total_questions)::integer AS total,
+      MAX(last_score)::integer AS last_score,
+      MAX(last_total)::integer AS last_total,
+      COUNT(*)::integer AS attempts_count,
+      MAX(last_selected_grade)::integer AS selected_grade,
+      (ARRAY_AGG(last_quiz_id ORDER BY created_at DESC))[1] AS quiz_id,
+      MAX(created_at)::text AS created_at
+    FROM user_attempts
+    GROUP BY clerk_user_id
+    ORDER BY SUM(score) DESC, SUM(total_questions) ASC, MAX(created_at) DESC
+    LIMIT 25
+  `) as QuizScoreRow[];
+}
+
 type QuizScoreRow = {
   user_id: string;
   user_name: string;
   year: number;
   score: number;
   total: number;
+  last_score?: number | null;
+  last_total?: number | null;
+  attempts_count?: number | null;
+  selected_grade?: number | null;
+  quiz_id?: string | null;
   created_at: string;
 };
 
@@ -82,6 +212,11 @@ function toLeaderboardScore(row: QuizScoreRow) {
     year: row.year,
     score: row.score,
     total: row.total,
+    lastScore: row.last_score ?? row.score,
+    lastTotal: row.last_total ?? row.total,
+    attemptsCount: row.attempts_count ?? 1,
+    selectedGrade: row.selected_grade ?? null,
+    quizId: row.quiz_id ?? null,
     createdAt: row.created_at,
   };
 }

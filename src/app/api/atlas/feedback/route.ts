@@ -58,7 +58,9 @@ export async function GET(request: Request) {
     const rows = (await sql`
       SELECT id::text, slug, year, state_name, user_name, rating, comment, proposed_geometry, status, created_at::text
       FROM atlas_state_feedback
-      WHERE slug = ${slug} AND year = ${year}
+      WHERE slug = ${slug}
+        AND year = ${year}
+        AND (${isAdmin} OR status IN ('visible', 'approved'))
       ORDER BY created_at DESC
       LIMIT 20
     `) as FeedbackRow[];
@@ -86,6 +88,7 @@ export async function POST(request: Request) {
     const proposedGeometry = parsed.data.proposedCoordinates
       ? toPolygonGeometry(parsed.data.proposedCoordinates)
       : null;
+    const isGuestFeedback = !userId;
 
     const rows = (await sql`
       INSERT INTO atlas_state_feedback (
@@ -108,7 +111,7 @@ export async function POST(request: Request) {
         ${parsed.data.rating},
         ${parsed.data.comment},
         ${proposedGeometry ? JSON.stringify(proposedGeometry) : null}::jsonb,
-        ${proposedGeometry ? "pending" : "visible"}
+        ${proposedGeometry || isGuestFeedback ? "pending" : "visible"}
       )
       RETURNING id::text, slug, year, state_name, user_name, rating, comment, proposed_geometry, status, created_at::text
     `) as FeedbackRow[];
@@ -142,11 +145,21 @@ export async function PATCH(request: Request) {
     const feedback = rows[0];
 
     if (!feedback) return Response.json({ error: "Feedback олдсонгүй." }, { status: 404 });
-    if (feedback.status !== "pending" || !feedback.proposed_geometry) {
-      return Response.json({ error: "Шалгах координатын санал алга байна." }, { status: 400 });
+    if (feedback.status !== "pending") {
+      return Response.json({ error: "Шалгах feedback алга байна." }, { status: 400 });
     }
 
     if (parsed.data.action === "approve") {
+      if (!feedback.proposed_geometry) {
+        await sql`
+          UPDATE atlas_state_feedback
+          SET status = 'visible', reviewed_by = ${userId}, reviewed_at = NOW()
+          WHERE id = ${parsed.data.id}
+        `;
+
+        return Response.json({ ok: true, status: "visible" });
+      }
+
       const geometry = normalizePolygon(feedback.proposed_geometry);
       const feature = await updateStateGeometry(feedback.year, feedback.slug, geometry);
       if (!feature) return Response.json({ error: "Улсын бичлэг олдсонгүй." }, { status: 404 });

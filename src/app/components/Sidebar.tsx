@@ -605,8 +605,9 @@ function AdminFeedbackNotice({
                 {item.userName}: {item.comment}
               </p>
               <p className="mt-1 text-[10px]" style={{ color: T.textSub }}>
-                {item.proposedGeometry?.coordinates?.[0]?.length ?? 0}{' '}
-                coordinate point
+                {item.proposedGeometry
+                  ? `${item.proposedGeometry.coordinates?.[0]?.length ?? 0} coordinate point`
+                  : "Guest feedback"}
               </p>
               <div className="grid grid-cols-2 gap-2 mt-2">
                 <button
@@ -620,7 +621,7 @@ function AdminFeedbackNotice({
                   }}
                 >
                   <Check className="size-3" />
-                  Зөвшөөрөх
+                  {item.proposedGeometry ? "Зөвшөөрөх" : "Нийтлэх"}
                 </button>
                 <button
                   type="button"

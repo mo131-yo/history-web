@@ -3,6 +3,7 @@ import type { LeaderboardScore } from "./QuizLeaderboardPage";
 import { CrownIcon } from "./CrownIcon";
 import { MedalIcon } from "./Medalicon";
 import { T } from "../atlas/constants";
+import type { LeaderboardCategory } from "./QuizLeaderboardPage";
 
 type PodiumConfig = {
   dataIdx: number;
@@ -81,7 +82,13 @@ function initials(name: string) {
     .toUpperCase();
 }
 
-export function OlympicPodium({ scores }: { scores: LeaderboardScore[] }) {
+export function OlympicPodium({
+  scores,
+  category,
+}: {
+  scores: LeaderboardScore[];
+  category: LeaderboardCategory;
+}) {
   return (
     <div
       style={{
@@ -174,7 +181,9 @@ export function OlympicPodium({ scores }: { scores: LeaderboardScore[] }) {
                 <span style={{ fontSize: 13, color: T.textMuted }}>/{entry.total}</span>
               </p>
 
-              <p style={{ fontSize: 11, color: T.textMuted, margin: 0 }}>{entry.year} он</p>
+              <p style={{ fontSize: 11, color: T.textMuted, margin: 0 }}>
+                {formatPodiumMeta(entry, category)}
+              </p>
             </div>
 
             <div
@@ -206,4 +215,16 @@ export function OlympicPodium({ scores }: { scores: LeaderboardScore[] }) {
       })}
     </div>
   );
+}
+
+function formatPodiumMeta(entry: LeaderboardScore, category: LeaderboardCategory) {
+  if (category === "grade") {
+    return entry.selectedGrade ? `${entry.selectedGrade}-р анги` : "Ангийн quiz";
+  }
+
+  if (category === "knowledge") {
+    return `${entry.attemptsCount} мэдлэгийн оролдлого`;
+  }
+
+  return `${entry.attemptsCount} нийт quiz`;
 }
