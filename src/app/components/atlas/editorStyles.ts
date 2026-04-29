@@ -2,7 +2,7 @@
 
 export const editorTheme = {
   BG: '#fcfcfc',
-  BORDER: '#004883',
+  BORDER: '#b6c7d5',
   GOLD: '#000000',
   GOLD_DIM: '#0C60A9',
   TEXT_MAIN: '#000000',
