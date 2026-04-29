@@ -13,13 +13,13 @@ export function SidebarHeader({
   onToggleCollapsed: () => void;
 }) {
   return (
-    <div className="shrink-0 px-4 py-4 sm:px-5 sm:py-5" style={{ borderBottom: `1px solid ${T.border}` }}>
-      <div className="mb-4 flex items-center gap-3 sm:mb-5">
-        <div className="h-px flex-1" style={{ background: `linear-gradient(90deg, transparent, ${T.amber}66)` }} />
+    <div className="px-4 py-4 shrink-0 sm:px-5 sm:py-5" style={{background: T.bg, borderBottom: `1px solid ${T.border}` }}>
+      <div className="flex items-center gap-3 mb-4 sm:mb-5">
+        <div className="flex-1 h-px" style={{ background: `linear-gradient(90deg, transparent, ${T.amber}66)` }} />
         <svg width="16" height="16" viewBox="0 0 16 16">
           <polygon points="8,1 9.5,5.5 14.5,5.5 10.3,8.8 11.8,13.5 8,10.8 4.2,13.5 5.7,8.8 1.5,5.5 6.5,5.5" fill={T.amber} opacity="0.8" />
         </svg>
-        <div className="h-px flex-1" style={{ background: `linear-gradient(90deg, ${T.amber}66, transparent)` }} />
+        <div className="flex-1 h-px" style={{ background: `linear-gradient(90deg, ${T.amber}66, transparent)` }} />
       </div>
 
       <div className={`flex gap-3 ${collapsed ? "items-center justify-center lg:flex-col" : "items-start justify-between"}`}>
@@ -39,14 +39,14 @@ export function SidebarHeader({
         <button
           type="button"
           onClick={onToggleCollapsed}
-          className="mt-1 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg transition-all duration-200 hover:scale-105 sm:h-10 sm:w-10"
+          className="flex items-center justify-center mt-1 transition-all duration-200 rounded-lg h-9 w-9 shrink-0 hover:scale-105 sm:h-10 sm:w-10"
           style={{ background: T.amberGlow, border: `1px solid ${T.amber}33` }}
           title={collapsed ? "Sidebar нээх" : "Sidebar хураах"}
         >
           <div className="relative flex items-center justify-center">
             <Globe className="size-4 sm:size-5" style={{ color: T.amberDim }} />
             <ChevronRight
-              className="absolute -right-3 size-3 transition-transform duration-300"
+              className="absolute transition-transform duration-300 -right-3 size-3"
               style={{
                 color: T.amber,
                 transform: collapsed ? "rotate(180deg)" : "rotate(0deg)",
@@ -56,10 +56,10 @@ export function SidebarHeader({
         </button>
       </div>
 
-      <div className="mt-4 flex items-center gap-2">
-        <div className="h-px flex-1" style={{ background: T.border }} />
+      <div className="flex items-center gap-2 mt-4">
+        <div className="flex-1 h-px" style={{ background: T.border }} />
         <div className="h-1.5 w-1.5 rounded-full" style={{ background: T.amberDim, opacity: 0.5 }} />
-        <div className="h-px flex-1" style={{ background: T.border }} />
+        <div className="flex-1 h-px" style={{ background: T.border }} />
       </div>
     </div>
   );
