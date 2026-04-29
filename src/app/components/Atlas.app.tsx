@@ -11,7 +11,7 @@ import { AtlasTimelineFooter } from "./atlas/AtlasTimelineFooter";
 import { QuizModal } from "./QuizModal";
 import { CHARACTER_STORAGE_KEY, T } from "./atlas/constants";
 import { QuizLeaderboardPage } from "./leaderboard/QuizLeaderboardPage";
-import { CoordEditorProps, SavedCharacterResult } from "./atlas/types";
+import { SavedCharacterResult } from "./atlas/types";
 import { useAtlasEditor } from "./atlas/useAtlasEditor";
 
 const CoordEditor = dynamic(
@@ -37,7 +37,7 @@ export default function AtlasApp() {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [characterOpen, setCharacterOpen] = useState(false);
   const [quizOpen, setQuizOpen] = useState(false);
-  const [leaderboardVersion, setLeaderboardVersion] = useState(0);
+  const [leaderboardVersion] = useState(0);
   const [currentView, setCurrentView] = useState<"map" | "leaderboard">("map");
   const [liveCharacterResult, setLiveCharacterResult] = useState<SavedCharacterResult | null>(null);
   const storedCharacterResultRaw = useSyncExternalStore(
@@ -95,15 +95,17 @@ export default function AtlasApp() {
         />
       )}
 
-      <QuizModal
-        isOpen={quizOpen}
-        onClose={() => setQuizOpen(false)}
-        userName={playerName}
-        onScoreSaved={() => setLeaderboardVersion((value) => value + 1)}
-      />
+<QuizModal
+  isOpen={quizOpen}
+  mode="grade"
+  onClose={() => setQuizOpen(false)}
+  userName={user?.fullName ?? undefined}
+  onScoreSaved={() => {}}
+/>
 
       <div className="flex min-h-screen flex-col lg:h-screen lg:flex-row lg:overflow-hidden">
         <Sidebar
+          year={year}
           search={search}
           onSearchChange={setSearch}
           mapMode={mapMode}

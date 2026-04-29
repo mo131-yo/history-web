@@ -3,9 +3,7 @@
 import { useCallback, useState } from "react";
 import { T } from "./atlas/constants";
 
-// =============================================
-// TYPES
-// =============================================
+
 interface Question {
   level: number;
   q: string;
@@ -24,9 +22,7 @@ type QuizAnswer = {
   isCorrect: boolean;
 };
 
-// =============================================
-// QUESTION BANK
-// =============================================
+
 const QUESTIONS: Record<GradeGroup, Question[]> = {
   "1-5": [
     { level: 0, q: "Монгол улсын нийслэл хот аль нь вэ?", opts: ["а) Дархан", "б) Улаанбаатар", "в) Эрдэнэт", "г) Чойбалсан"], ans: 1, exp: "Улаанбаатар хот 1924 оноос Монгол улсын нийслэл болсон." },
@@ -86,9 +82,7 @@ const quizPanelSoft = "rgba(15,23,42,0.42)";
 const quizBorder = `1px solid ${T.border}`;
 const quizGlow = "0 18px 60px rgba(0,0,0,0.55), inset 0 1px 0 rgba(255,255,255,0.03)";
 
-// =============================================
-// MAIN COMPONENT
-// =============================================
+
 export default function HistoryQuiz({
   mode,
   onClose,
@@ -343,7 +337,6 @@ export default function HistoryQuiz({
     }}>
       <div style={{ width: "100%", maxWidth: 580 }}>
 
-        {/* ── GRADE SELECTION ── */}
         {screen === "grade" && (
           <div style={{ animation: "fadeIn 0.4s ease" }}>
             <div style={{

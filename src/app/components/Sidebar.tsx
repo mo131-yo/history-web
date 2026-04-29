@@ -6,11 +6,12 @@ import { useEffect, useState, type ReactNode } from "react";
 import { ChevronDown, CircleHelp, ListChecks, Map, MapPinned, Medal, Search, Sparkles, Trophy } from "lucide-react";
 import { SidebarHeader } from "./atlas/SidebarHeader";
 import { sidebarTheme as T } from "./atlas/sidebarTheme";
-import { SidebarUserPanel } from "./atlas/SidebarUserPanel";
+import { SidebarUserPanel, type UserSyncStatus } from "./atlas/SidebarUserPanel";
 import type { MapMode, SavedCharacterResult } from "./atlas/types";
 import type { QuizMode } from "./QuizModal";
 
 export function Sidebar({
+  year,
   search,
   onSearchChange,
   mapMode,
@@ -28,6 +29,7 @@ export function Sidebar({
   collapsed,
   onToggleCollapsed,
 }: {
+  year: number;
   search: string;
   onSearchChange: (value: string) => void;
   mapMode: MapMode;
@@ -45,7 +47,11 @@ export function Sidebar({
   onToggleCollapsed: () => void;
   user:
     | {
+        id?: string;
         fullName?: string | null;
+        firstName?: string | null;
+        lastName?: string | null;
+        username?: string | null;
         imageUrl?: string;
         primaryEmailAddress?: { emailAddress?: string } | null;
       }
@@ -55,6 +61,7 @@ export function Sidebar({
   const { openSignIn, openSignUp, signOut } = useClerk();
   const [searchResults, setSearchResults] = useState<AtlasStateFeature[]>([]);
   const [searchStatus, setSearchStatus] = useState<"idle" | "loading" | "error">("idle");
+  const [userSyncStatus, setUserSyncStatus] = useState<UserSyncStatus>("idle");
   const [quizExpanded, setQuizExpanded] = useState(false);
   const trimmedSearch = search.trim();
   const navItems = [
@@ -87,6 +94,46 @@ export function Sidebar({
   useEffect(() => {
     if (currentView === "leaderboard") setQuizExpanded(true);
   }, [currentView]);
+
+  useEffect(() => {
+    if (!user?.id) {
+      setUserSyncStatus("idle");
+      return;
+    }
+
+    const controller = new AbortController();
+    setUserSyncStatus("syncing");
+
+    fetch("/api/users/me", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        email: user.primaryEmailAddress?.emailAddress ?? null,
+        firstName: user.firstName ?? null,
+        lastName: user.lastName ?? null,
+        username: user.username ?? null,
+        imageUrl: user.imageUrl ?? null,
+      }),
+      signal: controller.signal,
+    })
+      .then((response) => {
+        if (!response.ok) throw new Error("User sync failed");
+        setUserSyncStatus("synced");
+      })
+      .catch((error) => {
+        if (error instanceof DOMException && error.name === "AbortError") return;
+        setUserSyncStatus("error");
+      });
+
+    return () => controller.abort();
+  }, [
+    user?.id,
+    user?.primaryEmailAddress?.emailAddress,
+    user?.firstName,
+    user?.lastName,
+    user?.username,
+    user?.imageUrl,
+  ]);
 
   useEffect(() => {
     if (collapsed || trimmedSearch.length < 2) {
@@ -134,7 +181,9 @@ export function Sidebar({
     >
       <SidebarHeader
         collapsed={collapsed}
-        onToggleCollapsed={onToggleCollapsed} year={0}      />
+        onToggleCollapsed={onToggleCollapsed}
+        year={year}
+      />
 
       <div className={`flex flex-1 flex-col gap-3 px-3 py-3 ${collapsed ? "items-center" : ""}`}>
         {!collapsed && (
@@ -293,6 +342,7 @@ export function Sidebar({
           <SidebarUserPanel
             adminMode={adminMode}
             user={user}
+            syncStatus={userSyncStatus}
             onSignIn={() => openSignIn()}
             onSignUp={() => openSignUp()}
             onSignOut={() => signOut()}

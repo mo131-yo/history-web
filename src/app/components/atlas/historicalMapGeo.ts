@@ -1,4 +1,4 @@
-import maplibregl, { GeoJSONSource } from "maplibre-gl";
+import type { GeoJSONSource, Map as MapLibreMap } from "maplibre-gl";
 
 export function normalizeLngLatLike(value: unknown): [number, number] | null {
   if (Array.isArray(value) && value.length >= 2) {
@@ -92,10 +92,21 @@ export function createVertexCollection(ring: Array<[number, number]>) {
   };
 }
 
+// export function safeSetData(
+//   map: maplibregl.Map,
+//   sourceId: string,
+//   data: GeoJSON.FeatureCollection,
+// ) {
+//   const source = map.getSource(sourceId) as GeoJSONSource | undefined;
+//   source?.setData(data);
+// }
+
+
+
 export function safeSetData(
-  map: maplibregl.Map,
+  map: MapLibreMap,
   sourceId: string,
-  data: GeoJSON.FeatureCollection,
+  data: GeoJSON.FeatureCollection
 ) {
   const source = map.getSource(sourceId) as GeoJSONSource | undefined;
   source?.setData(data);

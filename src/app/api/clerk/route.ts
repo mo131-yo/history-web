@@ -1,6 +1,7 @@
 import { Webhook } from 'svix';
 import { headers } from 'next/headers';
 import { sql } from '../../../lib/db';
+import { ensureUsersTable } from '../../../lib/users-db';
 
 type ClerkEmail = {
   id: string;
@@ -11,6 +12,7 @@ type ClerkUserData = {
   id: string;
   first_name?: string | null;
   last_name?: string | null;
+  username?: string | null;
   image_url?: string | null;
   primary_email_address_id?: string | null;
   email_addresses?: ClerkEmail[];
@@ -67,6 +69,8 @@ export async function POST(req: Request) {
     null;
 
   try {
+    await ensureUsersTable();
+
     if (eventType === 'user.created' || eventType === 'user.updated') {
       await sql`
         INSERT INTO users (
@@ -74,6 +78,7 @@ export async function POST(req: Request) {
           email,
           first_name,
           last_name,
+          username,
           image_url,
           updated_at
         )
@@ -82,6 +87,7 @@ export async function POST(req: Request) {
           ${email},
           ${user.first_name ?? null},
           ${user.last_name ?? null},
+          ${user.username ?? null},
           ${user.image_url ?? null},
           NOW()
         )
@@ -90,6 +96,7 @@ export async function POST(req: Request) {
           email = EXCLUDED.email,
           first_name = EXCLUDED.first_name,
           last_name = EXCLUDED.last_name,
+          username = EXCLUDED.username,
           image_url = EXCLUDED.image_url,
           updated_at = NOW()
       `;

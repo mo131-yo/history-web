@@ -1,7 +1,9 @@
 "use client";
 
-import { Award, LogIn, LogOut, User, UserPlus } from "lucide-react";
+import { LogIn, LogOut, ShieldCheck, User, UserPlus } from "lucide-react";
 import { sidebarTheme as T } from "./sidebarTheme";
+
+export type UserSyncStatus = "idle" | "syncing" | "synced" | "error";
 
 export function SidebarUserPanel({
   adminMode,
@@ -14,44 +16,91 @@ export function SidebarUserPanel({
   user:
     | {
         fullName?: string | null;
+        username?: string | null;
         imageUrl?: string;
         primaryEmailAddress?: { emailAddress?: string } | null;
       }
     | null
     | undefined;
+  syncStatus: UserSyncStatus;
   onSignIn: () => void;
   onSignUp: () => void;
   onSignOut: () => void;
 }) {
+  const name = user?.fullName ?? user?.username ?? "Хэрэглэгч";
+  const email = user?.primaryEmailAddress?.emailAddress ?? "Clerk account";
+  const initials = getInitials(name, email);
+
   return (
-    <div className="shrink-0 px-4 py-4" style={{ borderTop: `1px solid ${T.border}` }}>
+    <div className="shrink-0 px-3 pb-3 pt-2" style={{ borderTop: `1px solid ${T.border}` }}>
       {user ? (
-        <div className="flex items-center gap-3 rounded-lg px-3 py-2.5" style={{ background: "rgba(15,23,42,0.6)", border: `1px solid ${T.border}` }}>
-          {user.imageUrl ? (
-            <img src={user.imageUrl} alt="" className="h-8 w-8 shrink-0 rounded-lg border object-cover" style={{ borderColor: T.border }} />
-          ) : (
-            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border" style={{ borderColor: T.border, background: T.amberGlow }}>
-              <User className="size-4" style={{ color: T.amberDim }} />
-            </div>
-          )}
-          <div className="min-w-0 flex-1">
-            <p className="truncate text-xs" style={{ color: T.text }}>
-              {user.fullName ?? user.primaryEmailAddress?.emailAddress ?? "Хэрэглэгч"}
-            </p>
-            <div className="mt-0.5 flex items-center gap-1">
-              <Award className="size-2.5" style={{ color: T.amber }} />
-              <span className="text-[8px] uppercase tracking-widest" style={{ color: T.amber }}>
-                {adminMode ? "Хаан · Засах эрхтэй" : "Хэрэглэгч"}
+        <div
+          className="overflow-hidden rounded-lg"
+          style={{
+            background: "linear-gradient(180deg, rgba(18,25,39,0.86), rgba(8,13,24,0.92))",
+            border: `1px solid ${T.border}`,
+            boxShadow: "0 14px 30px rgba(0,0,0,0.22), inset 0 1px 0 rgba(255,255,255,0.04)",
+          }}
+        >
+          <div className="flex items-center gap-3 px-3 py-3">
+            <div className="relative shrink-0">
+              {user.imageUrl ? (
+                <img src={user.imageUrl} alt="" className="h-11 w-11 rounded-lg border object-cover" style={{ borderColor: `${T.amber}55` }} />
+              ) : (
+                <div
+                  className="flex h-11 w-11 items-center justify-center rounded-lg border text-sm font-bold"
+                  style={{ borderColor: `${T.amber}55`, background: T.amberGlow, color: T.amber }}
+                >
+                  {initials || <User className="size-5" />}
+                </div>
+              )}
+              <span
+                className="absolute -bottom-0.5 -right-0.5 flex h-4 w-4 items-center justify-center rounded-full border"
+                style={{ background: adminMode ? T.amber : "#7ddc8a", borderColor: "rgba(8,13,24,0.95)" }}
+              >
+                <ShieldCheck className="size-2.5" style={{ color: adminMode ? "#111827" : "#052e16" }} />
               </span>
             </div>
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center gap-2">
+                <p className="min-w-0 truncate text-sm font-semibold leading-tight" style={{ color: T.text }}>
+                  {name}
+                </p>
+              </div>
+              <p className="mt-0.5 truncate text-[10px]" style={{ color: T.textMuted }}>
+                {email}
+              </p>
+              <div className="mt-2 flex items-center gap-1.5">
+                <span
+                  className="rounded px-1.5 py-0.5 text-[8px] font-bold uppercase tracking-widest"
+                  style={{
+                    background: adminMode ? `${T.amber}1f` : "rgba(125,220,138,0.12)",
+                    border: `1px solid ${adminMode ? `${T.amber}44` : "rgba(125,220,138,0.28)"}`,
+                    color: adminMode ? T.amber : "#7ddc8a",
+                  }}
+                >
+                  {adminMode ? "Admin" : "User"}
+                </span>
+                <span className="truncate text-[9px]" style={{ color: T.textSub }}>
+                  {adminMode ? "Засах эрхтэй" : "Атлас хэрэглэгч"}
+                </span>
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={onSignOut}
+              className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md transition-colors hover:opacity-70"
+              style={{ border: `1px solid ${T.border}`, color: T.textMuted, background: "rgba(8,13,24,0.72)" }}
+              title="Гарах"
+            >
+              <LogOut className="size-3.5" />
+            </button>
           </div>
-          <button type="button" onClick={onSignOut} className="rounded-md p-1.5 transition-colors hover:opacity-70" style={{ border: `1px solid ${T.border}`, color: T.textMuted }} title="Гарах">
-            <LogOut className="size-3" />
-          </button>
+
         </div>
       ) : (
         <div className="grid gap-2">
-          <button type="button" onClick={onSignIn} className="flex w-full items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-xs transition-all hover:opacity-80" style={{ border: `1px solid ${T.border}`, background: "rgba(15,23,42,0.6)", color: T.text, fontFamily: "Georgia, serif" }}>
+          <button type="button" onClick={onSignIn} className="flex w-full items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-xs transition-all hover:opacity-80" style={{ border: `1px solid ${T.border}`, background: "rgba(15,23,42,0.72)", color: T.text, fontFamily: "Georgia, serif" }}>
             <LogIn className="size-3.5" />
             Нэвтрэх
           </button>
@@ -63,4 +112,14 @@ export function SidebarUserPanel({
       )}
     </div>
   );
+}
+
+function getInitials(name: string, email: string) {
+  const source = name !== "Хэрэглэгч" ? name : email;
+  return source
+    .split(/[\s@._-]+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0]?.toUpperCase())
+    .join("");
 }

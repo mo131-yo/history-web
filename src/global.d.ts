@@ -222,17 +222,22 @@ declare module "next/navigation" {
   export function notFound(): never;
 }
 
-declare module "next/server" {
-  export class NextRequest extends Request {
-    nextUrl: URL;
-  }
+declare module "@clerk/nextjs" {
+  export const ClerkProvider: any;
+  export const SignInButton: any;
+  export const SignUpButton: any;
+  export const UserButton: any;
+  export const useUser: any;
+  export const useAuth: any;
+  export const useClerk: any;
+}
 
   export class NextResponse extends Response {
     static json(body: any, init?: ResponseInit): NextResponse;
     static redirect(url: string | URL, init?: ResponseInit): NextResponse;
     static next(init?: ResponseInit): NextResponse;
   }
-}
+
 
 declare module "next/headers" {
   export function cookies(): any;
@@ -445,6 +450,7 @@ declare module "lucide-react" {
     export const Edit3: any;
   export const WandSparkles: any;
   export const PlusCircle: any;
+  export const CircleHelp: any;
 }
 
 declare module "zod" {

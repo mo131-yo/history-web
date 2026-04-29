@@ -3,13 +3,13 @@
 import { useEffect, useMemo, useRef, type CSSProperties } from "react";
 import { Pause, Play } from "lucide-react";
 
-interface TimelineSliderProps {
+type TimelineSliderProps = {
   years: number[];
   currentYear: number;
-  isAutoPlaying: boolean;
-  onAutoToggle: () => void;
   onYearChange: (year: number) => void;
-}
+  isAutoPlaying?: boolean;
+  onAutoToggle?: () => void;
+};
 
 export default function TimelineSlider({
   years,
