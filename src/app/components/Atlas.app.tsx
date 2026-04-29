@@ -136,7 +136,10 @@ export default function AtlasApp() {
           onSelectSearchResult={(feature: { properties: { year: SetStateAction<number>; slug: any; }; }) => {
             setCurrentView("map");
             setYear(feature.properties.year);
-            setSelectedSlug(feature.properties.slug);
+            setSelectedSlug(feature.properties.slug, {
+              focus: true,
+              year: Number(feature.properties.year),
+            });
           }}
           currentView={currentView}
           characterResult={characterResult}

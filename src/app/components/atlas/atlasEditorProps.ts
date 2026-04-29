@@ -2,13 +2,14 @@
 
 import { buildFormFromFeature, emptyAtlasForm } from "./form";
 import type { AtlasFeatureCollection, AtlasStateFeature } from "@/lib/types";
-import { SharedMapProps, SaveState, AtlasFormState, CoordEditorProps } from "./types";
+import { SharedMapProps, SaveState, AtlasFormState, CoordEditorProps, SelectedFeatureFocusRequest } from "./types";
 
 export function buildSharedMapProps(args: {
   adminMode: boolean;
   collection: AtlasFeatureCollection | null;
   selectedSlug: string | null;
-  onSelectSlug: (slug: string) => void;
+  focusRequest: SelectedFeatureFocusRequest | null;
+  onSelectSlug: SharedMapProps["onSelectSlug"];
   isEditing: boolean;
   isCreating: boolean;
   addPointMode: boolean;
@@ -20,6 +21,7 @@ export function buildSharedMapProps(args: {
   return {
     collection: args.collection,
     selectedSlug: args.selectedSlug,
+    focusRequest: args.focusRequest,
     onSelectSlug: args.onSelectSlug,
     isEditing: args.adminMode && args.isEditing,
     isCreating: args.adminMode && args.isCreating,

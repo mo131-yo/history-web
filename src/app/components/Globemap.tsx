@@ -107,7 +107,7 @@ export default function GlobeMap(props: SharedMapProps) {
       onPolygonClick: (polygon: object) => {
         const slug = (polygon as { properties?: { slug?: string } }).properties?.slug;
         if (!slug || slug === "__draft__") return;
-        props.onSelectSlug(slug);
+        props.onSelectSlug(slug, { focus: true });
       },
       onPolygonHover: (polygon: object | null) =>
         syncHoveredSlug(

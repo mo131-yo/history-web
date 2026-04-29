@@ -75,9 +75,7 @@ type MapLibreMap = InstanceType<typeof maplibregl.Map>;
 export function syncCollection(
   map: MapLibreMap | null,
   ready: boolean,
-  collection: HistoricalMapProps["collection"],
-  selectedSlug: string | null,
-  padding: HistoricalMapFocusPadding
+  collection: HistoricalMapProps["collection"]
 ) {
   if (!map) return;
 
@@ -97,12 +95,29 @@ export function syncCollection(
     safeSetData(map, "state-flags", flagCollection);
     void loadFlagImages(map, flagCollection);
 
-    if (!selectedSlug || !collection) return;
+  if (ready && map.isStyleLoaded()) push();
+  else map.once("load", push);
+}
 
-    const selected = collection.features.find(
-      (feature) => feature.properties.slug === selectedSlug
-    );
+export function syncSelectedFeatureFocus(
+  map: MapLibreMap | null,
+  ready: boolean,
+  collection: HistoricalMapProps["collection"],
+  focusRequest: HistoricalMapProps["focusRequest"],
+  padding: HistoricalMapFocusPadding
+) {
+  if (!map || !collection || !focusRequest) return false;
+  if (focusRequest.year !== undefined && collection.year !== focusRequest.year) {
+    return false;
+  }
 
+  const selected = collection.features.find(
+    (feature) => feature.properties.slug === focusRequest.slug
+  );
+
+  if (!selected) return false;
+
+  const focus = () => {
     const shape = selected as GeoJSON.Feature<GeoJSON.Polygon> | undefined;
     const bounds = getFeatureBounds(shape);
 
@@ -126,8 +141,10 @@ export function syncCollection(
     }
   };
 
-  if (ready && map.isStyleLoaded()) push();
-  else map.once("load", push);
+  if (ready && map.isStyleLoaded()) focus();
+  else map.once("load", focus);
+
+  return true;
 }
 
 export function syncSelection(

@@ -1,9 +1,14 @@
 import type { AtlasFeatureCollection } from "@/lib/types";
+import type {
+  SelectedFeatureFocusRequest,
+  SelectedSlugOptions,
+} from "./types";
 
 export interface HistoricalMapProps {
   collection: AtlasFeatureCollection | null;
   selectedSlug: string | null;
-  onSelectSlug: (slug: string) => void;
+  focusRequest: SelectedFeatureFocusRequest | null;
+  onSelectSlug: (slug: string, options?: SelectedSlugOptions) => void;
   isEditing: boolean;
   isCreating: boolean;
   addPointMode: boolean;
