@@ -4,7 +4,6 @@ import OpenAI from "openai";
 
 export async function POST(req: NextRequest) {
   try {
-    const openai = getOpenAIClient();
     const body = await req.json();
     const { year, slug, state } = body as {
       year: number;
@@ -27,16 +26,14 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ text: cached, cached: true });
     }
 
-    const apiKey = process.env.OPENAI_API_KEY ?? process.env.OPENAI_KEY;
-    if (!apiKey) {
+    const openai = createOpenAIClient();
+    if (!openai) {
       return NextResponse.json({
         text: buildFallbackInsight(year, state),
         cached: false,
         unavailable: true,
       });
     }
-
-    const openai = new OpenAI({ apiKey });
     const periodName = state.metadata?.periodName
       ? ` (тухайн үеийн нэр: «${String(state.metadata.periodName)}»)`
       : "";
@@ -105,4 +102,9 @@ function buildFallbackInsight(
 ${state.summary}
 
 AI түүхч тайлбар одоогоор идэвхгүй байна. Сервер дээр \`OPENAI_API_KEY\` эсвэл \`OPENAI_KEY\` тохируулсны дараа энэ хэсэг илүү дэлгэрэнгүй тайлбараар шинэчлэгдэнэ.`;
+}
+
+function createOpenAIClient() {
+  const apiKey = process.env.OPENAI_API_KEY ?? process.env.OPENAI_KEY;
+  return apiKey ? new OpenAI({ apiKey }) : null;
 }
