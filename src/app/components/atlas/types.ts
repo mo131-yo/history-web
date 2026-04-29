@@ -56,10 +56,22 @@ export type AtlasFormState = {
 
 export type SaveState = "idle" | "saving" | "saved" | "error";
 
+export type SelectedSlugOptions = {
+  focus?: boolean;
+  year?: number;
+};
+
+export type SelectedFeatureFocusRequest = {
+  id: number;
+  slug: string;
+  year?: number;
+};
+
 export type SharedMapProps = {
   collection: AtlasFeatureCollection | null;
   selectedSlug: string | null;
-  onSelectSlug: (slug: string) => void;
+  focusRequest: SelectedFeatureFocusRequest | null;
+  onSelectSlug: (slug: string, options?: SelectedSlugOptions) => void;
   isEditing: boolean;
   isCreating: boolean;
   addPointMode: boolean;

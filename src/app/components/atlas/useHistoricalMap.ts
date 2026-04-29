@@ -167,6 +167,7 @@ import {
   syncCollection,
   syncDraft,
   syncSelection,
+  syncSelectedFeatureFocus,
 } from "./historicalMapSync";
 import {
   MAPTILER_DEFAULT_CENTER,
@@ -187,6 +188,7 @@ export function useHistoricalMap(
   {
     collection,
     selectedSlug,
+    focusRequest,
     onSelectSlug,
     isEditing,
     isCreating,
@@ -203,6 +205,7 @@ export function useHistoricalMap(
   const collectionRef = useRef(collection);
   const selectedSlugRef = useRef(selectedSlug);
   const hoveredSlugRef = useRef<string | null>(null);
+  const handledFocusRequestIdRef = useRef<number | null>(null);
 
   const isEditingRef = useRef(isEditing);
   const isCreatingRef = useRef(isCreating);
@@ -438,11 +441,27 @@ export function useHistoricalMap(
     syncCollection(
       mapRef.current,
       mapReadyRef.current,
+      collection
+    );
+  }, [collection]);
+
+  useEffect(() => {
+    if (!focusRequest || handledFocusRequestIdRef.current === focusRequest.id) {
+      return;
+    }
+
+    const focused = syncSelectedFeatureFocus(
+      mapRef.current,
+      mapReadyRef.current,
       collection,
-      selectedSlug,
+      focusRequest,
       focusPaddingRef.current
     );
-  }, [collection, selectedSlug]);
+
+    if (focused) {
+      handledFocusRequestIdRef.current = focusRequest.id;
+    }
+  }, [collection, focusRequest?.id, focusRequest?.slug]);
 
   useEffect(() => {
     syncSelection(mapRef.current, mapReadyRef.current, selectedSlug);

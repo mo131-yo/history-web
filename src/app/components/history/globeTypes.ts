@@ -1,4 +1,8 @@
 import type { AtlasFeatureCollection } from '@/lib/types';
+import type {
+  SelectedFeatureFocusRequest,
+  SelectedSlugOptions,
+} from '../atlas/types';
 
 export type GlobePolygon = {
   type: 'Feature';
@@ -31,7 +35,8 @@ export type GlobeLabel = {
 export interface GlobeMapProps {
   collection: AtlasFeatureCollection | null;
   selectedSlug: string | null;
-  onSelectSlug: (slug: string) => void;
+  focusRequest: SelectedFeatureFocusRequest | null;
+  onSelectSlug: (slug: string, options?: SelectedSlugOptions) => void;
   isEditing: boolean;
   isCreating: boolean;
   addPointMode: boolean;

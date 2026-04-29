@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, type CSSProperties } from "react";
+import { useCallback, useEffect, useMemo, useRef, type CSSProperties } from "react";
 import { Pause, Play } from "lucide-react";
 
 type TimelineSliderProps = {
@@ -20,6 +20,8 @@ export default function TimelineSlider({
 }: TimelineSliderProps) {
   const scrollRef = useRef<HTMLDivElement | null>(null);
   const activeYearRef = useRef<HTMLButtonElement | null>(null);
+  const animationFrameRef = useRef<number | null>(null);
+  const pendingYearRef = useRef<number | null>(null);
 
   const { safeYears, currentIndex, maxIndex, progress, startYear, endYear } =
     useMemo(() => {
@@ -47,9 +49,42 @@ export default function TimelineSlider({
     });
   }, [currentYear, years.length]);
 
+  useEffect(() => {
+    return () => {
+      if (animationFrameRef.current !== null) {
+        window.cancelAnimationFrame(animationFrameRef.current);
+      }
+    };
+  }, []);
+
+  const commitYearChange = useCallback((nextYear: number) => {
+    if (nextYear === currentYear) {
+      pendingYearRef.current = null;
+      if (animationFrameRef.current !== null) {
+        window.cancelAnimationFrame(animationFrameRef.current);
+        animationFrameRef.current = null;
+      }
+      return;
+    }
+
+    pendingYearRef.current = nextYear;
+
+    if (animationFrameRef.current !== null) return;
+
+    animationFrameRef.current = window.requestAnimationFrame(() => {
+      animationFrameRef.current = null;
+      const pendingYear = pendingYearRef.current;
+      pendingYearRef.current = null;
+
+      if (pendingYear !== null) {
+        onYearChange(pendingYear);
+      }
+    });
+  }, [currentYear, onYearChange]);
+
   const handleRangeChange = (value: string) => {
     const nextIndex = Math.min(Math.max(Number(value), 0), maxIndex);
-    onYearChange(safeYears[nextIndex] ?? currentYear);
+    commitYearChange(safeYears[nextIndex] ?? currentYear);
   };
 
   const sliderStyle = {
@@ -123,7 +158,7 @@ export default function TimelineSlider({
             aria-label="Timeline year selector"
           />
           <div
-            className="pointer-events-none absolute top-1/2 h-7 w-px -translate-y-1/2 bg-stone-200/70 shadow-[0_0_14px_rgba(245,158,11,0.8)]"
+            className="pointer-events-none absolute top-1/2 h-7 w-px -translate-y-1/2 bg-stone-200/70 shadow-[0_0_14px_rgba(245,158,11,0.8)] transition-[left] duration-150 ease-out"
             style={markerStyle}
           />
         </div>
@@ -143,7 +178,7 @@ export default function TimelineSlider({
                   key={year}
                   ref={active ? activeYearRef : null}
                   type="button"
-                  onClick={() => onYearChange(year)}
+                  onClick={() => commitYearChange(year)}
                   className={`shrink-0 rounded-full px-3 py-1.5 text-xs transition ${
                     active
                       ? "bg-amber-500 text-slate-950 shadow-[0_0_18px_rgba(245,158,11,0.45)]"
