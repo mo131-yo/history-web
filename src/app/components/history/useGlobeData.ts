@@ -11,19 +11,26 @@ import { computeCentroid, ringToCoords } from './globeMath';
 import { createFlagCollection } from '../atlas/historicalMapGeo';
 
 export function useGlobeData({
+  battleEvents,
   collection,
   draftRing,
+  layerVisibility,
   hoveredVertexIndex,
   isEditing,
   selectedVertexIndex,
 }: Pick<
   GlobeMapProps,
-  'collection' | 'draftRing' | 'isEditing' | 'selectedVertexIndex'
+  | 'battleEvents'
+  | 'collection'
+  | 'draftRing'
+  | 'isEditing'
+  | 'layerVisibility'
+  | 'selectedVertexIndex'
 > & {
   hoveredVertexIndex: number | null;
 }) {
   const polygonData: GlobePolygon[] = useMemo(() => {
-    if (!collection) return [];
+    if (!collection || !layerVisibility.states) return [];
     return collection.features.map((feature) => ({
       type: 'Feature' as const,
       geometry: feature.geometry,
@@ -35,7 +42,7 @@ export function useGlobeData({
         leader: feature.properties.leader,
       },
     }));
-  }, [collection]);
+  }, [collection, layerVisibility.states]);
 
   const draftPolygons: GlobePolygon[] = useMemo(() => {
     if (!isEditing || draftRing.length < 3) return [];
@@ -52,35 +59,58 @@ export function useGlobeData({
   }, [draftRing, isEditing]);
 
   const labelsData: GlobeLabel[] = useMemo(() => {
-    if (!collection) return [];
-    const stateLabels = collection.features.map((feature) => {
-      const centroid = computeCentroid(
-        feature.geometry.coordinates[0] as number[][],
-      );
-      return {
-        lat: centroid.lat,
-        lng: centroid.lng,
-        text: feature.properties.name,
-        color: feature.properties.color ?? '#c9a45d',
-        slug: feature.properties.slug,
-        kind: 'label' as const,
-      };
-    });
+    const stateLabels =
+      collection && layerVisibility.labels
+        ? collection.features.map((feature) => {
+            const centroid = computeCentroid(
+              feature.geometry.coordinates[0] as number[][],
+            );
+            return {
+              lat: centroid.lat,
+              lng: centroid.lng,
+              text: feature.properties.name,
+              color: feature.properties.color ?? '#c9a45d',
+              slug: feature.properties.slug,
+              kind: 'label' as const,
+            };
+          })
+        : [];
 
-    const flagLabels = createFlagCollection(collection).features.map((feature) => ({
-      lat: feature.geometry.coordinates[1],
-      lng: feature.geometry.coordinates[0],
-      text: feature.properties.name,
-      color: '#c9a45d',
-      slug: feature.properties.slug,
-      kind: 'flag' as const,
-      flagAsset: feature.properties.flagAsset,
-      flagUrl: feature.properties.flagUrl,
-      flagLabel: feature.properties.flagLabel,
-    }));
+    const flagLabels =
+      collection && layerVisibility.capitals
+        ? createFlagCollection(collection).features.map((feature) => ({
+            lat: feature.geometry.coordinates[1],
+            lng: feature.geometry.coordinates[0],
+            text: feature.properties.name,
+            color: '#c9a45d',
+            slug: feature.properties.slug,
+            kind: 'flag' as const,
+            flagAsset: feature.properties.flagAsset,
+            flagUrl: feature.properties.flagUrl,
+            flagLabel: feature.properties.flagLabel,
+          }))
+        : [];
 
-    return [...stateLabels, ...flagLabels];
-  }, [collection]);
+    const eventLabels =
+      battleEvents && layerVisibility.battles
+        ? battleEvents.features.map((feature) => ({
+            lat: feature.geometry.coordinates[1],
+            lng: feature.geometry.coordinates[0],
+            text: `${feature.properties.icon} ${feature.properties.label}`,
+            color: '#f2b24f',
+            slug: feature.properties.slug,
+            kind: 'event' as const,
+            eventType: feature.properties.eventType,
+            description: feature.properties.description,
+            startYear: feature.properties.startYear,
+            endYear: feature.properties.endYear,
+            relatedStates: feature.properties.relatedStates,
+            importance: feature.properties.importance,
+          }))
+        : [];
+
+    return [...stateLabels, ...flagLabels, ...eventLabels];
+  }, [battleEvents, collection, layerVisibility.battles, layerVisibility.capitals, layerVisibility.labels]);
 
   const vertexPoints: GlobePoint[] = useMemo(
     () =>

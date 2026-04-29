@@ -1,17 +1,26 @@
 "use client";
 import dynamic from "next/dynamic";
-import { useEffect, useMemo, useSyncExternalStore, useState, SetStateAction } from "react";
+import {
+  useEffect,
+  useMemo,
+  useSyncExternalStore,
+  useState,
+  type SetStateAction,
+} from "react";
 import { useUser } from "@clerk/nextjs";
+import type { AtlasEventFeatureCollection } from "@/lib/types";
 import SelectedStateDrawer from "@/app/components/SelectedStateDrawer";
+import { AtlasEventDrawer } from "@/app/components/AtlasEventDrawer";
 import { Sidebar } from "@/app/components/Sidebar";
 import { AtlasCharacterRpgModal } from "./atlas/AtlasCharacterRpgModal";
 import { AtlasHeader } from "./atlas/AtlasHeader";
+import { AtlasLayerToggle } from "./atlas/AtlasLayerToggle";
 import { MapLoader } from "./atlas/AtlasMapControls";
 import { AtlasTimelineFooter } from "./atlas/AtlasTimelineFooter";
 import { QuizModal, type QuizMode } from "./QuizModal";
 import { CHARACTER_STORAGE_KEY, T } from "./atlas/constants";
 import { QuizLeaderboardPage } from "./leaderboard/QuizLeaderboardPage";
-import { SavedCharacterResult } from "./atlas/types";
+import type { AtlasLayerVisibility, SavedCharacterResult } from "./atlas/types";
 import { useAtlasEditor } from "./atlas/useAtlasEditor";
 
 const CoordEditor = dynamic(
@@ -19,7 +28,7 @@ const CoordEditor = dynamic(
   { ssr: false }
 ) as any;
 
-const GlobeMap = dynamic( 
+const GlobeMap = dynamic(
   () => import("@/app/components/Globemap").then((m) => ({ default: m.default })),
   { ssr: false, loading: () => <MapLoader label="Дэлхийн бөмбөрцөг" /> }
 );
@@ -43,6 +52,14 @@ export default function AtlasApp() {
   const [timelineAutoPlaying, setTimelineAutoPlaying] = useState(false);
   const [liveCharacterResult, setLiveCharacterResult] = useState<SavedCharacterResult | null>(null);
   const [pendingFeedbackCount, setPendingFeedbackCount] = useState(0);
+  const [battleEvents, setBattleEvents] = useState<AtlasEventFeatureCollection | null>(null);
+  const [selectedEventSlug, setSelectedEventSlug] = useState<string | null>(null);
+  const [layerVisibility, setLayerVisibility] = useState<AtlasLayerVisibility>({
+    states: true,
+    labels: true,
+    capitals: true,
+    battles: true,
+  });
   const storedCharacterResultRaw = useSyncExternalStore(
     subscribeCharacterResult,
     readCharacterResultRawSnapshot,
@@ -71,6 +88,37 @@ export default function AtlasApp() {
     sharedMapProps,
     coordEditorProps,
   } = useAtlasEditor(year, adminMode);
+
+  useEffect(() => {
+    const controller = new AbortController();
+
+    fetch(`/api/atlas-events?year=${year}`, { signal: controller.signal })
+      .then(async (response) => {
+        if (!response.ok) throw new Error("Event fetch failed");
+        return response.json() as Promise<AtlasEventFeatureCollection>;
+      })
+      .then((data) => setBattleEvents(data))
+      .catch((error) => {
+        if (error instanceof DOMException && error.name === "AbortError") return;
+        setBattleEvents({
+          type: "FeatureCollection",
+          year,
+          features: [],
+        });
+      });
+
+    return () => controller.abort();
+  }, [year]);
+
+  useEffect(() => {
+    setSelectedEventSlug((current) => {
+      if (!current) return null;
+      const exists = battleEvents?.features.some(
+        (feature) => feature.properties.slug === current
+      );
+      return exists ? current : null;
+    });
+  }, [battleEvents, year]);
 
   useEffect(() => {
     if (!timelineAutoPlaying || currentView !== "map" || years.length < 2) return;
@@ -128,6 +176,25 @@ export default function AtlasApp() {
     />
   );
 
+  const selectedEvent = useMemo(
+    () =>
+      battleEvents?.features.find(
+        (feature) => feature.properties.slug === selectedEventSlug
+      ) ?? null,
+    [battleEvents, selectedEventSlug]
+  );
+
+  const mapSceneProps = useMemo(
+    () => ({
+      ...sharedMapProps,
+      battleEvents,
+      selectedEventSlug,
+      onSelectEvent: setSelectedEventSlug,
+      layerVisibility,
+    }),
+    [battleEvents, layerVisibility, selectedEventSlug, sharedMapProps]
+  );
+
   return (
     <main
       className="min-h-screen overflow-hidden"
@@ -142,13 +209,13 @@ export default function AtlasApp() {
         />
       )}
 
-<QuizModal
-  isOpen={quizOpen}
-  mode={quizMode}
-  onClose={() => setQuizOpen(false)}
-  userName={user?.fullName ?? undefined}
-  onScoreSaved={() => {}}
-/>
+      <QuizModal
+        isOpen={quizOpen}
+        mode={quizMode}
+        onClose={() => setQuizOpen(false)}
+        userName={user?.fullName ?? undefined}
+        onScoreSaved={() => {}}
+      />
 
       <div className="flex min-h-screen flex-col lg:h-screen lg:flex-row lg:overflow-hidden">
         <Sidebar
@@ -191,13 +258,28 @@ export default function AtlasApp() {
           ) : (
             <>
               <div className="absolute inset-x-0 top-0 bottom-[7.5rem] z-0 md:bottom-32 lg:bottom-[7.5rem]">
-                {mapMode === "globe" && <GlobeMap {...sharedMapProps} />}
-                {mapMode === "historical" && <HistoricalMap {...sharedMapProps} />}
+                {mapMode === "globe" && <GlobeMap {...mapSceneProps} />}
+                {mapMode === "historical" && <HistoricalMap {...mapSceneProps} />}
               </div>
 
               <AtlasHeader
                 adminMode={adminMode}
                 collectionCount={collection?.features.length ?? null}
+              />
+
+              <AtlasLayerToggle
+                value={layerVisibility}
+                onChange={(key, next) =>
+                  setLayerVisibility((current) => ({
+                    ...current,
+                    [key]: next,
+                  }))
+                }
+              />
+
+              <AtlasEventDrawer
+                event={selectedEvent}
+                onClose={() => setSelectedEventSlug(null)}
               />
 
               {loadError && (

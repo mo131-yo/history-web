@@ -1,5 +1,9 @@
 import maplibregl, { type GeoJSONSource } from "maplibre-gl";
-import type { AtlasFeatureCollection, AtlasStateFeature } from "@/lib/types";
+import type {
+  AtlasEventFeatureCollection,
+  AtlasFeatureCollection,
+  AtlasStateFeature,
+} from "@/lib/types";
 
 type MapLibreMap = InstanceType<typeof maplibregl.Map>;
 
@@ -124,6 +128,14 @@ export function createVertexCollection(ring: Array<[number, number]>) {
       geometry: { type: "Point" as const, coordinates },
       properties: { index },
     })),
+  };
+}
+
+export function createEmptyEventCollection(): AtlasEventFeatureCollection {
+  return {
+    type: "FeatureCollection",
+    year: 0,
+    features: [],
   };
 }
 

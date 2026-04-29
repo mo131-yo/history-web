@@ -1,11 +1,8 @@
 import { OpenAI } from "openai";
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_KEY,
-});
-
 export async function POST(req: Request) {
   try {
+    const openai = getOpenAIClient();
     const { yearData } = await req.json();
 
     const prompt = `
@@ -50,4 +47,13 @@ export async function POST(req: Request) {
     console.error("OpenAI Route Error:", error);
     return Response.json({ error: error.message }, { status: 500 });
   }
+}
+
+function getOpenAIClient() {
+  const apiKey = process.env.OPENAI_API_KEY ?? process.env.OPENAI_KEY;
+  if (!apiKey) {
+    throw new Error("Missing OpenAI API key");
+  }
+
+  return new OpenAI({ apiKey });
 }

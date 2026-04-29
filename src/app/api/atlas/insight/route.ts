@@ -2,12 +2,9 @@ import { getCachedInsight, saveInsight } from "@/lib/db-insight";
 import { NextRequest, NextResponse } from "next/server";
 import OpenAI from "openai";
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
-
 export async function POST(req: NextRequest) {
   try {
+    const openai = getOpenAIClient();
     const body = await req.json();
     const { year, slug, state } = body as {
       year: number;
@@ -75,4 +72,13 @@ export async function POST(req: NextRequest) {
     console.error("[insight]", err);
     return NextResponse.json({ error: "Серверийн алдаа." }, { status: 500 });
   }
+}
+
+function getOpenAIClient() {
+  const apiKey = process.env.OPENAI_API_KEY ?? process.env.OPENAI_KEY;
+  if (!apiKey) {
+    throw new Error("Missing OpenAI API key");
+  }
+
+  return new OpenAI({ apiKey });
 }
