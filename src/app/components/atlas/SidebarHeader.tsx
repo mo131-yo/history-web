@@ -25,9 +25,9 @@ export function SidebarHeader({
       <div className={`flex gap-3 ${collapsed ? "items-center justify-center lg:flex-col" : "items-start justify-between"}`}>
         {!collapsed && (
           <div>
-            <p className="mb-1 text-[7px] uppercase tracking-[0.45em] sm:text-[8px] sm:tracking-[0.6em]" style={{ color: T.textMuted }}>Монгол Атлас</p>
+            <p className="mb-1 text-[7px] uppercase tracking-[0.45em] sm:text-[8px] sm:tracking-[0.6em]" style={{ color: T.text }}>Монгол Атлас</p>
             <h2 className="text-3xl font-bold leading-none sm:text-4xl" style={{ color: T.amber, textShadow: `0 0 30px ${T.amberGlow}, 0 0 60px ${T.amberGlow}` }}>{year}</h2>
-            <p className="mt-1 text-[8px] uppercase tracking-[0.28em] sm:text-[9px] sm:tracking-[0.4em]" style={{ color: T.textMuted }}>он · Дундад Зуун</p>
+            <p className="mt-1 text-[8px] uppercase tracking-[0.28em] sm:text-[9px] sm:tracking-[0.4em]" style={{ color: T.text }}>он · Дундад Зуун</p>
           </div>
         )}
         {collapsed && (
@@ -44,12 +44,12 @@ export function SidebarHeader({
           title={collapsed ? "Sidebar нээх" : "Sidebar хураах"}
         >
           <div className="relative flex items-center justify-center">
-            <Globe className="size-4 sm:size-5" style={{ color: T.amberDim }} />
+            <Globe className="size-4 sm:size-5" style={{ color: T.amber }} />
             <ChevronRight
               className="absolute transition-transform duration-300 -right-3 size-3"
               style={{
                 color: T.amber,
-                transform: collapsed ? "rotate(180deg)" : "rotate(0deg)",
+                transform: collapsed ? "rotate(0deg)" : "rotate(180deg)",
               }}
             />
           </div>
@@ -58,7 +58,7 @@ export function SidebarHeader({
 
       <div className="flex items-center gap-2 mt-4">
         <div className="flex-1 h-px" style={{ background: T.border }} />
-        <div className="h-1.5 w-1.5 rounded-full" style={{ background: T.amberDim, opacity: 0.5 }} />
+        <div className="h-1.5 w-1.5 rounded-full" style={{ background: T.amber, opacity: 0.5 }} />
         <div className="flex-1 h-px" style={{ background: T.border }} />
       </div>
     </div>
