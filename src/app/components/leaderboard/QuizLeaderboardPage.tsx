@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { BookOpenCheck, Clock3, Layers3, Loader2, Medal, RefreshCw, School, Trophy } from "lucide-react";
-import { T } from "../atlas/constants";
+import { sidebarTheme as T } from "../atlas/sidebarTheme";
 import { OlympicPodium } from "./Olympicpodium";
 
 export type LeaderboardCategory = "grade" | "knowledge" | "all";
@@ -142,16 +142,16 @@ export function QuizLeaderboardPage({
         <div
           className="rounded-xl px-5 py-5"
           style={{
-            background: "rgba(8,5,2,0.90)",
+            background: T.bg,
             border: `1px solid ${T.border}`,
-            boxShadow: "0 8px 42px rgba(0,0,0,0.45)",
+            boxShadow: "0 12px 34px rgba(12,96,169,0.08)",
           }}
         >
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex items-center gap-3">
               <div
                 className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg"
-                style={{ background: "rgba(201,164,93,0.14)", border: "1px solid rgba(201,164,93,0.38)" }}
+                style={{ background: "rgba(12,96,169,0.08)", border: "1px solid rgba(12,96,169,0.24)" }}
               >
                 <Trophy className="size-5" style={{ color: T.amber }} />
               </div>
@@ -170,7 +170,7 @@ export function QuizLeaderboardPage({
                 type="button"
                 onClick={() => setReloadKey((v) => v + 1)}
                 className="flex h-10 items-center gap-2 rounded-lg px-3 text-xs font-semibold uppercase tracking-widest"
-                style={{ background: "rgba(15,23,42,0.5)", border: `1px solid ${T.border}`, color: T.textSub }}
+                style={{ background: "rgba(12,96,169,0.05)", border: `1px solid ${T.border}`, color: T.textMuted }}
               >
                 <RefreshCw className="size-4" />
                 Refresh
@@ -197,7 +197,7 @@ export function QuizLeaderboardPage({
 
         <div
           className="overflow-hidden rounded-xl"
-          style={{ background: "rgba(8,5,2,0.82)", border: `1px solid ${T.border}` }}
+          style={{ background: T.bg, border: `1px solid ${T.border}` }}
         >
           <div
             className="px-5 py-4"
@@ -223,9 +223,9 @@ export function QuizLeaderboardPage({
                     onClick={() => setCategory(item.id)}
                     className="rounded-lg px-3 py-3 text-left transition hover:opacity-85"
                     style={{
-                      background: active ? "rgba(245,158,11,0.16)" : "rgba(15,23,42,0.42)",
-                      border: `1px solid ${active ? `${T.amber}66` : T.border}`,
-                      color: active ? T.amber : T.textSub,
+                      background: active ? "rgba(12,96,169,0.10)" : "rgba(12,96,169,0.04)",
+                      border: `1px solid ${active ? "rgba(12,96,169,0.35)" : T.border}`,
+                      color: active ? T.amber : T.text,
                     }}
                   >
                     <span className="flex items-center gap-2 text-xs font-bold">
@@ -347,7 +347,7 @@ export function QuizLeaderboardPage({
 
         <div
           className="overflow-hidden rounded-xl"
-          style={{ background: "rgba(8,5,2,0.82)", border: `1px solid ${T.border}` }}
+          style={{ background: T.bg, border: `1px solid ${T.border}` }}
         >
           <div
             className="flex items-center justify-between gap-3 px-5 py-4"
@@ -429,7 +429,7 @@ function Stat({ label, value }: { label: string; value: string }) {
   return (
     <div
       className="rounded-lg px-4 py-3"
-      style={{ background: "rgba(15,23,42,0.42)", border: `1px solid ${T.border}` }}
+      style={{ background: "rgba(12,96,169,0.04)", border: `1px solid ${T.border}` }}
     >
       <p className="text-[10px] uppercase tracking-[0.18em]" style={{ color: T.textMuted }}>
         {label}

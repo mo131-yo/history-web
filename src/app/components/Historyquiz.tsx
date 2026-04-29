@@ -1,7 +1,16 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { T } from "./atlas/constants";
+import { sidebarTheme } from "./atlas/sidebarTheme";
+
+const T = {
+  ...sidebarTheme,
+  amberDim: sidebarTheme.amber,
+  amberGlow: "rgba(12,96,169,0.12)",
+  amberBright: sidebarTheme.amber,
+  borderMid: sidebarTheme.border,
+  red: "#dc2626",
+};
 
 
 interface Question {
@@ -12,7 +21,8 @@ interface Question {
   exp: string;
 }
 
-type GradeGroup = "1-5" | "6-9" | "10-12";
+type GradeGroup = "6-9" | "10-12";
+type QuestionGroup = "1-5" | GradeGroup;
 type QuizMode = "knowledge" | "grade";
 type Screen = "grade" | "quiz" | "result";
 type QuizAnswer = {
@@ -41,7 +51,7 @@ type SavedQuizState = {
 
 
 const QUIZ_PERIOD = "1162-1300";
-const QUESTIONS: Record<GradeGroup, Question[]> = {
+const QUESTIONS: Record<QuestionGroup, Question[]> = {
   "1-5": [
     { level: 0, q: "1162 онд төрсөн гэж үздэг Монголын их хаан хэн бэ?", opts: ["а) Өгэдэй", "б) Тэмүжин", "в) Хубилай", "г) Мөнх"], ans: 1, exp: "Тэмүжин буюу Чингис хааныг 1162 онд төрсөн гэж уламжлалд тэмдэглэдэг." },
     { level: 0, q: "1206 оны их хуралдайгаар Тэмүжин ямар цол авсан бэ?", opts: ["а) Гүр хаан", "б) Сэцэн хан", "в) Чингис хаан", "г) Ил хаан"], ans: 2, exp: "1206 онд Тэмүжин бүх Монголын хаанаар өргөмжлөгдөж Чингис хаан цол хүртсэн." },
@@ -88,17 +98,19 @@ const QUESTIONS: Record<GradeGroup, Question[]> = {
 
 const LEVELS = ["Энгийн", "Дунд", "Хэцүү"] as const;
 const TOTAL = 10;
-const GRADE_GROUPS: GradeGroup[] = ["1-5", "6-9", "10-12"];
+const GRADE_GROUPS: GradeGroup[] = ["6-9", "10-12"];
 const GRADE_LABELS: Record<GradeGroup, string> = {
-  "1-5": "1-5 ангийн түвшин",
-  "6-9": "6-9 ангийн түвшин",
-  "10-12": "10-12 ангийн түвшин",
+  "6-9": "Дунд анги",
+  "10-12": "Ахлах анги",
 };
-const GRADES = Array.from({ length: 12 }, (_, index) => index + 1);
-const quizPanel = "rgba(8,5,2,0.92)";
-const quizPanelSoft = "rgba(15,23,42,0.42)";
+const GRADE_OPTIONS: Array<{ group: GradeGroup; label: string; grades: number[] }> = [
+  { group: "6-9", label: "Дунд анги", grades: [6, 7, 8, 9] },
+  { group: "10-12", label: "Ахлах анги", grades: [10, 11, 12] },
+];
+const quizPanel = "#fcfcfc";
+const quizPanelSoft = "rgba(12,96,169,0.06)";
 const quizBorder = `1px solid ${T.border}`;
-const quizGlow = "0 18px 60px rgba(0,0,0,0.55), inset 0 1px 0 rgba(255,255,255,0.03)";
+const quizGlow = "0 18px 48px rgba(12,96,169,0.10), inset 0 1px 0 rgba(255,255,255,0.8)";
 const QUIZ_STORAGE_PREFIX = "mongol-atlas-history-quiz";
 
 
@@ -130,7 +142,6 @@ export default function HistoryQuiz({
   const [answers, setAnswers] = useState<QuizAnswer[]>([]);
   const [scoreSaveStatus, setScoreSaveStatus] = useState<"idle" | "saving" | "saved" | "login" | "error">("idle");
   const [groupStats, setGroupStats] = useState<Record<GradeGroup, { asked: number; correct: number }>>({
-    "1-5": { asked: 0, correct: 0 },
     "6-9": { asked: 0, correct: 0 },
     "10-12": { asked: 0, correct: 0 },
   });
@@ -434,7 +445,7 @@ export default function HistoryQuiz({
   return (
     <div style={{
       minHeight: "100%",
-      background: `radial-gradient(circle at 50% 0%, rgba(201,164,93,0.10), transparent 34%), ${T.bg}`,
+      background: `radial-gradient(circle at 50% 0%, rgba(12,96,169,0.10), transparent 34%), ${T.bg}`,
       display: "flex",
       justifyContent: "center",
       alignItems: "flex-start",
@@ -480,8 +491,8 @@ export default function HistoryQuiz({
                     height: 48,
                     margin: "0 auto 12px",
                     borderRadius: 12,
-                    background: "rgba(201,164,93,0.14)",
-                    border: "1px solid rgba(201,164,93,0.38)",
+                    background: "rgba(12,96,169,0.08)",
+                    border: "1px solid rgba(12,96,169,0.25)",
                     color: T.amber,
                     display: "flex",
                     alignItems: "center",
@@ -503,7 +514,7 @@ export default function HistoryQuiz({
                     </>
                   ) : (
                     <>
-                      1-12 ангиас сонгоно.<br />
+                      6-12 ангиас сонгоно.<br />
                       Асуултууд зөвхөн 1162-1300 оны Монголын түүхээс орно.
                     </>
                   )}
@@ -551,25 +562,47 @@ export default function HistoryQuiz({
                   </button>
                 </>
               ) : (
-                <div style={{ display: "grid", gridTemplateColumns: "repeat(4, minmax(0, 1fr))", gap: 10 }}>
-                  {GRADES.map((grade) => (
-                    <button
-                      key={grade}
-                      type="button"
-                      onClick={() => startGradeQuiz(grade)}
+                <div style={{ display: "grid", gap: 14 }}>
+                  {GRADE_OPTIONS.map((option) => (
+                    <section
+                      key={option.group}
                       style={{
-                        minHeight: 58,
                         border: quizBorder,
-                        borderRadius: 12,
-                        background: "rgba(15,23,42,0.42)",
-                        color: T.text,
-                        cursor: "pointer",
-                        fontFamily: "inherit",
+                        borderRadius: 14,
+                        background: "rgba(12,96,169,0.035)",
+                        padding: 12,
                       }}
                     >
-                      <span style={{ display: "block", color: T.amber, fontSize: 18, fontWeight: 700 }}>{grade}</span>
-                      <span style={{ display: "block", color: T.textMuted, fontSize: 10, marginTop: 2 }}>анги</span>
-                    </button>
+                      <div style={{ marginBottom: 10 }}>
+                        <p style={{ color: T.amber, fontSize: 13, fontWeight: 700, margin: 0 }}>
+                          {option.label}
+                        </p>
+                        <p style={{ color: T.textMuted, fontSize: 10, margin: "3px 0 0" }}>
+                          {option.group}-р ангийн түвшин
+                        </p>
+                      </div>
+                      <div style={{ display: "grid", gridTemplateColumns: `repeat(${option.grades.length}, minmax(0, 1fr))`, gap: 10 }}>
+                        {option.grades.map((grade) => (
+                          <button
+                            key={grade}
+                            type="button"
+                            onClick={() => startGradeQuiz(grade)}
+                            style={{
+                              minHeight: 58,
+                              border: quizBorder,
+                              borderRadius: 12,
+                              background: quizPanelSoft,
+                              color: T.text,
+                              cursor: "pointer",
+                              fontFamily: "inherit",
+                            }}
+                          >
+                            <span style={{ display: "block", color: T.amber, fontSize: 18, fontWeight: 700 }}>{grade}</span>
+                            <span style={{ display: "block", color: T.textMuted, fontSize: 10, marginTop: 2 }}>анги</span>
+                          </button>
+                        ))}
+                      </div>
+                    </section>
                   ))}
                 </div>
               )}
@@ -589,13 +622,13 @@ export default function HistoryQuiz({
                 <span style={{
                   padding: "4px 14px",
                   borderRadius: 99,
-                  background: level === 0 ? "rgba(92,64,32,0.38)" : level === 1 ? "rgba(201,164,93,0.14)" : "rgba(192,96,96,0.14)",
+                  background: level === 0 ? "rgba(12,96,169,0.06)" : level === 1 ? "rgba(12,96,169,0.10)" : "rgba(220,38,38,0.08)",
                   color: level === 0 ? T.textSub : level === 1 ? T.amber : T.red,
                   fontWeight: 700,
                   letterSpacing: 1,
                   fontSize: 11,
                   textTransform: "uppercase" as const,
-                  border: `1px solid ${level === 0 ? T.borderMid : level === 1 ? "rgba(201,164,93,0.38)" : "rgba(192,96,96,0.38)"}`,
+                  border: `1px solid ${level === 0 ? T.borderMid : level === 1 ? "rgba(12,96,169,0.25)" : "rgba(220,38,38,0.25)"}`,
                 }}>
                   {LEVELS[level]}
                 </span>
@@ -624,7 +657,7 @@ export default function HistoryQuiz({
             </p>
 
             {/* Progress */}
-            <div style={{ height: 5, background: "rgba(92,64,32,0.38)", borderRadius: 999, marginBottom: 20, overflow: "hidden" }}>
+            <div style={{ height: 5, background: "rgba(12,96,169,0.10)", borderRadius: 999, marginBottom: 20, overflow: "hidden" }}>
               <div style={{
                 height: "100%",
                 background: `linear-gradient(90deg, ${T.amberDim}, ${T.amberBright})`,
@@ -662,12 +695,12 @@ export default function HistoryQuiz({
 
                   if (answered) {
                     if (i === currentQ.ans) {
-                      bg = "rgba(201,164,93,0.14)";
-                      border = "1px solid rgba(201,164,93,0.48)";
+                      bg = "rgba(12,96,169,0.10)";
+                      border = "1px solid rgba(12,96,169,0.35)";
                       color = T.amberBright;
                     } else if (i === chosen && chosen !== currentQ.ans) {
-                      bg = "rgba(192,96,96,0.14)";
-                      border = "1px solid rgba(192,96,96,0.48)";
+                      bg = "rgba(220,38,38,0.08)";
+                      border = "1px solid rgba(220,38,38,0.28)";
                       color = T.red;
                     }
                   }
@@ -703,8 +736,8 @@ export default function HistoryQuiz({
                   marginTop: 14,
                   padding: "12px 16px",
                   borderRadius: 10,
-                  background: chosen === currentQ.ans ? "rgba(201,164,93,0.10)" : "rgba(192,96,96,0.12)",
-                  border: `1px solid ${chosen === currentQ.ans ? "rgba(201,164,93,0.35)" : "rgba(192,96,96,0.35)"}`,
+                  background: chosen === currentQ.ans ? "rgba(12,96,169,0.08)" : "rgba(220,38,38,0.08)",
+                  border: `1px solid ${chosen === currentQ.ans ? "rgba(12,96,169,0.28)" : "rgba(220,38,38,0.28)"}`,
                   color: chosen === currentQ.ans ? T.amberBright : T.red,
                   fontSize: 13,
                   lineHeight: 1.6,
@@ -722,8 +755,8 @@ export default function HistoryQuiz({
                 style={{
                   width: "100%",
                   padding: "13px",
-                  background: "rgba(201,164,93,0.10)",
-                  border: "1px solid rgba(201,164,93,0.28)",
+                  background: "rgba(12,96,169,0.08)",
+                  border: "1px solid rgba(12,96,169,0.24)",
                   borderRadius: 12,
                   color: T.amber,
                   fontSize: 14,
@@ -756,8 +789,8 @@ export default function HistoryQuiz({
               </div>
               <p style={{ color: T.textSub, fontSize: 14, marginBottom: 24 }}>{resultSub}</p>
               <div style={{
-                background: "rgba(201,164,93,0.10)",
-                border: "1px solid rgba(201,164,93,0.28)",
+                background: "rgba(12,96,169,0.08)",
+                border: "1px solid rgba(12,96,169,0.24)",
                 borderRadius: 14,
                 padding: "14px 16px",
                 marginBottom: 18,
@@ -819,7 +852,7 @@ export default function HistoryQuiz({
                   width: "100%",
                   padding: "12px",
                   marginTop: 10,
-                  background: "rgba(15,23,42,0.42)",
+                  background: quizPanelSoft,
                   color: T.textSub,
                   border: quizBorder,
                   borderRadius: 12,
@@ -857,9 +890,8 @@ export default function HistoryQuiz({
     const correctAnswers = Math.max(correct, 1);
     const avgLevel = weightedScore / correctAnswers;
 
-    if (correct / TOTAL >= 0.75 && avgLevel >= 2.2) return "10-12";
-    if (correct / TOTAL >= 0.5 && avgLevel >= 1.35) return "6-9";
-    return "1-5";
+    if (correct / TOTAL >= 0.75 && avgLevel >= 1.6) return "10-12";
+    return "6-9";
   }
 }
 
@@ -870,14 +902,12 @@ function shiftGradeGroup(group: GradeGroup, delta: -1 | 1): GradeGroup {
 }
 
 function getGradeGroup(grade: number): GradeGroup {
-  if (grade <= 5) return "1-5";
   if (grade <= 9) return "6-9";
   return "10-12";
 }
 
 function getGradeLevel(grade: number) {
-  if (grade <= 4) return 0;
-  if (grade <= 8) return 1;
+  if (grade <= 9) return 1;
   return 2;
 }
 
@@ -893,7 +923,6 @@ function shuffleQuestions(questions: Question[]) {
 
 function createEmptyGroupStats(): Record<GradeGroup, { asked: number; correct: number }> {
   return {
-    "1-5": { asked: 0, correct: 0 },
     "6-9": { asked: 0, correct: 0 },
     "10-12": { asked: 0, correct: 0 },
   };

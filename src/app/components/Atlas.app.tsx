@@ -50,7 +50,7 @@ export default function AtlasApp() {
   const [characterOpen, setCharacterOpen] = useState(false);
   const [quizOpen, setQuizOpen] = useState(false);
   const [quizMode, setQuizMode] = useState<QuizMode>('grade');
-  const [leaderboardVersion] = useState(0);
+  const [leaderboardVersion, setLeaderboardVersion] = useState(0);
   const [currentView, setCurrentView] = useState<'map' | 'leaderboard'>('map');
   const [timelineAutoPlaying, setTimelineAutoPlaying] = useState(false);
   const [liveCharacterResult, setLiveCharacterResult] =
