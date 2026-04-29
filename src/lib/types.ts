@@ -16,6 +16,13 @@ export interface AtlasMetadata {
   };
 }
 
+export interface AtlasEventMetadata {
+  icon?: string;
+  label?: string;
+  importance?: number;
+  [key: string]: unknown;
+}
+
 export interface AtlasStateRecord {
   slug: string;
   year: number;
@@ -46,6 +53,30 @@ export interface AtlasStateProperties {
 export type AtlasStateFeature = GeoJSON.Feature<GeoJSON.Polygon, AtlasStateProperties>;
 
 export interface AtlasFeatureCollection extends GeoJSON.FeatureCollection<GeoJSON.Polygon, AtlasStateProperties> {
+  year: number;
+}
+
+export interface AtlasEventProperties {
+  slug: string;
+  startYear: number;
+  endYear: number;
+  title: string;
+  description: string;
+  eventType: string;
+  relatedStates: string[];
+  icon: string;
+  label: string;
+  importance: number;
+  metadata: AtlasEventMetadata;
+}
+
+export type AtlasEventFeature = GeoJSON.Feature<
+  GeoJSON.Point,
+  AtlasEventProperties
+>;
+
+export interface AtlasEventFeatureCollection
+  extends GeoJSON.FeatureCollection<GeoJSON.Point, AtlasEventProperties> {
   year: number;
 }
 

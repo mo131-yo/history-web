@@ -2,6 +2,7 @@ import OpenAI from "openai";
 
 export async function POST(req: Request) {
   try {
+    const openai = getOpenAIClient();
     const { message, historyContext } = await req.json();
     const apiKey = process.env.OPENAI_API_KEY ?? process.env.OPENAI_KEY;
     if (!apiKey) {

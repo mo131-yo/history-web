@@ -11,6 +11,7 @@ if (!databaseUrl) {
 export const sql = neon(databaseUrl);
 export { ensureAtlasDatabase } from "./atlas-db-core";
 export { listAtlasYears, getAtlasForYear } from "./atlas-db-read";
+export { getAtlasEventsForYear } from "./atlas-events";
 export {
   createAtlasState,
   deleteAtlasState,

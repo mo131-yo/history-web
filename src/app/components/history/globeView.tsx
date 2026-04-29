@@ -92,8 +92,39 @@ export function renderGlobeStaticLabel(
   data: object,
   selectedSlug: string | null,
   hoveredSlug: string | null,
+  selectedEventSlug?: string | null,
+  onSelectEvent?: (slug: string | null) => void,
 ) {
   const label = data as GlobeLabel;
+  if (label.kind === 'event') {
+    const element = document.createElement('button');
+    const isSelected = label.slug === selectedEventSlug;
+
+    element.type = 'button';
+    element.textContent = label.text;
+    element.onclick = () => onSelectEvent?.(label.slug);
+    element.style.color = isSelected ? '#fff1cd' : '#f2b24f';
+    element.style.fontFamily = 'var(--font-inter), Arial, sans-serif';
+    element.style.fontSize = isSelected ? '16px' : '14px';
+    element.style.fontWeight = isSelected ? '700' : '600';
+    element.style.whiteSpace = 'nowrap';
+    element.style.padding = isSelected ? '5px 10px' : '4px 8px';
+    element.style.borderRadius = '999px';
+    element.style.border = isSelected
+      ? '1px solid rgba(255,215,128,0.82)'
+      : '1px solid rgba(201,164,93,0.35)';
+    element.style.background = isSelected
+      ? 'rgba(31,16,3,0.92)'
+      : 'rgba(14,9,2,0.82)';
+    element.style.boxShadow =
+      '0 0 2px rgba(5,6,8,0.95), 0 0 14px rgba(0,0,0,0.66), 0 4px 14px rgba(0,0,0,0.45)';
+    element.style.pointerEvents = 'auto';
+    element.style.cursor = 'pointer';
+    element.style.userSelect = 'none';
+    element.style.transform = 'translate(-50%, -50%)';
+    return element;
+  }
+
   if (label.kind === 'flag' && label.flagUrl) {
     const element = document.createElement('div');
     const image = document.createElement('img');

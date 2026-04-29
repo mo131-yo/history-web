@@ -178,6 +178,7 @@
 import maplibregl from "maplibre-gl";
 import {
   createDraftPolygon,
+  createEmptyEventCollection,
   createFlagCollection,
   createVertexCollection,
   loadFlagImages,
@@ -217,6 +218,13 @@ export function addHistoricalMapSources(
     map.addSource("draft-vertices", {
       type: "geojson",
       data: createVertexCollection([]),
+    });
+  }
+
+  if (!map.getSource("battle-events")) {
+    map.addSource("battle-events", {
+      type: "geojson",
+      data: createEmptyEventCollection(),
     });
   }
 }
@@ -322,6 +330,40 @@ export function addHistoricalMapLayers(
           1,
           0.9,
         ],
+      },
+    });
+  }
+
+  if (!map.getLayer("battle-events")) {
+    map.addLayer({
+      id: "battle-events",
+      type: "symbol",
+      source: "battle-events",
+      layout: {
+        "text-field": ["concat", ["get", "icon"], " ", ["get", "label"]],
+        "text-font": ["Open Sans Bold"],
+        "text-size": [
+          "interpolate",
+          ["linear"],
+          ["zoom"],
+          1.5,
+          12,
+          3,
+          14,
+          5,
+          17,
+        ],
+        "text-letter-spacing": 0.02,
+        "text-allow-overlap": true,
+        "text-ignore-placement": true,
+        "text-anchor": "center",
+        "symbol-sort-key": ["coalesce", ["get", "importance"], 0],
+      },
+      paint: {
+        "text-color": "#f5b348",
+        "text-halo-color": "rgba(5,6,8,0.94)",
+        "text-halo-width": 1.8,
+        "text-halo-blur": 0.8,
       },
     });
   }

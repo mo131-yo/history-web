@@ -4,6 +4,7 @@ import OpenAI from "openai";
 
 export async function POST(req: NextRequest) {
   try {
+    const openai = getOpenAIClient();
     const body = await req.json();
     const { year, slug, state } = body as {
       year: number;

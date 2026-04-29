@@ -27,18 +27,20 @@ import { useGlobeData } from "./history/useGlobeData";
 import { useGlobeEditor } from "./history/useGlobeEditor";
 import { useGlobePointerEditing } from "./history/useGlobePointerEditing";
 import { Globe } from "./history/GlobeLeader";
-import { SharedMapProps } from "./atlas/types";
+import { AtlasMapSceneProps } from "./atlas/types";
 
 const MAPTILER_HYBRID_TILE = (x: number, y: number, level: number) =>
   `https://api.maptiler.com/maps/hybrid-v4/256/${level}/${x}/${y}@2x.png?key=UDHwVf5wxc04GFo8f0PC`;
 
-export default function GlobeMap(props: SharedMapProps) {
+export default function GlobeMap(props: AtlasMapSceneProps) {
   const globeEditor = useGlobeEditor(props);
   const { allPolygons, labelsData, vertexPoints } = useGlobeData({
+    battleEvents: props.battleEvents,
     collection: props.collection,
     draftRing: props.draftRing,
     hoveredVertexIndex: globeEditor.hoveredVertexIndex,
     isEditing: props.isEditing,
+    layerVisibility: props.layerVisibility,
     selectedVertexIndex: props.selectedVertexIndex ?? null,
   });
 
@@ -71,7 +73,9 @@ export default function GlobeMap(props: SharedMapProps) {
         renderGlobeStaticLabel(
           data,
           props.selectedSlug,
-          globeEditor.hoveredSlugRef.current
+          globeEditor.hoveredSlugRef.current,
+          props.selectedEventSlug,
+          props.onSelectEvent
         ),
       htmlElementsData: labelsData,
       htmlLat: "lat",

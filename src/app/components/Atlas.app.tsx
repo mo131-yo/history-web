@@ -1,17 +1,26 @@
 "use client";
 import dynamic from "next/dynamic";
-import { useEffect, useMemo, useSyncExternalStore, useState, SetStateAction } from "react";
+import {
+  useEffect,
+  useMemo,
+  useSyncExternalStore,
+  useState,
+  type SetStateAction,
+} from "react";
 import { useUser } from "@clerk/nextjs";
+import type { AtlasEventFeatureCollection } from "@/lib/types";
 import SelectedStateDrawer from "@/app/components/SelectedStateDrawer";
+import { AtlasEventDrawer } from "@/app/components/AtlasEventDrawer";
 import { Sidebar } from "@/app/components/Sidebar";
 import { AtlasCharacterRpgModal } from "./atlas/AtlasCharacterRpgModal";
 import { AtlasHeader } from "./atlas/AtlasHeader";
+import { AtlasLayerToggle } from "./atlas/AtlasLayerToggle";
 import { MapLoader } from "./atlas/AtlasMapControls";
 import { AtlasTimelineFooter } from "./atlas/AtlasTimelineFooter";
 import { QuizModal, type QuizMode } from "./QuizModal";
 import { CHARACTER_STORAGE_KEY, T } from "./atlas/constants";
 import { QuizLeaderboardPage } from "./leaderboard/QuizLeaderboardPage";
-import { SavedCharacterResult } from "./atlas/types";
+import type { AtlasLayerVisibility, SavedCharacterResult } from "./atlas/types";
 import { useAtlasEditor } from "./atlas/useAtlasEditor";
 import { ensureEditableRing } from "@/lib/geometry";
 
@@ -20,7 +29,7 @@ const CoordEditor = dynamic(
   { ssr: false }
 ) as any;
 
-const GlobeMap = dynamic( 
+const GlobeMap = dynamic(
   () => import("@/app/components/Globemap").then((m) => ({ default: m.default })),
   { ssr: false, loading: () => <MapLoader label="Дэлхийн бөмбөрцөг" /> }
 );
@@ -196,13 +205,13 @@ export default function AtlasApp() {
         />
       )}
 
-<QuizModal
-  isOpen={quizOpen}
-  mode={quizMode}
-  onClose={() => setQuizOpen(false)}
-  userName={user?.fullName ?? undefined}
-  onScoreSaved={() => {}}
-/>
+      <QuizModal
+        isOpen={quizOpen}
+        mode={quizMode}
+        onClose={() => setQuizOpen(false)}
+        userName={user?.fullName ?? undefined}
+        onScoreSaved={() => {}}
+      />
 
       <div className="flex min-h-screen flex-col lg:h-screen lg:flex-row lg:overflow-hidden">
         <Sidebar
@@ -252,6 +261,21 @@ export default function AtlasApp() {
               <AtlasHeader
                 adminMode={adminMode}
                 collectionCount={collection?.features.length ?? null}
+              />
+
+              <AtlasLayerToggle
+                value={layerVisibility}
+                onChange={(key, next) =>
+                  setLayerVisibility((current) => ({
+                    ...current,
+                    [key]: next,
+                  }))
+                }
+              />
+
+              <AtlasEventDrawer
+                event={selectedEvent}
+                onClose={() => setSelectedEventSlug(null)}
               />
 
               {loadError && (

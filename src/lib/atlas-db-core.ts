@@ -1,5 +1,4 @@
 import { neon } from "@neondatabase/serverless";
-
 const databaseUrl = process.env.DATABASE_URL;
 
 if (!databaseUrl) {
@@ -36,6 +35,27 @@ export async function ensureAtlasDatabase() {
     await sql`CREATE INDEX IF NOT EXISTS atlas_states_year_idx ON atlas_states (year)`;
     await sql`CREATE INDEX IF NOT EXISTS atlas_states_slug_idx ON atlas_states (slug)`;
     await sql`CREATE INDEX IF NOT EXISTS atlas_states_geom_idx ON atlas_states USING GIST (geometry)`;
+
+    await sql`
+      CREATE TABLE IF NOT EXISTS atlas_events (
+        id BIGSERIAL PRIMARY KEY,
+        slug TEXT NOT NULL UNIQUE,
+        start_year INTEGER NOT NULL,
+        end_year INTEGER NOT NULL,
+        title TEXT NOT NULL,
+        description TEXT NOT NULL,
+        event_type TEXT NOT NULL DEFAULT 'battle',
+        related_states TEXT[] NOT NULL DEFAULT '{}',
+        coordinates JSONB NOT NULL,
+        metadata JSONB NOT NULL DEFAULT '{}'::jsonb,
+        created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+      )
+    `;
+
+    await sql`
+      CREATE INDEX IF NOT EXISTS atlas_events_year_span_idx
+      ON atlas_events (start_year, end_year)
+    `;
   })();
 
   return bootstrapPromise;
