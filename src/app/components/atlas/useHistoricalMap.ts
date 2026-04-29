@@ -336,14 +336,14 @@ export function useHistoricalMap(
         if (bounds) {
           map.fitBounds(bounds, {
             padding: focusPaddingRef.current,
-            maxZoom: 4.2,
+            maxZoom: 2.8,
             duration: 900,
             essential: true,
           });
         } else if (center) {
           map.flyTo({
             center,
-            zoom: Math.max(Math.min(map.getZoom() + 0.4, 4), 3.2),
+            zoom: Math.max(Math.min(map.getZoom() + 0.25, 2.8), 2.2),
             speed: 0.8,
             curve: 1.2,
             essential: true,
@@ -402,6 +402,11 @@ export function useHistoricalMap(
 
     mapRef.current = map;
 
+    const resizeMap = () => map.resize();
+    const resizeFrame = window.requestAnimationFrame(resizeMap);
+    const resizeTimer = window.setTimeout(resizeMap, 250);
+    window.addEventListener("resize", resizeMap);
+
     const resizeObserver =
       typeof ResizeObserver !== "undefined" && containerRef.current
         ? new ResizeObserver(() => map.resize())
@@ -413,6 +418,9 @@ export function useHistoricalMap(
       mapReadyRef.current = false;
 
       resizeObserver?.disconnect();
+      window.cancelAnimationFrame(resizeFrame);
+      window.clearTimeout(resizeTimer);
+      window.removeEventListener("resize", resizeMap);
 
       if (stopDraggingFromWindow) {
         window.removeEventListener("mouseup", stopDraggingFromWindow);

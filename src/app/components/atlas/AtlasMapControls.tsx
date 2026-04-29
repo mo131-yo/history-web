@@ -30,7 +30,7 @@ export function MapLoader({ label }: { label: string }) {
             <div className="h-1.5 w-1.5 rounded-full" style={{ background: "#c9a45d", opacity: 0.7 }} />
           </div>
         </div>
-        <p className="text-[9px] uppercase tracking-[0.45em]" style={{ color: "#5c4020", fontFamily: "Georgia, serif" }}>
+        <p className="text-[9px] uppercase tracking-[0.45em]" style={{ color: "#5c4020", fontFamily: "var(--font-inter), Arial, sans-serif" }}>
           {label} ачаалж байна
         </p>
       </div>
@@ -71,7 +71,7 @@ export function MapSwitcher({
               border: `1px solid ${active ? "rgba(201,164,93,0.4)" : "transparent"}`,
               color: active ? T.amberBright : T.textMuted,
               fontSize: "10px",
-              fontFamily: "Georgia, serif",
+              fontFamily: "var(--font-inter), Arial, sans-serif",
               letterSpacing: "0.07em",
               cursor: "pointer",
               boxShadow: active

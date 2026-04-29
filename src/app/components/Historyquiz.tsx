@@ -439,7 +439,7 @@ export default function HistoryQuiz({
       justifyContent: "center",
       alignItems: "flex-start",
       padding: "2rem 1rem 3rem",
-      fontFamily: "'Georgia', serif",
+      fontFamily: "var(--font-inter), Arial, sans-serif",
     }}>
       <div style={{ width: "100%", maxWidth: 580 }}>
 

@@ -45,7 +45,7 @@ export function FeatureDetailsHeader({
               Сонгосон улс
             </p>
             <h2
-              className="mt-2 font-serif text-3xl font-bold leading-tight"
+              className="mt-2 font-sans text-3xl font-bold leading-tight"
               style={{ color }}
             >
               {name}

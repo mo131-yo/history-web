@@ -129,14 +129,14 @@ export function syncSelectedFeatureFocus(
     if (bounds) {
       map.fitBounds(bounds, {
         padding,
-        maxZoom: 4,
+        maxZoom: 2.8,
         duration: 700,
         essential: true,
       });
     } else if (center) {
       map.flyTo({
         center,
-        zoom: Math.max(Math.min(map.getZoom(), 3.8), 3),
+        zoom: Math.max(Math.min(map.getZoom(), 2.8), 2.2),
         speed: 0.7,
       });
     }

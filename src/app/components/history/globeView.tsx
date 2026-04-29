@@ -138,7 +138,7 @@ export function renderGlobeStaticLabel(
 
   element.textContent = label.text;
   element.style.color = color;
-  element.style.fontFamily = 'Georgia, serif';
+  element.style.fontFamily = 'var(--font-inter), Arial, sans-serif';
   element.style.fontSize = isSelected ? '20px' : '17px';
   element.style.fontWeight = isSelected ? '700' : '600';
   element.style.letterSpacing = '0.03em';
@@ -168,12 +168,12 @@ export function renderPolygonLabel(data: object, selectedSlug: string | null) {
   const { slug, name, color } = (data as GlobePolygon).properties;
   if (slug === '__draft__') return '';
   const isSelected = slug === selectedSlug;
-  return `<div style="background:rgba(10,6,2,0.93);border:1px solid ${isSelected ? '#c9a45d' : hexToRgba(color, 0.4)};border-radius:6px;padding:6px 11px;font-family:Georgia,serif;color:#e8d8b8;font-size:12px;letter-spacing:0.05em;box-shadow:0 4px 16px rgba(0,0,0,0.7);white-space:nowrap;"><span style="color:${isSelected ? '#d4a843' : lighten(color, 0.15)};font-weight:600;font-size:12px;">${name}</span></div>`;
+  return `<div style="background:rgba(10,6,2,0.93);border:1px solid ${isSelected ? '#c9a45d' : hexToRgba(color, 0.4)};border-radius:6px;padding:6px 11px;font-family:var(--font-inter),Arial,sans-serif;color:#e8d8b8;font-size:12px;letter-spacing:0.05em;box-shadow:0 4px 16px rgba(0,0,0,0.7);white-space:nowrap;"><span style="color:${isSelected ? '#d4a843' : lighten(color, 0.15)};font-weight:600;font-size:12px;">${name}</span></div>`;
 }
 
 export function renderPointLabel(data: object) {
   const point = data as GlobePoint;
-  return `<div style="background:rgba(10,6,2,0.92);border:1px solid ${point.isSelected ? 'rgba(245,158,11,0.6)' : 'rgba(201,164,93,0.3)'};border-radius:5px;padding:3px 8px;color:${point.isSelected ? '#f59e0b' : '#c9a45d'};font-size:10px;font-family:Georgia,serif;white-space:nowrap;">цэг #${point.index + 1}${point.isSelected ? ' · сонгогдсон' : ''}</div>`;
+  return `<div style="background:rgba(10,6,2,0.92);border:1px solid ${point.isSelected ? 'rgba(245,158,11,0.6)' : 'rgba(201,164,93,0.3)'};border-radius:5px;padding:3px 8px;color:${point.isSelected ? '#f59e0b' : '#c9a45d'};font-size:10px;font-family:var(--font-inter),Arial,sans-serif;white-space:nowrap;">цэг #${point.index + 1}${point.isSelected ? ' · сонгогдсон' : ''}</div>`;
 }
 
 export function renderEditingHud(
@@ -192,7 +192,7 @@ export function renderEditingHud(
             background: 'rgba(10,6,2,0.92)',
             border: '1px solid rgba(90,60,20,0.5)',
             color: '#c9a45d',
-            fontFamily: 'Georgia, serif',
+            fontFamily: 'var(--font-inter), Arial, sans-serif',
             backdropFilter: 'blur(4px)',
           }}
         >
@@ -211,7 +211,7 @@ export function renderEditingHud(
               background: 'rgba(10,6,2,0.92)',
               border: '1px solid rgba(245,158,11,0.3)',
               color: '#e8d8b8',
-              fontFamily: 'Georgia, serif',
+              fontFamily: 'var(--font-inter), Arial, sans-serif',
               backdropFilter: 'blur(4px)',
               fontSize: 10,
               lineHeight: 1.8,
@@ -241,7 +241,7 @@ export function renderEditingHud(
               background: 'rgba(10,6,2,0.85)',
               border: '1px solid rgba(90,60,20,0.3)',
               color: '#5c4020',
-              fontFamily: 'Georgia, serif',
+              fontFamily: 'var(--font-inter), Arial, sans-serif',
               backdropFilter: 'blur(4px)',
               fontSize: 9,
               letterSpacing: '0.05em',
@@ -266,7 +266,7 @@ export function renderEditingHud(
               background: 'rgba(10,6,2,0.92)',
               border: '1px solid rgba(245,158,11,0.4)',
               color: '#f59e0b',
-              fontFamily: 'Georgia, serif',
+              fontFamily: 'var(--font-inter), Arial, sans-serif',
               fontSize: 11,
             }}
           >
@@ -310,7 +310,7 @@ export function renderSelectedBadge(
       <span
         style={{
           color: '#f0e0c0',
-          fontFamily: 'Georgia, serif',
+          fontFamily: 'var(--font-inter), Arial, sans-serif',
           fontSize: 13,
           fontWeight: 600,
           letterSpacing: '0.04em',
@@ -323,7 +323,7 @@ export function renderSelectedBadge(
           style={{
             color: '#7a5c2a',
             fontSize: 11,
-            fontFamily: 'Georgia, serif',
+            fontFamily: 'var(--font-inter), Arial, sans-serif',
           }}
         >
           {feature.properties.capital}

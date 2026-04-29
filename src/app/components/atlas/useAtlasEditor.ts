@@ -40,7 +40,7 @@ export function useAtlasEditor(year: number, adminMode: boolean) {
     );
   }, []);
 
-  useAtlasYears(year, years, setYears, setLoadError);
+  useAtlasYears(setYears, setLoadError);
   useAtlasCollection(
     year,
     setCollection,

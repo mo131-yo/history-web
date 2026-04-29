@@ -137,7 +137,7 @@ export function CoordEditorColorField({
             border: `1px solid ${editorTheme.BORDER}`,
             background: "rgba(255,255,255,0.02)",
             color: editorTheme.TEXT_MAIN,
-            fontFamily: "Georgia, serif",
+            fontFamily: "var(--font-inter), Arial, sans-serif",
           }}
         >
           {color}

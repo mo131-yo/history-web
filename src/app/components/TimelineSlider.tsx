@@ -130,7 +130,7 @@ export default function TimelineSlider({
           </p>
           <h3
             className="mt-0.5 text-lg text-stone-200"
-            style={{ fontFamily: "var(--font-cinzel-decorative), Georgia, serif" }}
+            style={{ fontFamily: "var(--font-inter), Arial, sans-serif" }}
           >
             {currentYear} он
           </h3>
@@ -149,7 +149,7 @@ export default function TimelineSlider({
               value={yearQuery}
               onChange={(event: { target: { value: string } }) => setYearQuery(event.target.value)}
               className="h-6 w-16 bg-transparent text-xs font-semibold tabular-nums text-stone-100 outline-none placeholder:text-stone-500"
-              style={{ fontFamily: "Georgia, serif" }}
+              style={{ fontFamily: "var(--font-inter), Arial, sans-serif" }}
               placeholder="Он хайх"
               aria-label="Оноор хайх"
               list="timeline-years"
@@ -207,7 +207,7 @@ export default function TimelineSlider({
             value={yearQuery}
             onChange={(event: { target: { value: string } }) => setYearQuery(event.target.value)}
             className="min-w-0 flex-1 bg-transparent text-xs font-semibold tabular-nums text-stone-100 outline-none placeholder:text-stone-500"
-            style={{ fontFamily: "Georgia, serif" }}
+            style={{ fontFamily: "var(--font-inter), Arial, sans-serif" }}
             placeholder="Он хайх"
             aria-label="Оноор хайх"
             list="timeline-years-mobile"

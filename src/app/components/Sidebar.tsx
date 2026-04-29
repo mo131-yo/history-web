@@ -3,12 +3,23 @@
 import { useClerk } from "@clerk/nextjs";
 import type { AtlasStateFeature } from "@/lib/types";
 import { useEffect, useState, type ReactNode } from "react";
-import { ChevronDown, CircleHelp, ListChecks, Map, MapPinned, Medal, Search, Sparkles, Trophy } from "lucide-react";
+import { Bell, Check, ChevronDown, CircleHelp, ListChecks, Map, MapPinned, Medal, Search, Sparkles, Trophy, XCircle } from "lucide-react";
 import { SidebarHeader } from "./atlas/SidebarHeader";
 import { sidebarTheme as T } from "./atlas/sidebarTheme";
 import { SidebarUserPanel, type UserSyncStatus } from "./atlas/SidebarUserPanel";
 import type { MapMode, SavedCharacterResult } from "./atlas/types";
 import type { QuizMode } from "./QuizModal";
+
+type SidebarNavItem = {
+  id: "character" | "quiz" | "map";
+  title: string;
+  subtitle: string;
+  icon: typeof CircleHelp;
+  iconText?: string;
+  onClick: () => void;
+  active?: boolean;
+  disabled?: boolean;
+};
 
 export function Sidebar({
   year,
@@ -23,6 +34,7 @@ export function Sidebar({
   onSelectSearchResult,
   currentView,
   characterResult,
+  pendingFeedbackCount,
   quizEnabled,
   adminMode,
   user,
@@ -41,6 +53,7 @@ export function Sidebar({
   onSelectSearchResult: (feature: AtlasStateFeature) => void;
   currentView: "map" | "leaderboard";
   characterResult: SavedCharacterResult | null;
+  pendingFeedbackCount: number;
   quizEnabled: boolean;
   adminMode: boolean;
   collapsed: boolean;
@@ -64,12 +77,13 @@ export function Sidebar({
   const [userSyncStatus, setUserSyncStatus] = useState<UserSyncStatus>("idle");
   const [quizExpanded, setQuizExpanded] = useState(false);
   const trimmedSearch = search.trim();
-  const navItems = [
+  const navItems: SidebarNavItem[] = [
     {
       id: "character",
       title: "Би хэн бэ?",
       subtitle: characterResult ? characterResult.roleName : "Дүрээ олох",
       icon: CircleHelp,
+      iconText: characterResult?.icon,
       onClick: onOpenCharacter,
       active: !!characterResult,
     },
@@ -176,7 +190,7 @@ export function Sidebar({
         background: collapsed ? "rgba(9,14,26,0.99)" : T.bgCard,
         borderRight: collapsed ? `1px solid ${T.amber}33` : `1px solid ${T.border}`,
         boxShadow: collapsed ? "8px 0 24px rgba(0,0,0,0.34)" : "none",
-        fontFamily: "'Georgia', 'Times New Roman', serif",
+        fontFamily: "var(--font-inter), Arial, sans-serif",
       }}
     >
       <SidebarHeader
@@ -197,7 +211,7 @@ export function Sidebar({
               onChange={(event: { target: { value: string; }; }) => onSearchChange(event.target.value)}
               placeholder="Улс хайх"
               className="min-w-0 flex-1 bg-transparent text-xs outline-none placeholder:opacity-45"
-              style={{ color: T.text, fontFamily: "Georgia, serif" }}
+              style={{ color: T.text, fontFamily: "var(--font-inter), Arial, sans-serif" }}
             />
           </label>
         )}
@@ -256,6 +270,7 @@ export function Sidebar({
             const Icon = item.icon;
             const isMap = item.id === "map";
             const isQuiz = item.id === "quiz";
+            const hasCharacterIcon = item.id === "character" && item.iconText;
 
             return (
               <div key={item.id} className={collapsed ? "w-11" : "w-full"}>
@@ -275,7 +290,21 @@ export function Sidebar({
                   title={collapsed ? item.title : undefined}
                 >
                   <span className={`flex min-w-0 items-center ${collapsed ? "justify-center" : "gap-3"}`}>
-                    <Icon className="size-5 shrink-0" />
+                    {hasCharacterIcon ? (
+                      <span
+                        className="flex size-6 shrink-0 items-center justify-center rounded-full text-base leading-none"
+                        style={{
+                          background: "rgba(245,158,11,0.13)",
+                          border: `1px solid ${T.amber}35`,
+                          boxShadow: "0 0 14px rgba(245,158,11,0.12)",
+                        }}
+                        aria-hidden="true"
+                      >
+                        {item.iconText}
+                      </span>
+                    ) : (
+                      <Icon className="size-5 shrink-0" />
+                    )}
                     {!collapsed && (
                       <span className="min-w-0 text-left">
                         <span className="block truncate text-sm font-semibold leading-tight">{item.title}</span>
@@ -338,6 +367,10 @@ export function Sidebar({
           })}
         </nav>
 
+        {adminMode && !collapsed && (
+          <AdminFeedbackNotice pendingFeedbackCount={pendingFeedbackCount} />
+        )}
+
         {!collapsed && (
           <SidebarUserPanel
             adminMode={adminMode}
@@ -350,6 +383,139 @@ export function Sidebar({
         )}
       </div>
     </aside>
+  );
+}
+
+type PendingFeedback = {
+  id: string;
+  slug: string;
+  year: number;
+  stateName: string;
+  userName: string;
+  rating: number;
+  comment: string;
+  proposedGeometry?: GeoJSON.Polygon | null;
+};
+
+function AdminFeedbackNotice({
+  pendingFeedbackCount,
+}: {
+  pendingFeedbackCount: number;
+}) {
+  const [open, setOpen] = useState(pendingFeedbackCount > 0);
+  const [items, setItems] = useState<PendingFeedback[]>([]);
+  const [status, setStatus] = useState<"idle" | "loading" | "error">("idle");
+
+  useEffect(() => {
+    if (pendingFeedbackCount <= 0) {
+      setItems([]);
+      return;
+    }
+
+    const controller = new AbortController();
+    setStatus("loading");
+    fetch("/api/atlas/feedback?status=pending", { signal: controller.signal })
+      .then((response) => {
+        if (!response.ok) throw new Error("Pending feedback failed");
+        return response.json() as Promise<{ feedback?: PendingFeedback[] }>;
+      })
+      .then((data) => {
+        setItems(data.feedback ?? []);
+        setStatus("idle");
+      })
+      .catch((error) => {
+        if (error instanceof DOMException && error.name === "AbortError") return;
+        setItems([]);
+        setStatus("error");
+      });
+
+    return () => controller.abort();
+  }, [pendingFeedbackCount]);
+
+  async function reviewFeedback(id: string, action: "approve" | "reject") {
+    const response = await fetch("/api/atlas/feedback", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id, action }),
+    });
+    if (!response.ok) {
+      setStatus("error");
+      return;
+    }
+    setItems((current) => current.filter((item) => item.id !== id));
+  }
+
+  return (
+    <div
+      className="rounded-lg p-2"
+      style={{
+        background: pendingFeedbackCount > 0 ? "rgba(245,158,11,0.12)" : "rgba(8,13,24,0.55)",
+        border: pendingFeedbackCount > 0 ? `1px solid ${T.amber}44` : `1px solid ${T.border}`,
+      }}
+    >
+      <button
+        type="button"
+        onClick={() => setOpen((value) => !value)}
+        className="flex w-full items-center gap-2 rounded-md px-2 py-2 text-left"
+        style={{ color: pendingFeedbackCount > 0 ? T.amber : T.textSub }}
+      >
+        <Bell className="size-4 shrink-0" />
+        <span className="min-w-0 flex-1 truncate text-xs font-semibold">
+          Coordinate feedback
+        </span>
+        <span className="rounded-full px-2 py-0.5 text-[10px] font-bold" style={{ background: `${T.amber}22` }}>
+          {pendingFeedbackCount}
+        </span>
+      </button>
+
+      {open && (
+        <div className="mt-2 grid max-h-72 gap-2 overflow-y-auto">
+          {status === "loading" && (
+            <p className="px-2 py-2 text-xs" style={{ color: T.textMuted }}>Feedback уншиж байна...</p>
+          )}
+          {status === "error" && (
+            <p className="px-2 py-2 text-xs" style={{ color: "#f87171" }}>Feedback шалгахад алдаа гарлаа.</p>
+          )}
+          {items.length === 0 && status !== "loading" && (
+            <p className="px-2 py-2 text-xs" style={{ color: T.textMuted }}>Хүлээгдэж буй координат санал алга.</p>
+          )}
+          {items.map((item) => (
+            <div key={item.id} className="rounded-lg px-2.5 py-2" style={{ background: "rgba(8,13,24,0.72)", border: `1px solid ${T.border}` }}>
+              <div className="flex items-center justify-between gap-2">
+                <p className="truncate text-xs font-semibold" style={{ color: T.text }}>{item.stateName}</p>
+                <span className="shrink-0 text-[10px]" style={{ color: T.amber }}>{item.year}</span>
+              </div>
+              <p className="mt-1 line-clamp-2 text-[10px] leading-4" style={{ color: T.textMuted }}>
+                {item.userName}: {item.comment}
+              </p>
+              <p className="mt-1 text-[10px]" style={{ color: T.textSub }}>
+                {item.proposedGeometry?.coordinates?.[0]?.length ?? 0} coordinate point
+              </p>
+              <div className="mt-2 grid grid-cols-2 gap-2">
+                <button
+                  type="button"
+                  onClick={() => reviewFeedback(item.id, "approve")}
+                  className="flex h-8 items-center justify-center gap-1 rounded-md text-[10px] font-semibold"
+                  style={{ background: "rgba(34,197,94,0.13)", border: "1px solid rgba(34,197,94,0.35)", color: "#86efac" }}
+                >
+                  <Check className="size-3" />
+                  Зөвшөөрөх
+                </button>
+                <button
+                  type="button"
+                  onClick={() => reviewFeedback(item.id, "reject")}
+                  className="flex h-8 items-center justify-center gap-1 rounded-md text-[10px] font-semibold"
+                  style={{ background: "rgba(239,68,68,0.12)", border: "1px solid rgba(239,68,68,0.35)", color: "#fca5a5" }}
+                >
+                  <XCircle className="size-3" />
+                  Татгалзах
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
   );
 }
 

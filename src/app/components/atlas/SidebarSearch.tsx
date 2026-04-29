@@ -22,7 +22,7 @@ export function SidebarSearch({
             onChange={(e: any) => onSearchChange(e.target.value)}
             placeholder="Улс, хаан, нийслэл…"
             className="w-full bg-transparent text-xs outline-none placeholder:opacity-40"
-            style={{ color: T.text, fontFamily: "Georgia, serif" }}
+            style={{ color: T.text, fontFamily: "var(--font-inter), Arial, sans-serif" }}
           />
         </label>
       </div>

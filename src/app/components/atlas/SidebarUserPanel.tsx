@@ -100,11 +100,11 @@ export function SidebarUserPanel({
         </div>
       ) : (
         <div className="grid gap-2">
-          <button type="button" onClick={onSignIn} className="flex w-full items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-xs transition-all hover:opacity-80" style={{ border: `1px solid ${T.border}`, background: "rgba(15,23,42,0.72)", color: T.text, fontFamily: "Georgia, serif" }}>
+          <button type="button" onClick={onSignIn} className="flex w-full items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-xs transition-all hover:opacity-80" style={{ border: `1px solid ${T.border}`, background: "rgba(15,23,42,0.72)", color: T.text, fontFamily: "var(--font-inter), Arial, sans-serif" }}>
             <LogIn className="size-3.5" />
             Нэвтрэх
           </button>
-          <button type="button" onClick={onSignUp} className="flex w-full items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-xs transition-all hover:opacity-80" style={{ border: `1px solid ${T.amber}44`, background: "linear-gradient(135deg, rgba(245,158,11,0.14), rgba(245,158,11,0.04))", color: T.amber, fontFamily: "Georgia, serif" }}>
+          <button type="button" onClick={onSignUp} className="flex w-full items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-xs transition-all hover:opacity-80" style={{ border: `1px solid ${T.amber}44`, background: "linear-gradient(135deg, rgba(245,158,11,0.14), rgba(245,158,11,0.04))", color: T.amber, fontFamily: "var(--font-inter), Arial, sans-serif" }}>
             <UserPlus className="size-3.5" />
             Бүртгүүлэх
           </button>

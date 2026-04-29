@@ -74,7 +74,7 @@ export function AtlasCharacterRpgModal({
           background: 'rgba(8,5,2,0.97)',
           border: '1px solid rgba(201,164,93,0.35)',
           boxShadow: '0 30px 90px rgba(0,0,0,0.75)',
-          fontFamily: 'Georgia, serif',
+          fontFamily: 'var(--font-inter), Arial, sans-serif',
         }}
       >
         <div

@@ -50,7 +50,7 @@ export function AtlasHeader({
               color: T.amber,
               backdropFilter: "blur(16px)",
               boxShadow: "0 0 16px rgba(201,164,93,0.08)",
-              fontFamily: "Georgia, serif",
+              fontFamily: "var(--font-inter), Arial, sans-serif",
               letterSpacing: "0.1em",
             }}
           >
@@ -72,7 +72,7 @@ export function AtlasHeader({
               border: `1px solid ${T.border}`,
               color: T.textSub,
               backdropFilter: "blur(16px)",
-              fontFamily: "Georgia, serif",
+              fontFamily: "var(--font-inter), Arial, sans-serif",
             }}
           >
             {collectionCount} улс

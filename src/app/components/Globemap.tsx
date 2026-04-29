@@ -201,14 +201,6 @@ export default function GlobeMap(props: SharedMapProps) {
 
       {props.selectedSlug &&
         renderSelectedBadge(props.collection, props.selectedSlug)}
-
-      <div className="pointer-events-none absolute bottom-6 left-4 rounded-2xl border border-white/10 bg-black/45 px-4 py-3 text-xs text-stone-200 shadow-lg backdrop-blur lg:bottom-10">
-        {props.isEditing
-          ? props.isCreating
-            ? "Create mode: 3D globe дээр дарж шинэ оройнууд нэм."
-            : "Edit mode: 3D globe дээр цэгийг чирж зөөж хилээ зас."
-          : "3D globe view: улс сонгоод хил, түүх, газарзүйг бөмбөрцөг дээр хар."}
-      </div>
     </div>
   );
 }

@@ -42,6 +42,7 @@ export default function AtlasApp() {
   const [currentView, setCurrentView] = useState<"map" | "leaderboard">("map");
   const [timelineAutoPlaying, setTimelineAutoPlaying] = useState(false);
   const [liveCharacterResult, setLiveCharacterResult] = useState<SavedCharacterResult | null>(null);
+  const [pendingFeedbackCount, setPendingFeedbackCount] = useState(0);
   const storedCharacterResultRaw = useSyncExternalStore(
     subscribeCharacterResult,
     readCharacterResultRawSnapshot,
@@ -85,6 +86,35 @@ export default function AtlasApp() {
     return () => window.clearInterval(timer);
   }, [currentView, timelineAutoPlaying, years]);
 
+  useEffect(() => {
+    if (!adminMode) {
+      setPendingFeedbackCount(0);
+      return;
+    }
+
+    const controller = new AbortController();
+    const loadPendingFeedbackCount = () => {
+      fetch("/api/atlas/feedback?status=pending", { signal: controller.signal })
+        .then((response) => {
+          if (!response.ok) throw new Error("Feedback notification failed");
+          return response.json() as Promise<{ count?: number }>;
+        })
+        .then((data) => setPendingFeedbackCount(data.count ?? 0))
+        .catch((error) => {
+          if (error instanceof DOMException && error.name === "AbortError") return;
+          setPendingFeedbackCount(0);
+        });
+    };
+
+    loadPendingFeedbackCount();
+    const timer = window.setInterval(loadPendingFeedbackCount, 30000);
+
+    return () => {
+      controller.abort();
+      window.clearInterval(timer);
+    };
+  }, [adminMode, selectedFeature?.properties.slug, year]);
+
   const drawer = adminMode ? (
     <div className="flex-1 overflow-hidden">
       <CoordEditor {...coordEditorProps} />
@@ -93,6 +123,7 @@ export default function AtlasApp() {
     <SelectedStateDrawer
       year={year}
       feature={selectedFeature}
+      adminMode={adminMode}
       onClose={() => setSelectedSlug(null)}
     />
   );
@@ -100,7 +131,7 @@ export default function AtlasApp() {
   return (
     <main
       className="min-h-screen overflow-hidden"
-      style={{ background: T.bg, fontFamily: "'Georgia', 'Times New Roman', serif" }}
+      style={{ background: T.bg, fontFamily: "var(--font-inter), Arial, sans-serif" }}
     >
       {characterOpen && (
         <AtlasCharacterRpgModal
@@ -143,6 +174,7 @@ export default function AtlasApp() {
           }}
           currentView={currentView}
           characterResult={characterResult}
+          pendingFeedbackCount={pendingFeedbackCount}
           quizEnabled={!!collection?.features.length}
           adminMode={adminMode}
           user={user}
@@ -176,7 +208,7 @@ export default function AtlasApp() {
                     border: "1px solid rgba(150,40,40,0.5)",
                     color: "#f08080",
                     backdropFilter: "blur(12px)",
-                    fontFamily: "Georgia, serif",
+                    fontFamily: "var(--font-inter), Arial, sans-serif",
                   }}
                 >
                   <span style={{ fontSize: 11 }}>⚠</span>
