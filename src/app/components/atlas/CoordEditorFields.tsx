@@ -16,7 +16,7 @@ export function CoordEditorFields({
     <>
       <div className="h-px shrink-0" style={{ background: editorTheme.BORDER }} />
       <div className="grid gap-2">
-        <p className="text-[8px] uppercase tracking-[0.4em]" style={{ color: editorTheme.TEXT_MUTED }}>
+        <p className="text-[14px] font-black uppercase tracking-[0.1em]" style={{ color: editorTheme.TEXT_MUTED }}>
           Нутгийн мэдээлэл
         </p>
         {FORM_FIELDS.map(({ field, placeholder }) => (

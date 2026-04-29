@@ -7,7 +7,7 @@ const { BORDER, INPUT_BG, TEXT_MAIN } = editorTheme;
 
 export const BTN_BASE: CSSProperties = {
   fontFamily: "Georgia, serif",
-  fontSize: "12px",
+  fontSize: "15px",
   borderRadius: "6px",
   padding: "9px 12px",
   border: `1px solid ${BORDER}`,
@@ -26,7 +26,7 @@ export const INPUT_STYLE: CSSProperties = {
   border: `1px solid ${BORDER}`,
   borderRadius: "6px",
   padding: "7px 10px",
-  fontSize: "12px",
+  fontSize: "15px",
   color: TEXT_MAIN,
   fontFamily: "Georgia, serif",
   outline: "none",

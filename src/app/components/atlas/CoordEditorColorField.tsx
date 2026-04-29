@@ -1,6 +1,6 @@
 "use client";
 
-import { INPUT_STYLE } from "./coordEditorConfig";
+// import { INPUT_STYLE } from "./coordEditorConfig";
 import { editorTheme } from "./editorStyles";
 
 const COLOR_PRESETS = [
@@ -36,7 +36,7 @@ export function CoordEditorColorField({
       <div className="flex items-center justify-between gap-3 mb-3">
         <div>
           <p
-            className="text-[8px] uppercase tracking-[0.38em]"
+            className="text-[15px] font-bold uppercase tracking-[0.1em]"
             style={{ color: editorTheme.TEXT_MUTED }}
           >
             Polygon өнгө
@@ -124,7 +124,7 @@ export function CoordEditorColorField({
         })}
       </div>
 
-      <div className="grid grid-cols-[1fr_90px] gap-2">
+      {/* <div className="grid grid-cols-[1fr_90px] gap-2">
         <input
           value={color}
           onChange={(e: any) => onChange(e.target.value)}
@@ -142,7 +142,7 @@ export function CoordEditorColorField({
         >
           {color}
         </div>
-      </div>
+      </div> */}
     </div>
   );
 }

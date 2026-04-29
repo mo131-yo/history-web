@@ -48,13 +48,13 @@ export function CoordEditorHeader({
   return (
     <>
       <div>
-        <div className="flex items-center gap-2 mb-1">
+        <div className="flex items-center gap-3 mb-1 p-4 pl-8 ">
           <Swords
-            className="size-3.5"
+            className="size-4.5  "
             style={{ color: editorTheme.GOLD_DIM }}
           />
           <p
-            className="text-[8px] uppercase tracking-[0.5em]"
+            className="text-[18px] font-bold  uppercase tracking-[0.2em]"
             style={{ color: TEXT_MUTED }}
           >
             Засах самбар

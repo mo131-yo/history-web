@@ -85,7 +85,7 @@ export default function AtlasApp() {
   }, [currentView, timelineAutoPlaying, years]);
 
   const drawer = adminMode ? (
-    <div className="flex-1 overflow-hidden">
+    <div className="flex-1 overflow-hidden ">
       <CoordEditor {...coordEditorProps} />
     </div>
   ) : (
