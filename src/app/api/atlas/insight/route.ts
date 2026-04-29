@@ -2,10 +2,6 @@ import { getCachedInsight, saveInsight } from "@/lib/db-insight";
 import { NextRequest, NextResponse } from "next/server";
 import OpenAI from "openai";
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
-
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
@@ -30,6 +26,14 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ text: cached, cached: true });
     }
 
+    const openai = createOpenAIClient();
+    if (!openai) {
+      return NextResponse.json({
+        text: buildFallbackInsight(year, state),
+        cached: false,
+        unavailable: true,
+      });
+    }
     const periodName = state.metadata?.periodName
       ? ` (тухайн үеийн нэр: «${String(state.metadata.periodName)}»)`
       : "";
@@ -73,6 +77,34 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ text, cached: false });
   } catch (err) {
     console.error("[insight]", err);
-    return NextResponse.json({ error: "Серверийн алдаа." }, { status: 500 });
+    return NextResponse.json({ error: "Түүхч тайлбар үүсгэхэд алдаа гарлаа." }, { status: 502 });
   }
+}
+
+function buildFallbackInsight(
+  year: number,
+  state: {
+    name: string;
+    leader: string;
+    capital: string;
+    summary: string;
+    metadata?: Record<string, unknown>;
+  },
+) {
+  const periodName = state.metadata?.periodName
+    ? `, тухайн үеийн нэршлээр «${String(state.metadata.periodName)}»`
+    : "";
+
+  return `## ${state.name}
+
+**${year} он**-д ${state.name}${periodName} нь ${state.capital} төвтэй, ${state.leader} удирдагчтай улс/нутаг дэвсгэр байв.
+
+${state.summary}
+
+AI түүхч тайлбар одоогоор идэвхгүй байна. Сервер дээр \`OPENAI_API_KEY\` эсвэл \`OPENAI_KEY\` тохируулсны дараа энэ хэсэг илүү дэлгэрэнгүй тайлбараар шинэчлэгдэнэ.`;
+}
+
+function createOpenAIClient() {
+  const apiKey = process.env.OPENAI_API_KEY ?? process.env.OPENAI_KEY;
+  return apiKey ? new OpenAI({ apiKey }) : null;
 }

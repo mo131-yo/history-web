@@ -2,8 +2,9 @@
 
 import { useEffect, useMemo, useState, type FormEvent } from "react";
 import { useUser } from "@clerk/nextjs";
-import { Check, Crown, Loader2, MapPin, Scroll, Send, Sparkles, Star, Swords, X } from "lucide-react";
+import { Check, ChevronDown, ChevronUp, Crown, Loader2, MapPin, Plus, RotateCcw, Scroll, Send, Sparkles, Star, Swords, X } from "lucide-react";
 import type { AtlasStateFeature } from "@/lib/types";
+import { normalizeClosedRing } from "@/lib/geometry";
 import { SelectedStateMarkdown } from "./atlas/SelectedStateMarkdown";
 import { selectedStateTheme as T } from "./atlas/selectedStateTheme";
 import { useStateInsight } from "./atlas/useStateInsight";
@@ -16,6 +17,19 @@ type StateFeedback = {
   status?: string;
   proposedGeometry?: GeoJSON.Polygon | null;
   createdAt: string;
+};
+
+type FeedbackEditorState = {
+  isEditing: boolean;
+  addPointMode: boolean;
+  draftRing: Array<[number, number]>;
+  onDraftRingChange: (ring: Array<[number, number]>) => void;
+  selectedVertexIndex: number | null;
+  onSelectVertex: (index: number | null) => void;
+  onStart: () => void;
+  onStop: () => void;
+  onToggleAddPoint: () => void;
+  onReset: () => void;
 };
 
 function Divider() {
@@ -33,15 +47,22 @@ export default function SelectedStateDrawer({
   feature,
   adminMode = false,
   onClose,
+  feedbackEditor,
 }: {
   year: number;
   feature: AtlasStateFeature | null;
   adminMode?: boolean;
   onClose: () => void;
+  feedbackEditor?: FeedbackEditorState;
 }) {
   const { insight, insightLoading, insightError, isCached } = useStateInsight(year, feature);
   const { user } = useUser();
   const userName = user?.fullName ?? user?.username ?? user?.primaryEmailAddress?.emailAddress ?? "Зочин";
+  const [insightExpanded, setInsightExpanded] = useState(false);
+
+  useEffect(() => {
+    setInsightExpanded(false);
+  }, [feature?.properties.slug, year]);
 
   if (!feature) {
     return (
@@ -120,7 +141,30 @@ export default function SelectedStateDrawer({
             ) : insightError ? (
               <p className="py-2 text-xs" style={{ color: "#f87171" }}>{insightError}</p>
             ) : (
-              <SelectedStateMarkdown text={insight} />
+              <>
+                <div className="relative">
+                  <div className={insightExpanded ? "" : "max-h-36 overflow-hidden"}>
+                    <SelectedStateMarkdown text={insight} />
+                  </div>
+                  {!insightExpanded && (
+                    <div
+                      className="pointer-events-none absolute inset-x-0 bottom-0 h-10"
+                      style={{ background: "linear-gradient(180deg, rgba(15,23,42,0), rgba(15,23,42,0.96))" }}
+                    />
+                  )}
+                </div>
+                {insight && (
+                  <button
+                    type="button"
+                    onClick={() => setInsightExpanded((value) => !value)}
+                    className="mt-2 flex h-8 w-full items-center justify-center gap-1 rounded-md text-[10px] font-semibold transition hover:opacity-80"
+                    style={{ border: `1px solid ${T.border}`, color: T.amber, background: "rgba(245,158,11,0.08)" }}
+                  >
+                    {insightExpanded ? <ChevronUp className="size-3" /> : <ChevronDown className="size-3" />}
+                    {insightExpanded ? "Хураах" : "Дэлгэрэнгүй унших"}
+                  </button>
+                )}
+              </>
             )}
           </div>
 
@@ -129,6 +173,7 @@ export default function SelectedStateDrawer({
             feature={feature}
             userName={userName}
             year={year}
+            feedbackEditor={feedbackEditor}
           />
 
           <p className="mt-3 text-right text-[8px]" style={{ color: T.textMuted }}>
@@ -145,17 +190,18 @@ function StateFeedbackPanel({
   feature,
   userName,
   year,
+  feedbackEditor,
 }: {
   adminMode: boolean;
   feature: AtlasStateFeature;
   userName: string;
   year: number;
+  feedbackEditor?: FeedbackEditorState;
 }) {
   const [feedback, setFeedback] = useState<StateFeedback[]>([]);
   const [rating, setRating] = useState(5);
   const [comment, setComment] = useState("");
   const [includeCoordinates, setIncludeCoordinates] = useState(false);
-  const [coordinatesText, setCoordinatesText] = useState("");
   const [status, setStatus] = useState<"idle" | "loading" | "saving" | "saved" | "error">("idle");
   const [error, setError] = useState<string | null>(null);
   const slug = feature.properties.slug;
@@ -196,8 +242,15 @@ function StateFeedbackPanel({
 
   useEffect(() => {
     setIncludeCoordinates(false);
-    setCoordinatesText(JSON.stringify(currentCoordinates, null, 2));
+    feedbackEditor?.onStop();
   }, [currentCoordinates, slug, year]);
+
+  function handleCoordinateToggle(checked: boolean) {
+    setIncludeCoordinates(checked);
+    setError(null);
+    if (checked) feedbackEditor?.onStart();
+    else feedbackEditor?.onStop();
+  }
 
   async function submitFeedback(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -209,12 +262,12 @@ function StateFeedbackPanel({
 
     let proposedCoordinates: Array<[number, number]> | undefined;
     if (includeCoordinates) {
-      const parsedCoordinates = parseCoordinateProposal(coordinatesText);
-      if (!parsedCoordinates.ok) {
-        setError(parsedCoordinates.error);
+      const draftRing = feedbackEditor?.draftRing ?? [];
+      if (draftRing.length < 4) {
+        setError("Газрын зураг дээр дор хаяж 3 цэгтэй хил зурна уу.");
         return;
       }
-      proposedCoordinates = parsedCoordinates.coordinates;
+      proposedCoordinates = normalizeClosedRing(draftRing);
     }
 
     setStatus("saving");
@@ -240,7 +293,7 @@ function StateFeedbackPanel({
       if (data.feedback) setFeedback((current) => [data.feedback!, ...current]);
       setComment("");
       setIncludeCoordinates(false);
-      setCoordinatesText(JSON.stringify(currentCoordinates, null, 2));
+      feedbackEditor?.onStop();
       setRating(5);
       setStatus("saved");
     } catch {
@@ -315,24 +368,52 @@ function StateFeedbackPanel({
           <input
             type="checkbox"
             checked={includeCoordinates}
-            onChange={(event) => setIncludeCoordinates(event.target.checked)}
+            onChange={(event) => handleCoordinateToggle(event.target.checked)}
             className="size-3 accent-amber-500"
           />
-          Энэ улсын координатын засвар санал болгох
+          Энэ улсын хилийн цэгүүдийг зураг дээр засаж санал болгох
         </label>
         {includeCoordinates && (
-          <textarea
-            value={coordinatesText}
-            onChange={(event) => setCoordinatesText(event.target.value)}
-            rows={6}
-            spellCheck={false}
-            className="w-full resize-y rounded-lg px-3 py-2 font-mono text-[10px] leading-4 outline-none transition focus:border-amber-500/50"
-            style={{
-              background: "rgba(3,7,18,0.78)",
-              border: `1px solid ${T.border}`,
-              color: T.text,
-            }}
-          />
+          <div className="grid gap-2 rounded-lg px-3 py-2" style={{ background: "rgba(3,7,18,0.6)", border: `1px solid ${T.border}` }}>
+            <div className="flex items-center justify-between gap-2">
+              <span className="text-[10px]" style={{ color: T.textSub }}>
+                {feedbackEditor?.draftRing.length ?? 0} цэг · цэгийг чирж засна, double click хийж устгана
+              </span>
+              <button
+                type="button"
+                onClick={feedbackEditor?.onReset}
+                className="flex h-7 items-center gap-1 rounded-md px-2 text-[10px] font-semibold transition hover:opacity-80"
+                style={{ border: `1px solid ${T.border}`, color: T.textSub }}
+              >
+                <RotateCcw className="size-3" />
+                Reset
+              </button>
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                type="button"
+                onClick={feedbackEditor?.onStart}
+                className="flex h-8 items-center justify-center gap-1 rounded-md text-[10px] font-semibold"
+                style={{ background: "rgba(245,158,11,0.13)", border: `1px solid ${T.amber}44`, color: T.amber }}
+              >
+                <MapPin className="size-3" />
+                Засах горим
+              </button>
+              <button
+                type="button"
+                onClick={feedbackEditor?.onToggleAddPoint}
+                className="flex h-8 items-center justify-center gap-1 rounded-md text-[10px] font-semibold"
+                style={{
+                  background: feedbackEditor?.addPointMode ? "rgba(34,197,94,0.16)" : "rgba(8,13,24,0.55)",
+                  border: feedbackEditor?.addPointMode ? "1px solid rgba(34,197,94,0.45)" : `1px solid ${T.border}`,
+                  color: feedbackEditor?.addPointMode ? "#86efac" : T.textSub,
+                }}
+              >
+                <Plus className="size-3" />
+                Цэг нэмэх
+              </button>
+            </div>
+          </div>
         )}
         <div className="flex items-center justify-between gap-3">
           <span className="text-[10px]" style={{ color: error ? "#f87171" : T.textMuted }}>
@@ -413,28 +494,4 @@ function StateFeedbackPanel({
       ) : null}
     </div>
   );
-}
-
-function parseCoordinateProposal(value: string):
-  | { ok: true; coordinates: Array<[number, number]> }
-  | { ok: false; error: string } {
-  try {
-    const parsed = JSON.parse(value) as unknown;
-    if (!Array.isArray(parsed) || parsed.length < 4) {
-      return { ok: false, error: "Координат JSON array бөгөөд дор хаяж 4 цэгтэй байна." };
-    }
-
-    const coordinates = parsed.map((point) => {
-      if (!Array.isArray(point) || point.length < 2) throw new Error();
-      const lng = Number(point[0]);
-      const lat = Number(point[1]);
-      if (!Number.isFinite(lng) || !Number.isFinite(lat)) throw new Error();
-      if (lng < -180 || lng > 180 || lat < -90 || lat > 90) throw new Error();
-      return [lng, lat] as [number, number];
-    });
-
-    return { ok: true, coordinates };
-  } catch {
-    return { ok: false, error: "Координатын JSON бүтэц буруу байна." };
-  }
 }

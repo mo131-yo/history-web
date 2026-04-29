@@ -122,7 +122,7 @@ export default function TimelineSlider({
   } as CSSProperties;
 
   return (
-    <div className="rounded-xl border border-amber-500/15 bg-slate-950/88 px-3 py-2 shadow-[0_-8px_28px_rgba(0,0,0,0.36)] backdrop-blur-xl sm:px-4">
+    <div className="w-full min-w-0 overflow-hidden rounded-xl border border-amber-500/15 bg-slate-950/88 px-3 py-2 shadow-[0_-8px_28px_rgba(0,0,0,0.36)] backdrop-blur-xl sm:px-4">
       <div className="flex items-center justify-between gap-3">
         <div className="shrink-0">
           <p className="text-[8px] uppercase tracking-[0.22em] text-stone-500">
@@ -254,12 +254,12 @@ export default function TimelineSlider({
         </div>
       </div>
 
-      <div className="relative mt-1.5">
+      <div className="relative mt-1.5 min-w-0">
         <div className="pointer-events-none absolute inset-y-0 left-0 z-10 w-6 bg-linear-to-r from-slate-950/95 to-transparent" />
         <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-6 bg-linear-to-l from-slate-950/95 to-transparent" />
 
-        <div ref={scrollRef} className="timeline-years-scroll overflow-x-auto">
-          <div className="flex min-w-max gap-1.5 px-1">
+        <div ref={scrollRef} className="timeline-years-scroll w-full min-w-0 overflow-x-auto overflow-y-hidden overscroll-x-contain">
+          <div className="flex w-max max-w-none gap-1.5 px-1">
             {safeYears.map((year) => {
               const active = year === currentYear;
 

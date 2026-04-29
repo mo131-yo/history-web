@@ -1,6 +1,10 @@
 "use client";
 
-import type { AtlasFeatureCollection, AtlasStateFeature } from "@/lib/types";
+import type {
+  AtlasEventFeatureCollection,
+  AtlasFeatureCollection,
+  AtlasStateFeature,
+} from "@/lib/types";
 
 export type MapMode = "globe" | "historical";
 
@@ -79,6 +83,20 @@ export type SharedMapProps = {
   onDraftRingChange: (ring: Array<[number, number]>) => void;
   selectedVertexIndex: number | null;
   onSelectVertex: (index: number | null) => void;
+};
+
+export type AtlasLayerVisibility = {
+  states: boolean;
+  labels: boolean;
+  capitals: boolean;
+  battles: boolean;
+};
+
+export type AtlasMapSceneProps = SharedMapProps & {
+  battleEvents: AtlasEventFeatureCollection | null;
+  selectedEventSlug: string | null;
+  onSelectEvent: (slug: string | null) => void;
+  layerVisibility: AtlasLayerVisibility;
 };
 
 export type CoordEditorProps = {
