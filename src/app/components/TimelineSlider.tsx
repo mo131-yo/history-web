@@ -1,7 +1,7 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, type CSSProperties } from "react";
-import { Pause, Play } from "lucide-react";
+import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties, type FormEvent } from "react";
+import { Pause, Play, Search } from "lucide-react";
 
 type TimelineSliderProps = {
   years: number[];
@@ -22,6 +22,7 @@ export default function TimelineSlider({
   const activeYearRef = useRef<HTMLButtonElement | null>(null);
   const animationFrameRef = useRef<number | null>(null);
   const pendingYearRef = useRef<number | null>(null);
+  const [yearQuery, setYearQuery] = useState(String(currentYear));
 
   const { safeYears, currentIndex, maxIndex, progress, startYear, endYear } =
     useMemo(() => {
@@ -56,6 +57,10 @@ export default function TimelineSlider({
       }
     };
   }, []);
+
+  useEffect(() => {
+    setYearQuery(String(currentYear));
+  }, [currentYear]);
 
   const commitYearChange = useCallback((nextYear: number) => {
     if (nextYear === currentYear) {
