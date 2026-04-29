@@ -1,12 +1,14 @@
 import { OpenAI } from "openai";
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_KEY,
-});
-
 export async function POST(req: Request) {
   try {
     const { yearData } = await req.json();
+    const apiKey = process.env.OPENAI_API_KEY ?? process.env.OPENAI_KEY;
+    if (!apiKey) {
+      return Response.json({ error: "OPENAI_API_KEY эсвэл OPENAI_KEY тохируулагдаагүй байна." }, { status: 503 });
+    }
+
+    const openai = new OpenAI({ apiKey });
 
     const prompt = `
       Чи бол түүхийн багш. Дараах түүхэн GeoJSON өгөгдөл дээр үндэслэн 3 асуулттай сонирхолтой Quiz үүсгэ.

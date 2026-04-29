@@ -13,6 +13,7 @@ import { CHARACTER_STORAGE_KEY, T } from "./atlas/constants";
 import { QuizLeaderboardPage } from "./leaderboard/QuizLeaderboardPage";
 import { SavedCharacterResult } from "./atlas/types";
 import { useAtlasEditor } from "./atlas/useAtlasEditor";
+import { ensureEditableRing } from "@/lib/geometry";
 
 const CoordEditor = dynamic(
   () => import("@/app/components/CoordEditor"),
@@ -43,6 +44,10 @@ export default function AtlasApp() {
   const [timelineAutoPlaying, setTimelineAutoPlaying] = useState(false);
   const [liveCharacterResult, setLiveCharacterResult] = useState<SavedCharacterResult | null>(null);
   const [pendingFeedbackCount, setPendingFeedbackCount] = useState(0);
+  const [feedbackEditing, setFeedbackEditing] = useState(false);
+  const [feedbackAddPointMode, setFeedbackAddPointMode] = useState(false);
+  const [feedbackDraftRing, setFeedbackDraftRing] = useState<Array<[number, number]>>([]);
+  const [feedbackSelectedVertexIndex, setFeedbackSelectedVertexIndex] = useState<number | null>(null);
   const storedCharacterResultRaw = useSyncExternalStore(
     subscribeCharacterResult,
     readCharacterResultRawSnapshot,
@@ -71,6 +76,14 @@ export default function AtlasApp() {
     sharedMapProps,
     coordEditorProps,
   } = useAtlasEditor(year, adminMode);
+
+  useEffect(() => {
+    const coordinates = selectedFeature?.geometry.coordinates[0] as Array<[number, number]> | undefined;
+    setFeedbackEditing(false);
+    setFeedbackAddPointMode(false);
+    setFeedbackSelectedVertexIndex(null);
+    setFeedbackDraftRing(coordinates ? ensureEditableRing(coordinates) : []);
+  }, [selectedFeature?.properties.slug, year]);
 
   useEffect(() => {
     if (!timelineAutoPlaying || currentView !== "map" || years.length < 2) return;
@@ -125,8 +138,49 @@ export default function AtlasApp() {
       feature={selectedFeature}
       adminMode={adminMode}
       onClose={() => setSelectedSlug(null)}
+      feedbackEditor={{
+        isEditing: feedbackEditing,
+        addPointMode: feedbackAddPointMode,
+        draftRing: feedbackDraftRing,
+        onDraftRingChange: setFeedbackDraftRing,
+        selectedVertexIndex: feedbackSelectedVertexIndex,
+        onSelectVertex: setFeedbackSelectedVertexIndex,
+        onStart: () => {
+          const coordinates = selectedFeature?.geometry.coordinates[0] as Array<[number, number]> | undefined;
+          setFeedbackDraftRing((current) => current.length ? current : coordinates ? ensureEditableRing(coordinates) : []);
+          setFeedbackEditing(true);
+          setFeedbackAddPointMode(false);
+          setFeedbackSelectedVertexIndex(null);
+        },
+        onStop: () => {
+          setFeedbackEditing(false);
+          setFeedbackAddPointMode(false);
+          setFeedbackSelectedVertexIndex(null);
+        },
+        onToggleAddPoint: () => setFeedbackAddPointMode((value) => !value),
+        onReset: () => {
+          const coordinates = selectedFeature?.geometry.coordinates[0] as Array<[number, number]> | undefined;
+          setFeedbackDraftRing(coordinates ? ensureEditableRing(coordinates) : []);
+          setFeedbackAddPointMode(false);
+          setFeedbackSelectedVertexIndex(null);
+        },
+      }}
     />
   );
+
+  const visibleMapProps =
+    !adminMode && feedbackEditing
+      ? {
+          ...sharedMapProps,
+          isEditing: true,
+          isCreating: false,
+          addPointMode: feedbackAddPointMode,
+          draftRing: feedbackDraftRing,
+          onDraftRingChange: setFeedbackDraftRing,
+          selectedVertexIndex: feedbackSelectedVertexIndex,
+          onSelectVertex: setFeedbackSelectedVertexIndex,
+        }
+      : sharedMapProps;
 
   return (
     <main
@@ -191,8 +245,8 @@ export default function AtlasApp() {
           ) : (
             <>
               <div className="absolute inset-x-0 top-0 bottom-[7.5rem] z-0 md:bottom-32 lg:bottom-[7.5rem]">
-                {mapMode === "globe" && <GlobeMap {...sharedMapProps} />}
-                {mapMode === "historical" && <HistoricalMap {...sharedMapProps} />}
+                {mapMode === "globe" && <GlobeMap {...visibleMapProps} />}
+                {mapMode === "historical" && <HistoricalMap {...visibleMapProps} />}
               </div>
 
               <AtlasHeader
