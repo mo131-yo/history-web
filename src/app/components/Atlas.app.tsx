@@ -8,7 +8,7 @@ import { AtlasCharacterRpgModal } from "./atlas/AtlasCharacterRpgModal";
 import { AtlasHeader } from "./atlas/AtlasHeader";
 import { MapLoader } from "./atlas/AtlasMapControls";
 import { AtlasTimelineFooter } from "./atlas/AtlasTimelineFooter";
-import { QuizModal } from "./QuizModal";
+import { QuizModal, type QuizMode } from "./QuizModal";
 import { CHARACTER_STORAGE_KEY, T } from "./atlas/constants";
 import { QuizLeaderboardPage } from "./leaderboard/QuizLeaderboardPage";
 import { SavedCharacterResult } from "./atlas/types";
@@ -37,6 +37,7 @@ export default function AtlasApp() {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [characterOpen, setCharacterOpen] = useState(false);
   const [quizOpen, setQuizOpen] = useState(false);
+  const [quizMode, setQuizMode] = useState<QuizMode>("grade");
   const [leaderboardVersion] = useState(0);
   const [currentView, setCurrentView] = useState<"map" | "leaderboard">("map");
   const [timelineAutoPlaying, setTimelineAutoPlaying] = useState(false);
@@ -112,7 +113,7 @@ export default function AtlasApp() {
 
 <QuizModal
   isOpen={quizOpen}
-  mode="grade"
+  mode={quizMode}
   onClose={() => setQuizOpen(false)}
   userName={user?.fullName ?? undefined}
   onScoreSaved={() => {}}
@@ -126,7 +127,10 @@ export default function AtlasApp() {
           mapMode={mapMode}
           onMapModeChange={setMapMode}
           onOpenCharacter={() => setCharacterOpen(true)}
-          onOpenQuiz={() => setQuizOpen(true)}
+          onOpenQuiz={(mode: QuizMode) => {
+            setQuizMode(mode);
+            setQuizOpen(true);
+          }}
           onOpenMap={() => setCurrentView("map")}
           onOpenLeaderboard={() => setCurrentView("leaderboard")}
           onSelectSearchResult={(feature: { properties: { year: SetStateAction<number>; slug: any; }; }) => {
@@ -151,7 +155,7 @@ export default function AtlasApp() {
             />
           ) : (
             <>
-              <div className="absolute inset-x-0 top-0 bottom-44 z-0 md:bottom-48 lg:bottom-44">
+              <div className="absolute inset-x-0 top-0 bottom-[7.5rem] z-0 md:bottom-32 lg:bottom-[7.5rem]">
                 {mapMode === "globe" && <GlobeMap {...sharedMapProps} />}
                 {mapMode === "historical" && <HistoricalMap {...sharedMapProps} />}
               </div>
@@ -178,7 +182,7 @@ export default function AtlasApp() {
               )}
 
               <div
-                className="absolute bottom-44 right-4 top-16 z-20 hidden w-[340px] flex-col xl:flex"
+                className="absolute bottom-[7.5rem] right-4 top-16 z-20 hidden w-[340px] flex-col xl:flex"
                 style={{ pointerEvents: selectedFeature || adminMode ? "auto" : "none" }}
               >
                 {drawer}
