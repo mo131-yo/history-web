@@ -176,7 +176,12 @@
 
 
 import maplibregl from "maplibre-gl";
-import { createDraftPolygon, createVertexCollection } from "./historicalMapGeo";
+import {
+  createDraftPolygon,
+  createFlagCollection,
+  createVertexCollection,
+  loadFlagImages,
+} from "./historicalMapGeo";
 
 type MapLibreMap = InstanceType<typeof maplibregl.Map>;
 
@@ -188,6 +193,16 @@ export function addHistoricalMapSources(
     map.addSource("atlas-states", {
       type: "geojson",
       data: collection,
+    });
+  }
+
+  const flagCollection = createFlagCollection(collection);
+  void loadFlagImages(map, flagCollection);
+
+  if (!map.getSource("state-flags")) {
+    map.addSource("state-flags", {
+      type: "geojson",
+      data: flagCollection,
     });
   }
 
@@ -274,6 +289,39 @@ export function addHistoricalMapLayers(
         "text-halo-color": "rgba(5,6,8,0.9)",
         "text-halo-width": 1.9,
         "text-halo-blur": 0.8,
+      },
+    });
+  }
+
+  if (!map.getLayer("state-flags")) {
+    map.addLayer({
+      id: "state-flags",
+      type: "symbol",
+      source: "state-flags",
+      layout: {
+        "icon-image": ["concat", "flag-", ["get", "flagAsset"]],
+        "icon-size": [
+          "interpolate",
+          ["linear"],
+          ["zoom"],
+          2,
+          0.2,
+          4,
+          0.28,
+          6,
+          0.38,
+        ],
+        "icon-anchor": "bottom",
+        "icon-allow-overlap": true,
+        "icon-ignore-placement": true,
+      },
+      paint: {
+        "icon-opacity": [
+          "case",
+          ["==", ["get", "slug"], selectedSlug ?? ""],
+          1,
+          0.9,
+        ],
       },
     });
   }

@@ -1,6 +1,6 @@
 "use client";
 import dynamic from "next/dynamic";
-import { useMemo, useSyncExternalStore, useState, SetStateAction } from "react";
+import { useEffect, useMemo, useSyncExternalStore, useState, SetStateAction } from "react";
 import { useUser } from "@clerk/nextjs";
 import SelectedStateDrawer from "@/app/components/SelectedStateDrawer";
 import { Sidebar } from "@/app/components/Sidebar";
@@ -39,6 +39,7 @@ export default function AtlasApp() {
   const [quizOpen, setQuizOpen] = useState(false);
   const [leaderboardVersion] = useState(0);
   const [currentView, setCurrentView] = useState<"map" | "leaderboard">("map");
+  const [timelineAutoPlaying, setTimelineAutoPlaying] = useState(false);
   const [liveCharacterResult, setLiveCharacterResult] = useState<SavedCharacterResult | null>(null);
   const storedCharacterResultRaw = useSyncExternalStore(
     subscribeCharacterResult,
@@ -68,6 +69,20 @@ export default function AtlasApp() {
     sharedMapProps,
     coordEditorProps,
   } = useAtlasEditor(year, adminMode);
+
+  useEffect(() => {
+    if (!timelineAutoPlaying || currentView !== "map" || years.length < 2) return;
+
+    const timer = window.setInterval(() => {
+      setYear((currentYear) => {
+        const currentIndex = years.findIndex((timelineYear) => timelineYear === currentYear);
+        const nextIndex = currentIndex >= 0 ? (currentIndex + 1) % years.length : 0;
+        return years[nextIndex] ?? currentYear;
+      });
+    }, 1800);
+
+    return () => window.clearInterval(timer);
+  }, [currentView, timelineAutoPlaying, years]);
 
   const drawer = adminMode ? (
     <div className="flex-1 overflow-hidden">
@@ -169,7 +184,13 @@ export default function AtlasApp() {
                 {drawer}
               </div>
 
-              <AtlasTimelineFooter year={year} years={years} onYearChange={setYear} />
+              <AtlasTimelineFooter
+                year={year}
+                years={years}
+                isAutoPlaying={timelineAutoPlaying}
+                onAutoToggle={() => setTimelineAutoPlaying((value) => !value)}
+                onYearChange={setYear}
+              />
 
               <div className="relative z-10 px-3 pb-4 pt-[calc(100vw*0.62+15rem)] sm:px-4 md:pt-[calc(100vw*0.5+16rem)] lg:pt-[calc(70vh+1rem)] xl:hidden">
                 {drawer}

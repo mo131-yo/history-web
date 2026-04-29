@@ -6,10 +6,14 @@ import { T } from "./constants";
 export function AtlasTimelineFooter({
   year,
   years,
+  isAutoPlaying,
+  onAutoToggle,
   onYearChange,
 }: {
   year: number;
   years: number[];
+  isAutoPlaying: boolean;
+  onAutoToggle: () => void;
   onYearChange: (year: number) => void;
 }) {
   return (
@@ -85,7 +89,13 @@ export function AtlasTimelineFooter({
           </div>
 
           <div className="flex-1">
-            <TimelineSlider years={years} currentYear={year} onYearChange={onYearChange} />
+            <TimelineSlider
+              years={years}
+              currentYear={year}
+              isAutoPlaying={isAutoPlaying}
+              onAutoToggle={onAutoToggle}
+              onYearChange={onYearChange}
+            />
           </div>
         </div>
       </div>

@@ -32,7 +32,7 @@ export async function ensureUsersTable() {
   await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS username TEXT`;
   await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS image_url TEXT`;
   await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()`;
-  await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()`;
+  await sql`ALTER TABLE users ADD COLUMN IF NO  T EXISTS updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()`;
   await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS last_seen_at TIMESTAMPTZ NOT NULL DEFAULT NOW()`;
   await sql`CREATE UNIQUE INDEX IF NOT EXISTS users_clerk_user_id_unique_idx ON users (clerk_user_id)`;
   await sql`CREATE INDEX IF NOT EXISTS users_clerk_user_id_idx ON users (clerk_user_id)`;
