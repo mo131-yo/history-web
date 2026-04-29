@@ -61,9 +61,11 @@ import type {
 } from "./historicalMapTypes";
 import {
   createDraftPolygon,
+  createFlagCollection,
   createVertexCollection,
   getFeatureBounds,
   getFeatureCenter,
+  loadFlagImages,
   normalizeLngLatLike,
   safeSetData,
 } from "./historicalMapGeo";
@@ -80,14 +82,20 @@ export function syncCollection(
   if (!map) return;
 
   const push = () => {
+    const emptyCollection = {
+      type: "FeatureCollection" as const,
+      features: [],
+    };
+    const nextCollection = collection ?? emptyCollection;
+    const flagCollection = createFlagCollection(nextCollection);
+
     safeSetData(
       map,
       "atlas-states",
-      collection ?? {
-        type: "FeatureCollection",
-        features: [],
-      }
+      nextCollection
     );
+    safeSetData(map, "state-flags", flagCollection);
+    void loadFlagImages(map, flagCollection);
 
     if (!selectedSlug || !collection) return;
 
