@@ -24,10 +24,9 @@ import type { AtlasLayerVisibility, SavedCharacterResult } from "./atlas/types";
 import { useAtlasEditor } from "./atlas/useAtlasEditor";
 import { ensureEditableRing } from "@/lib/geometry";
 
-const CoordEditor = dynamic(
-  () => import("@/app/components/CoordEditor"),
-  { ssr: false }
-) as any;
+const CoordEditor = dynamic(() => import('@/app/components/CoordEditor'), {
+  ssr: false,
+}) as any;
 
 const GlobeMap = dynamic(
   () => import("@/app/components/Globemap").then((m) => ({ default: m.default })),
@@ -35,23 +34,27 @@ const GlobeMap = dynamic(
 );
 
 const HistoricalMap = dynamic(
-  () => import("@/app/components/HistoricalMap").then((m) => ({ default: m.default })),
-  { ssr: false, loading: () => <MapLoader label="Түүхэн зураг" /> }
+  () =>
+    import('@/app/components/HistoricalMap').then((m) => ({
+      default: m.default,
+    })),
+  { ssr: false, loading: () => <MapLoader label="Түүхэн зураг" /> },
 );
 
 export default function AtlasApp() {
   const { user, isLoaded } = useUser();
   const adminMode = isLoaded && !!user;
   const [year, setYear] = useState(1206);
-  const [mapMode, setMapMode] = useState<"globe" | "historical">("historical");
+  const [mapMode, setMapMode] = useState<'globe' | 'historical'>('historical');
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [characterOpen, setCharacterOpen] = useState(false);
   const [quizOpen, setQuizOpen] = useState(false);
-  const [quizMode, setQuizMode] = useState<QuizMode>("grade");
+  const [quizMode, setQuizMode] = useState<QuizMode>('grade');
   const [leaderboardVersion] = useState(0);
-  const [currentView, setCurrentView] = useState<"map" | "leaderboard">("map");
+  const [currentView, setCurrentView] = useState<'map' | 'leaderboard'>('map');
   const [timelineAutoPlaying, setTimelineAutoPlaying] = useState(false);
-  const [liveCharacterResult, setLiveCharacterResult] = useState<SavedCharacterResult | null>(null);
+  const [liveCharacterResult, setLiveCharacterResult] =
+    useState<SavedCharacterResult | null>(null);
   const [pendingFeedbackCount, setPendingFeedbackCount] = useState(0);
   const [battleEvents, setBattleEvents] = useState<AtlasEventFeatureCollection | null>(null);
   const [selectedEventSlug, setSelectedEventSlug] = useState<string | null>(null);
@@ -79,7 +82,8 @@ export default function AtlasApp() {
     }
   }, [storedCharacterResultRaw]);
   const characterResult = liveCharacterResult ?? storedCharacterResult;
-  const playerName = user?.fullName ?? user?.primaryEmailAddress?.emailAddress ?? "Зочин";
+  const playerName =
+    user?.fullName ?? user?.primaryEmailAddress?.emailAddress ?? 'Зочин';
   const isGuest = !user;
 
   const {
@@ -138,8 +142,11 @@ export default function AtlasApp() {
 
     const timer = window.setInterval(() => {
       setYear((currentYear) => {
-        const currentIndex = years.findIndex((timelineYear) => timelineYear === currentYear);
-        const nextIndex = currentIndex >= 0 ? (currentIndex + 1) % years.length : 0;
+        const currentIndex = years.findIndex(
+          (timelineYear) => timelineYear === currentYear,
+        );
+        const nextIndex =
+          currentIndex >= 0 ? (currentIndex + 1) % years.length : 0;
         return years[nextIndex] ?? currentYear;
       });
     }, 1800);
@@ -155,14 +162,15 @@ export default function AtlasApp() {
 
     const controller = new AbortController();
     const loadPendingFeedbackCount = () => {
-      fetch("/api/atlas/feedback?status=pending", { signal: controller.signal })
+      fetch('/api/atlas/feedback?status=pending', { signal: controller.signal })
         .then((response) => {
-          if (!response.ok) throw new Error("Feedback notification failed");
+          if (!response.ok) throw new Error('Feedback notification failed');
           return response.json() as Promise<{ count?: number }>;
         })
         .then((data) => setPendingFeedbackCount(data.count ?? 0))
         .catch((error) => {
-          if (error instanceof DOMException && error.name === "AbortError") return;
+          if (error instanceof DOMException && error.name === 'AbortError')
+            return;
           setPendingFeedbackCount(0);
         });
     };
@@ -252,7 +260,10 @@ export default function AtlasApp() {
   return (
     <main
       className="min-h-screen overflow-hidden"
-      style={{ background: T.bg, fontFamily: "var(--font-inter), Arial, sans-serif" }}
+      style={{
+        background: T.bg,
+        fontFamily: 'var(--font-inter), Arial, sans-serif',
+      }}
     >
       {characterOpen && (
         <AtlasCharacterRpgModal
@@ -271,7 +282,7 @@ export default function AtlasApp() {
         onScoreSaved={() => {}}
       />
 
-      <div className="flex min-h-screen flex-col lg:h-screen lg:flex-row lg:overflow-hidden">
+      <div className="flex flex-col min-h-screen lg:h-screen lg:flex-row lg:overflow-hidden">
         <Sidebar
           year={year}
           search={search}
@@ -283,10 +294,12 @@ export default function AtlasApp() {
             setQuizMode(mode);
             setQuizOpen(true);
           }}
-          onOpenMap={() => setCurrentView("map")}
-          onOpenLeaderboard={() => setCurrentView("leaderboard")}
-          onSelectSearchResult={(feature: { properties: { year: SetStateAction<number>; slug: any; }; }) => {
-            setCurrentView("map");
+          onOpenMap={() => setCurrentView('map')}
+          onOpenLeaderboard={() => setCurrentView('leaderboard')}
+          onSelectSearchResult={(feature: {
+            properties: { year: SetStateAction<number>; slug: any };
+          }) => {
+            setCurrentView('map');
             setYear(feature.properties.year);
             setSelectedSlug(feature.properties.slug, {
               focus: true,
@@ -304,7 +317,7 @@ export default function AtlasApp() {
         />
 
         <section className="relative flex min-h-[620px] flex-1 flex-col overflow-hidden md:min-h-[720px] lg:h-screen lg:min-h-0">
-          {currentView === "leaderboard" ? (
+          {currentView === 'leaderboard' ? (
             <QuizLeaderboardPage
               version={leaderboardVersion}
               onStartQuiz={() => setQuizOpen(true)}
@@ -340,11 +353,11 @@ export default function AtlasApp() {
                 <div
                   className="absolute left-4 top-16 z-30 flex items-center gap-2 rounded-lg px-4 py-2.5 text-xs lg:left-auto lg:right-4"
                   style={{
-                    background: "rgba(20,4,4,0.96)",
-                    border: "1px solid rgba(150,40,40,0.5)",
-                    color: "#f08080",
-                    backdropFilter: "blur(12px)",
-                    fontFamily: "var(--font-inter), Arial, sans-serif",
+                    background: 'rgba(20,4,4,0.96)',
+                    border: '1px solid rgba(150,40,40,0.5)',
+                    color: '#f08080',
+                    backdropFilter: 'blur(12px)',
+                    fontFamily: 'var(--font-inter), Arial, sans-serif',
                   }}
                 >
                   <span style={{ fontSize: 11 }}>⚠</span>
@@ -354,7 +367,9 @@ export default function AtlasApp() {
 
               <div
                 className="absolute bottom-[7.5rem] right-4 top-16 z-20 hidden w-[340px] flex-col xl:flex"
-                style={{ pointerEvents: selectedFeature || adminMode ? "auto" : "none" }}
+                style={{
+                  pointerEvents: selectedFeature || adminMode ? 'auto' : 'none',
+                }}
               >
                 {drawer}
               </div>
@@ -379,18 +394,18 @@ export default function AtlasApp() {
 }
 
 function subscribeCharacterResult(onStoreChange: () => void) {
-  if (typeof window === "undefined") return () => {};
+  if (typeof window === 'undefined') return () => {};
   const handleChange = () => onStoreChange();
-  window.addEventListener("storage", handleChange);
-  window.addEventListener("focus", handleChange);
+  window.addEventListener('storage', handleChange);
+  window.addEventListener('focus', handleChange);
   return () => {
-    window.removeEventListener("storage", handleChange);
-    window.removeEventListener("focus", handleChange);
+    window.removeEventListener('storage', handleChange);
+    window.removeEventListener('focus', handleChange);
   };
 }
 
 function readCharacterResultRawSnapshot(): string | null {
-  if (typeof window === "undefined") return null;
+  if (typeof window === 'undefined') return null;
   try {
     return localStorage.getItem(CHARACTER_STORAGE_KEY);
   } catch {
