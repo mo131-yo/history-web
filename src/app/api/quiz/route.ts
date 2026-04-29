@@ -4,6 +4,12 @@ export async function POST(req: Request) {
   try {
     const openai = getOpenAIClient();
     const { yearData } = await req.json();
+    const apiKey = process.env.OPENAI_API_KEY ?? process.env.OPENAI_KEY;
+    if (!apiKey) {
+      return Response.json({ error: "OPENAI_API_KEY эсвэл OPENAI_KEY тохируулагдаагүй байна." }, { status: 503 });
+    }
+
+    const openai = new OpenAI({ apiKey });
 
     const prompt = `
       Чи бол түүхийн багш. Дараах түүхэн GeoJSON өгөгдөл дээр үндэслэн 3 асуулттай сонирхолтой Quiz үүсгэ.
@@ -47,13 +53,4 @@ export async function POST(req: Request) {
     console.error("OpenAI Route Error:", error);
     return Response.json({ error: error.message }, { status: 500 });
   }
-}
-
-function getOpenAIClient() {
-  const apiKey = process.env.OPENAI_API_KEY ?? process.env.OPENAI_KEY;
-  if (!apiKey) {
-    throw new Error("Missing OpenAI API key");
-  }
-
-  return new OpenAI({ apiKey });
 }

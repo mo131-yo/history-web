@@ -27,6 +27,16 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ text: cached, cached: true });
     }
 
+    const apiKey = process.env.OPENAI_API_KEY ?? process.env.OPENAI_KEY;
+    if (!apiKey) {
+      return NextResponse.json({
+        text: buildFallbackInsight(year, state),
+        cached: false,
+        unavailable: true,
+      });
+    }
+
+    const openai = new OpenAI({ apiKey });
     const periodName = state.metadata?.periodName
       ? ` (тухайн үеийн нэр: «${String(state.metadata.periodName)}»)`
       : "";
@@ -70,15 +80,29 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ text, cached: false });
   } catch (err) {
     console.error("[insight]", err);
-    return NextResponse.json({ error: "Серверийн алдаа." }, { status: 500 });
+    return NextResponse.json({ error: "Түүхч тайлбар үүсгэхэд алдаа гарлаа." }, { status: 502 });
   }
 }
 
-function getOpenAIClient() {
-  const apiKey = process.env.OPENAI_API_KEY ?? process.env.OPENAI_KEY;
-  if (!apiKey) {
-    throw new Error("Missing OpenAI API key");
-  }
+function buildFallbackInsight(
+  year: number,
+  state: {
+    name: string;
+    leader: string;
+    capital: string;
+    summary: string;
+    metadata?: Record<string, unknown>;
+  },
+) {
+  const periodName = state.metadata?.periodName
+    ? `, тухайн үеийн нэршлээр «${String(state.metadata.periodName)}»`
+    : "";
 
-  return new OpenAI({ apiKey });
+  return `## ${state.name}
+
+**${year} он**-д ${state.name}${periodName} нь ${state.capital} төвтэй, ${state.leader} удирдагчтай улс/нутаг дэвсгэр байв.
+
+${state.summary}
+
+AI түүхч тайлбар одоогоор идэвхгүй байна. Сервер дээр \`OPENAI_API_KEY\` эсвэл \`OPENAI_KEY\` тохируулсны дараа энэ хэсэг илүү дэлгэрэнгүй тайлбараар шинэчлэгдэнэ.`;
 }

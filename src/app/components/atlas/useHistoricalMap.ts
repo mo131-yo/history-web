@@ -331,7 +331,7 @@ export function useHistoricalMap(
       );
 
       map.on("click", ["states-fill", "states-labels", "state-flags"], (event: any) => {
-        if (isCreatingRef.current) return;
+        if (isCreatingRef.current || isEditingRef.current) return;
 
         const slug = event.features?.[0]?.properties?.slug;
 
@@ -382,7 +382,7 @@ export function useHistoricalMap(
       });
 
       map.on("mousemove", ["states-fill", "states-labels", "state-flags"], (event: any) => {
-        if (isCreatingRef.current) return;
+        if (isCreatingRef.current || isEditingRef.current) return;
 
         const slug = event.features?.[0]?.properties?.slug;
 
@@ -400,7 +400,7 @@ export function useHistoricalMap(
       });
 
       map.on("mouseenter", ["states-fill", "states-labels", "state-flags"], () => {
-        if (!isCreatingRef.current) {
+        if (!isCreatingRef.current && !isEditingRef.current) {
           map.getCanvas().style.cursor = "pointer";
         }
       });

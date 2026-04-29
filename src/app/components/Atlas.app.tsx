@@ -22,6 +22,7 @@ import { CHARACTER_STORAGE_KEY, T } from "./atlas/constants";
 import { QuizLeaderboardPage } from "./leaderboard/QuizLeaderboardPage";
 import type { AtlasLayerVisibility, SavedCharacterResult } from "./atlas/types";
 import { useAtlasEditor } from "./atlas/useAtlasEditor";
+import { ensureEditableRing } from "@/lib/geometry";
 
 const CoordEditor = dynamic(
   () => import("@/app/components/CoordEditor"),
@@ -52,14 +53,10 @@ export default function AtlasApp() {
   const [timelineAutoPlaying, setTimelineAutoPlaying] = useState(false);
   const [liveCharacterResult, setLiveCharacterResult] = useState<SavedCharacterResult | null>(null);
   const [pendingFeedbackCount, setPendingFeedbackCount] = useState(0);
-  const [battleEvents, setBattleEvents] = useState<AtlasEventFeatureCollection | null>(null);
-  const [selectedEventSlug, setSelectedEventSlug] = useState<string | null>(null);
-  const [layerVisibility, setLayerVisibility] = useState<AtlasLayerVisibility>({
-    states: true,
-    labels: true,
-    capitals: true,
-    battles: true,
-  });
+  const [feedbackEditing, setFeedbackEditing] = useState(false);
+  const [feedbackAddPointMode, setFeedbackAddPointMode] = useState(false);
+  const [feedbackDraftRing, setFeedbackDraftRing] = useState<Array<[number, number]>>([]);
+  const [feedbackSelectedVertexIndex, setFeedbackSelectedVertexIndex] = useState<number | null>(null);
   const storedCharacterResultRaw = useSyncExternalStore(
     subscribeCharacterResult,
     readCharacterResultRawSnapshot,
@@ -90,35 +87,12 @@ export default function AtlasApp() {
   } = useAtlasEditor(year, adminMode);
 
   useEffect(() => {
-    const controller = new AbortController();
-
-    fetch(`/api/atlas-events?year=${year}`, { signal: controller.signal })
-      .then(async (response) => {
-        if (!response.ok) throw new Error("Event fetch failed");
-        return response.json() as Promise<AtlasEventFeatureCollection>;
-      })
-      .then((data) => setBattleEvents(data))
-      .catch((error) => {
-        if (error instanceof DOMException && error.name === "AbortError") return;
-        setBattleEvents({
-          type: "FeatureCollection",
-          year,
-          features: [],
-        });
-      });
-
-    return () => controller.abort();
-  }, [year]);
-
-  useEffect(() => {
-    setSelectedEventSlug((current) => {
-      if (!current) return null;
-      const exists = battleEvents?.features.some(
-        (feature) => feature.properties.slug === current
-      );
-      return exists ? current : null;
-    });
-  }, [battleEvents, year]);
+    const coordinates = selectedFeature?.geometry.coordinates[0] as Array<[number, number]> | undefined;
+    setFeedbackEditing(false);
+    setFeedbackAddPointMode(false);
+    setFeedbackSelectedVertexIndex(null);
+    setFeedbackDraftRing(coordinates ? ensureEditableRing(coordinates) : []);
+  }, [selectedFeature?.properties.slug, year]);
 
   useEffect(() => {
     if (!timelineAutoPlaying || currentView !== "map" || years.length < 2) return;
@@ -173,27 +147,49 @@ export default function AtlasApp() {
       feature={selectedFeature}
       adminMode={adminMode}
       onClose={() => setSelectedSlug(null)}
+      feedbackEditor={{
+        isEditing: feedbackEditing,
+        addPointMode: feedbackAddPointMode,
+        draftRing: feedbackDraftRing,
+        onDraftRingChange: setFeedbackDraftRing,
+        selectedVertexIndex: feedbackSelectedVertexIndex,
+        onSelectVertex: setFeedbackSelectedVertexIndex,
+        onStart: () => {
+          const coordinates = selectedFeature?.geometry.coordinates[0] as Array<[number, number]> | undefined;
+          setFeedbackDraftRing((current) => current.length ? current : coordinates ? ensureEditableRing(coordinates) : []);
+          setFeedbackEditing(true);
+          setFeedbackAddPointMode(false);
+          setFeedbackSelectedVertexIndex(null);
+        },
+        onStop: () => {
+          setFeedbackEditing(false);
+          setFeedbackAddPointMode(false);
+          setFeedbackSelectedVertexIndex(null);
+        },
+        onToggleAddPoint: () => setFeedbackAddPointMode((value) => !value),
+        onReset: () => {
+          const coordinates = selectedFeature?.geometry.coordinates[0] as Array<[number, number]> | undefined;
+          setFeedbackDraftRing(coordinates ? ensureEditableRing(coordinates) : []);
+          setFeedbackAddPointMode(false);
+          setFeedbackSelectedVertexIndex(null);
+        },
+      }}
     />
   );
 
-  const selectedEvent = useMemo(
-    () =>
-      battleEvents?.features.find(
-        (feature) => feature.properties.slug === selectedEventSlug
-      ) ?? null,
-    [battleEvents, selectedEventSlug]
-  );
-
-  const mapSceneProps = useMemo(
-    () => ({
-      ...sharedMapProps,
-      battleEvents,
-      selectedEventSlug,
-      onSelectEvent: setSelectedEventSlug,
-      layerVisibility,
-    }),
-    [battleEvents, layerVisibility, selectedEventSlug, sharedMapProps]
-  );
+  const visibleMapProps =
+    !adminMode && feedbackEditing
+      ? {
+          ...sharedMapProps,
+          isEditing: true,
+          isCreating: false,
+          addPointMode: feedbackAddPointMode,
+          draftRing: feedbackDraftRing,
+          onDraftRingChange: setFeedbackDraftRing,
+          selectedVertexIndex: feedbackSelectedVertexIndex,
+          onSelectVertex: setFeedbackSelectedVertexIndex,
+        }
+      : sharedMapProps;
 
   return (
     <main
@@ -258,8 +254,8 @@ export default function AtlasApp() {
           ) : (
             <>
               <div className="absolute inset-x-0 top-0 bottom-[7.5rem] z-0 md:bottom-32 lg:bottom-[7.5rem]">
-                {mapMode === "globe" && <GlobeMap {...mapSceneProps} />}
-                {mapMode === "historical" && <HistoricalMap {...mapSceneProps} />}
+                {mapMode === "globe" && <GlobeMap {...visibleMapProps} />}
+                {mapMode === "historical" && <HistoricalMap {...visibleMapProps} />}
               </div>
 
               <AtlasHeader
