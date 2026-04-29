@@ -48,7 +48,7 @@ export default function AtlasApp() {
   const [characterOpen, setCharacterOpen] = useState(false);
   const [quizOpen, setQuizOpen] = useState(false);
   const [quizMode, setQuizMode] = useState<QuizMode>("grade");
-  const [leaderboardVersion] = useState(0);
+  const [leaderboardVersion, setLeaderboardVersion] = useState(0);
   const [currentView, setCurrentView] = useState<"map" | "leaderboard">("map");
   const [timelineAutoPlaying, setTimelineAutoPlaying] = useState(false);
   const [liveCharacterResult, setLiveCharacterResult] = useState<SavedCharacterResult | null>(null);
@@ -268,7 +268,7 @@ export default function AtlasApp() {
         mode={quizMode}
         onClose={() => setQuizOpen(false)}
         userName={user?.fullName ?? undefined}
-        onScoreSaved={() => {}}
+        onScoreSaved={() => setLeaderboardVersion((value) => value + 1)}
       />
 
       <div className="flex min-h-screen flex-col lg:h-screen lg:flex-row lg:overflow-hidden">

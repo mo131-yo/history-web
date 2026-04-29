@@ -461,7 +461,7 @@ function AdminFeedbackNotice({
       >
         <Bell className="size-4 shrink-0" />
         <span className="min-w-0 flex-1 truncate text-xs font-semibold">
-          Coordinate feedback
+          Feedback review
         </span>
         <span className="rounded-full px-2 py-0.5 text-[10px] font-bold" style={{ background: `${T.amber}22` }}>
           {pendingFeedbackCount}
@@ -489,7 +489,9 @@ function AdminFeedbackNotice({
                 {item.userName}: {item.comment}
               </p>
               <p className="mt-1 text-[10px]" style={{ color: T.textSub }}>
-                {item.proposedGeometry?.coordinates?.[0]?.length ?? 0} coordinate point
+                {item.proposedGeometry
+                  ? `${item.proposedGeometry.coordinates?.[0]?.length ?? 0} coordinate point`
+                  : "Guest feedback"}
               </p>
               <div className="mt-2 grid grid-cols-2 gap-2">
                 <button
@@ -499,7 +501,7 @@ function AdminFeedbackNotice({
                   style={{ background: "rgba(34,197,94,0.13)", border: "1px solid rgba(34,197,94,0.35)", color: "#86efac" }}
                 >
                   <Check className="size-3" />
-                  Зөвшөөрөх
+                  {item.proposedGeometry ? "Зөвшөөрөх" : "Нийтлэх"}
                 </button>
                 <button
                   type="button"
