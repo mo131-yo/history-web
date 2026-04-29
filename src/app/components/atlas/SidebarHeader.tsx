@@ -32,10 +32,10 @@ export function SidebarHeader({
           type="button"
           onClick={onToggleCollapsed}
           className="flex items-center justify-center mt-1 transition-all duration-200 rounded-lg h-9 w-9 shrink-0 hover:scale-105 sm:h-10 sm:w-10"
-          style={{ background: T.amberGlow, border: `1px solid ${T.amber}33` }}
+          style={{ background: T.bg, border: `1px solid ${T.amber}33` }}
           title={collapsed ? "Sidebar нээх" : "Sidebar хураах"}
         >
-          <div className="relative flex items-center justify-center">
+          <div className="relative flex items-center justify-center ">
             <Globe className="size-4 sm:size-5" style={{ color: T.amber }} />
             <ChevronRight
               className="absolute transition-transform duration-300 -right-3 size-3"
