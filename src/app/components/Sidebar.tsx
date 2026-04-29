@@ -96,7 +96,7 @@ export function Sidebar({
   const [quizExpanded, setQuizExpanded] = useState(false);
   const [mapExpanded, setMapExpanded] = useState(false);
   const trimmedSearch = search.trim();
-  
+
   const navItems: SidebarNavItem[] = [
     {
       id: 'character',
@@ -112,10 +112,10 @@ export function Sidebar({
       title: 'Quiz',
       subtitle: 'Атласын асуулт',
       icon: Trophy,
-     onClick: () => {
-  setMapExpanded(false);
-  setQuizExpanded((value) => !value);
-},
+      onClick: () => {
+        setMapExpanded(false);
+        setQuizExpanded((value) => !value);
+      },
       disabled: !quizEnabled,
     },
     {
@@ -123,10 +123,10 @@ export function Sidebar({
       title: 'Map',
       subtitle: mapMode === 'globe' ? '3D map' : 'Flat map',
       icon: Map,
-     onClick: () => {
-  onOpenMap();
-  setMapExpanded((prev) => !prev);
-},
+      onClick: () => {
+        onOpenMap();
+        setMapExpanded((prev) => !prev);
+      },
       active: currentView === 'map',
     },
   ];
@@ -331,6 +331,36 @@ export function Sidebar({
 
             return (
               <div key={item.id} className={collapsed ? 'w-11' : 'w-full'}>
+                {hasCharacterIcon && !collapsed && (
+                  <div className="flex items-center gap-2 px-2 mb-1">
+                    <CircleHelp className="size-3" style={{ color: T.textMuted }} />
+                    <span className="text-[10px] font-semibold uppercase tracking-wider" style={{color: T.textMuted}}>
+                      Навигаци
+                    </span>
+                  </div>
+                )}
+                {isQuiz && !collapsed && (
+                  <div className="flex items-center gap-2 px-2 mb-1">
+                    <Trophy className="size-3" style={{ color: T.textMuted }} />
+                    <span
+                      className="text-[10px] font-semibold uppercase tracking-wider"
+                      style={{ color: T.textMuted }}
+                    >
+                      Суралцах
+                    </span>
+                  </div>
+                )}
+                {isMap && !collapsed && (
+                  <div className="flex items-center gap-2 px-2 mb-1">
+                    <Map className="size-3" style={{ color: T.textMuted }} />
+                    <span
+                      className="text-[10px] font-semibold uppercase tracking-wider"
+                      style={{ color: T.textMuted }}
+                    >
+                      Газрын зураг
+                    </span>
+                  </div>
+                )}
                 <button
                   type="button"
                   onClick={item.onClick}
@@ -423,7 +453,6 @@ export function Sidebar({
                     />
                   </div>
                 )}
-                
 
                 {isMap && !collapsed && mapExpanded && (
                   <div className="grid grid-cols-2 gap-2 mt-2">
@@ -441,7 +470,6 @@ export function Sidebar({
                     />
                   </div>
                 )}
-                
               </div>
             );
           })}
