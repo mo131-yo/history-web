@@ -164,9 +164,12 @@ import {
   normalizeLngLatLike,
 } from "./historicalMapGeo";
 import {
+  syncBattleEvents,
   syncCollection,
   syncDraft,
+  syncLayerVisibility,
   syncSelection,
+  syncSelectedFeatureFocus,
 } from "./historicalMapSync";
 import {
   MAPTILER_DEFAULT_CENTER,
@@ -187,7 +190,12 @@ export function useHistoricalMap(
   {
     collection,
     selectedSlug,
+    focusRequest,
+    battleEvents,
+    selectedEventSlug,
+    layerVisibility,
     onSelectSlug,
+    onSelectEvent,
     isEditing,
     isCreating,
     addPointMode,
@@ -202,7 +210,10 @@ export function useHistoricalMap(
 
   const collectionRef = useRef(collection);
   const selectedSlugRef = useRef(selectedSlug);
+  const selectedEventSlugRef = useRef(selectedEventSlug);
+  const onSelectEventRef = useRef(onSelectEvent);
   const hoveredSlugRef = useRef<string | null>(null);
+  const handledFocusRequestIdRef = useRef<number | null>(null);
 
   const isEditingRef = useRef(isEditing);
   const isCreatingRef = useRef(isCreating);
@@ -223,6 +234,8 @@ export function useHistoricalMap(
   useEffect(() => {
     collectionRef.current = collection;
     selectedSlugRef.current = selectedSlug;
+    selectedEventSlugRef.current = selectedEventSlug;
+    onSelectEventRef.current = onSelectEvent;
     isEditingRef.current = isEditing;
     isCreatingRef.current = isCreating;
     addPointModeRef.current = addPointMode;
@@ -247,16 +260,16 @@ export function useHistoricalMap(
     // }) as MapLibreMap;
 
     const map = new maplibregl.Map({
-  container: containerRef.current,
-  style: MAPTILER_HYBRID_STYLE,
-  center: view?.center ?? MAPTILER_DEFAULT_CENTER,
-  zoom: view?.zoom ?? MAPTILER_DEFAULT_ZOOM,
-  pitch: view?.pitch ?? 0,
-  bearing: view?.bearing ?? 0,
-  maxPitch: view?.maxPitch ?? 85,
-  attributionControl: false,
-  renderWorldCopies: !globeMode,
-}) as MapLibreMap;
+      container: containerRef.current,
+      style: MAPTILER_HYBRID_STYLE,
+      center: view?.center ?? MAPTILER_DEFAULT_CENTER,
+      zoom: view?.zoom ?? MAPTILER_DEFAULT_ZOOM,
+      pitch: view?.pitch ?? 0,
+      bearing: view?.bearing ?? 0,
+      maxPitch: view?.maxPitch ?? 85,
+      attributionControl: false,
+      renderWorldCopies: !globeMode,
+    }) as MapLibreMap;
 
     map.addControl(
       new maplibregl.NavigationControl({ visualizePitch: globeMode }),
@@ -306,8 +319,19 @@ export function useHistoricalMap(
         source?.setData(collectionRef.current);
       }
 
+      const battleEventsSource = map.getSource("battle-events") as
+        | GeoJSONSource
+        | undefined;
+      battleEventsSource?.setData(
+        battleEvents ?? {
+          type: "FeatureCollection",
+          year: 0,
+          features: [],
+        }
+      );
+
       map.on("click", ["states-fill", "states-labels", "state-flags"], (event: any) => {
-        if (isCreatingRef.current) return;
+        if (isCreatingRef.current || isEditingRef.current) return;
 
         const slug = event.features?.[0]?.properties?.slug;
 
@@ -333,14 +357,14 @@ export function useHistoricalMap(
         if (bounds) {
           map.fitBounds(bounds, {
             padding: focusPaddingRef.current,
-            maxZoom: 4.2,
+            maxZoom: 2.8,
             duration: 900,
             essential: true,
           });
         } else if (center) {
           map.flyTo({
             center,
-            zoom: Math.max(Math.min(map.getZoom() + 0.4, 4), 3.2),
+            zoom: Math.max(Math.min(map.getZoom() + 0.25, 2.8), 2.2),
             speed: 0.8,
             curve: 1.2,
             essential: true,
@@ -348,8 +372,17 @@ export function useHistoricalMap(
         }
       });
 
+      map.on("click", "battle-events", (event: any) => {
+        const slug = event.features?.[0]?.properties?.slug;
+        if (typeof slug === "string") {
+          onSelectEventRef.current(
+            slug === selectedEventSlugRef.current ? null : slug
+          );
+        }
+      });
+
       map.on("mousemove", ["states-fill", "states-labels", "state-flags"], (event: any) => {
-        if (isCreatingRef.current) return;
+        if (isCreatingRef.current || isEditingRef.current) return;
 
         const slug = event.features?.[0]?.properties?.slug;
 
@@ -367,9 +400,13 @@ export function useHistoricalMap(
       });
 
       map.on("mouseenter", ["states-fill", "states-labels", "state-flags"], () => {
-        if (!isCreatingRef.current) {
+        if (!isCreatingRef.current && !isEditingRef.current) {
           map.getCanvas().style.cursor = "pointer";
         }
+      });
+
+      map.on("mouseenter", "battle-events", () => {
+        map.getCanvas().style.cursor = "pointer";
       });
 
       map.on("mouseleave", ["states-fill", "states-labels", "state-flags"], () => {
@@ -381,6 +418,10 @@ export function useHistoricalMap(
           "",
         ]);
 
+        map.getCanvas().style.cursor = "";
+      });
+
+      map.on("mouseleave", "battle-events", () => {
         map.getCanvas().style.cursor = "";
       });
 
@@ -399,6 +440,11 @@ export function useHistoricalMap(
 
     mapRef.current = map;
 
+    const resizeMap = () => map.resize();
+    const resizeFrame = window.requestAnimationFrame(resizeMap);
+    const resizeTimer = window.setTimeout(resizeMap, 250);
+    window.addEventListener("resize", resizeMap);
+
     const resizeObserver =
       typeof ResizeObserver !== "undefined" && containerRef.current
         ? new ResizeObserver(() => map.resize())
@@ -410,6 +456,9 @@ export function useHistoricalMap(
       mapReadyRef.current = false;
 
       resizeObserver?.disconnect();
+      window.cancelAnimationFrame(resizeFrame);
+      window.clearTimeout(resizeTimer);
+      window.removeEventListener("resize", resizeMap);
 
       if (stopDraggingFromWindow) {
         window.removeEventListener("mouseup", stopDraggingFromWindow);
@@ -443,11 +492,31 @@ export function useHistoricalMap(
     syncCollection(
       mapRef.current,
       mapReadyRef.current,
+      collection
+    );
+  }, [collection]);
+
+  useEffect(() => {
+    syncBattleEvents(mapRef.current, mapReadyRef.current, battleEvents);
+  }, [battleEvents]);
+
+  useEffect(() => {
+    if (!focusRequest || handledFocusRequestIdRef.current === focusRequest.id) {
+      return;
+    }
+
+    const focused = syncSelectedFeatureFocus(
+      mapRef.current,
+      mapReadyRef.current,
       collection,
-      selectedSlug,
+      focusRequest,
       focusPaddingRef.current
     );
-  }, [collection, selectedSlug]);
+
+    if (focused) {
+      handledFocusRequestIdRef.current = focusRequest.id;
+    }
+  }, [collection, focusRequest?.id, focusRequest?.slug]);
 
   useEffect(() => {
     syncSelection(mapRef.current, mapReadyRef.current, selectedSlug);
@@ -456,6 +525,10 @@ export function useHistoricalMap(
   useEffect(() => {
     syncDraft(mapRef.current, mapReadyRef.current, draftRing, isEditing);
   }, [draftRing, isEditing]);
+
+  useEffect(() => {
+    syncLayerVisibility(mapRef.current, mapReadyRef.current, layerVisibility);
+  }, [layerVisibility]);
 
   return containerRef;
 }

@@ -5,6 +5,7 @@
 html {
   -webkit-text-size-adjust: 100%;
   font-family:
+    var(--font-inter),
     ui-sans-serif,
     system-ui,
     -apple-system,
@@ -27,6 +28,7 @@ body {
   font-family: inherit;
   line-height: inherit;
   margin: 0;
+  overflow-x: hidden;
 }
 h1,
 h2,

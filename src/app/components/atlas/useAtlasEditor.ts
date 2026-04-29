@@ -4,14 +4,20 @@ import { useCallback, useMemo, useState } from "react";
 import type { AtlasFeatureCollection } from "@/lib/types";
 import { emptyAtlasForm } from "./form";
 import { buildCoordEditorProps, buildSharedMapProps } from "./atlasEditorProps";
-import type { AtlasFormState, SaveState } from "./types";
+import type {
+  AtlasFormState,
+  SaveState,
+  SelectedFeatureFocusRequest,
+  SelectedSlugOptions,
+} from "./types";
 import { resetEditorStatus, useAtlasYears, useAtlasCollection } from "./AtlasEditorData";
 import { useSelectedFeatureDraftSync, buildResetCreateMode, buildSaveGeometry, buildDeleteState } from "./useAtlasEditorPersistence";
 
 export function useAtlasEditor(year: number, adminMode: boolean) {
   const [years, setYears] = useState<number[]>([]);
   const [collection, setCollection] = useState<AtlasFeatureCollection | null>(null);
-  const [selectedSlug, setSelectedSlug] = useState<string | null>(null);
+  const [selectedSlug, setSelectedSlugState] = useState<string | null>(null);
+  const [focusRequest, setFocusRequest] = useState<SelectedFeatureFocusRequest | null>(null);
   const [search, setSearch] = useState("");
   const [isEditing, setIsEditing] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
@@ -34,11 +40,11 @@ export function useAtlasEditor(year: number, adminMode: boolean) {
     );
   }, []);
 
-  useAtlasYears(year, years, setYears, setLoadError);
+  useAtlasYears(setYears, setLoadError);
   useAtlasCollection(
     year,
     setCollection,
-    setSelectedSlug,
+    setSelectedSlugState,
     resetUiState,
     setLoadError,
   );
@@ -59,9 +65,19 @@ export function useAtlasEditor(year: number, adminMode: boolean) {
 
   useSelectedFeatureDraftSync({ isCreating, selectedFeature, setDraftRing, setForm, setSelectedVertexIndex, setSaveState, setSaveError });
 
-  const handleSelectSlug = useCallback((slug: string) => {
-    setSelectedSlug(slug);
+  const setSelectedSlug = useCallback((slug: string | null, options?: SelectedSlugOptions) => {
+    setSelectedSlugState(slug);
+    if (!slug || !options?.focus) return;
+    setFocusRequest((current) => ({
+      id: (current?.id ?? 0) + 1,
+      slug,
+      year: options.year,
+    }));
   }, []);
+
+  const handleSelectSlug = useCallback((slug: string, options?: SelectedSlugOptions) => {
+    setSelectedSlug(slug, options);
+  }, [setSelectedSlug]);
 
   function handleDeleteVertex(index: number) {
     if (draftRing.length <= 4) return;
@@ -115,6 +131,7 @@ export function useAtlasEditor(year: number, adminMode: boolean) {
     adminMode,
     collection,
     selectedSlug,
+    focusRequest,
     onSelectSlug: handleSelectSlug,
     isEditing,
     isCreating,

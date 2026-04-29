@@ -1,12 +1,12 @@
 import OpenAI from "openai";
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_KEY,
-});
-
 export async function POST(req: Request) {
   try {
     const { message, historyContext } = await req.json();
+    const openai = createOpenAIClient();
+    if (!openai) {
+      return Response.json({ error: "OPENAI_API_KEY эсвэл OPENAI_KEY тохируулагдаагүй байна." }, { status: 503 });
+    }
 
     const contextStr = historyContext
       ? `Хэрэглэгч одоо **${historyContext.name ?? "нэргүй нутаг"}** нутаг дэвсгэрийг харж байна.${
@@ -68,4 +68,9 @@ export async function POST(req: Request) {
     console.error("OpenAI API алдаа:", error);
     return Response.json({ error: "AI алдаа гарлаа" }, { status: 500 });
   }
+}
+
+function createOpenAIClient() {
+  const apiKey = process.env.OPENAI_API_KEY ?? process.env.OPENAI_KEY;
+  return apiKey ? new OpenAI({ apiKey }) : null;
 }

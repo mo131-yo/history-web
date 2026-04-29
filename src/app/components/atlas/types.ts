@@ -1,6 +1,10 @@
 "use client";
 
-import type { AtlasFeatureCollection, AtlasStateFeature } from "@/lib/types";
+import type {
+  AtlasEventFeatureCollection,
+  AtlasFeatureCollection,
+  AtlasStateFeature,
+} from "@/lib/types";
 
 export type MapMode = "globe" | "historical";
 
@@ -56,10 +60,22 @@ export type AtlasFormState = {
 
 export type SaveState = "idle" | "saving" | "saved" | "error";
 
+export type SelectedSlugOptions = {
+  focus?: boolean;
+  year?: number;
+};
+
+export type SelectedFeatureFocusRequest = {
+  id: number;
+  slug: string;
+  year?: number;
+};
+
 export type SharedMapProps = {
   collection: AtlasFeatureCollection | null;
   selectedSlug: string | null;
-  onSelectSlug: (slug: string) => void;
+  focusRequest: SelectedFeatureFocusRequest | null;
+  onSelectSlug: (slug: string, options?: SelectedSlugOptions) => void;
   isEditing: boolean;
   isCreating: boolean;
   addPointMode: boolean;
@@ -67,6 +83,20 @@ export type SharedMapProps = {
   onDraftRingChange: (ring: Array<[number, number]>) => void;
   selectedVertexIndex: number | null;
   onSelectVertex: (index: number | null) => void;
+};
+
+export type AtlasLayerVisibility = {
+  states: boolean;
+  labels: boolean;
+  capitals: boolean;
+  battles: boolean;
+};
+
+export type AtlasMapSceneProps = SharedMapProps & {
+  battleEvents: AtlasEventFeatureCollection | null;
+  selectedEventSlug: string | null;
+  onSelectEvent: (slug: string | null) => void;
+  layerVisibility: AtlasLayerVisibility;
 };
 
 export type CoordEditorProps = {

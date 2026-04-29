@@ -54,7 +54,7 @@ export function AtlasCharacterQuiz({
                 'linear-gradient(135deg, rgba(201,164,93,0.08), rgba(255,255,255,0.025))',
               border: `1px solid ${T.borderMid}`,
               color: T.text,
-              fontFamily: 'Georgia, serif',
+              fontFamily: 'var(--font-inter), Arial, sans-serif',
             }}
           >
             <span

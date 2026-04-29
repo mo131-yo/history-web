@@ -41,7 +41,7 @@ export function CoordEditorVertices({
                 background: displayCount > 0 ? `${editorTheme.GOLD}20` : "transparent",
                 border: `1px solid ${displayCount > 0 ? `${editorTheme.GOLD}40` : editorTheme.BORDER}`,
                 color: displayCount > 0 ? editorTheme.GOLD : editorTheme.TEXT_MUTED,
-                fontFamily: "Georgia, serif",
+                fontFamily: "var(--font-inter), Arial, sans-serif",
               }}
             >
               {displayCount} орой
@@ -120,14 +120,14 @@ export function CoordEditorVertices({
                         color: isSelected ? editorTheme.GOLD : editorTheme.TEXT_MUTED,
                         minWidth: "28px",
                         textAlign: "center",
-                        fontFamily: "Georgia, serif",
+                        fontFamily: "var(--font-inter), Arial, sans-serif",
                       }}
                     >
                       {i + 1}
                     </span>
                     <span
                       className="flex-1 text-[10px] tabular-nums"
-                      style={{ color: isSelected ? editorTheme.TEXT_MAIN : editorTheme.TEXT_SUB, fontFamily: "Georgia, serif" }}
+                      style={{ color: isSelected ? editorTheme.TEXT_MAIN : editorTheme.TEXT_SUB, fontFamily: "var(--font-inter), Arial, sans-serif" }}
                     >
                       {lng.toFixed(3)}°, {lat.toFixed(3)}°
                     </span>

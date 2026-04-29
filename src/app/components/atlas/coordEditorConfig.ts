@@ -28,7 +28,7 @@ export const INPUT_STYLE: CSSProperties = {
   padding: "7px 10px",
   fontSize: "15px",
   color: TEXT_MAIN,
-  fontFamily: "Georgia, serif",
+  fontFamily: "var(--font-inter), Arial, sans-serif",
   outline: "none",
   width: "100%",
 };

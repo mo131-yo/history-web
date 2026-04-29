@@ -1,46 +1,73 @@
 "use client";
 import dynamic from "next/dynamic";
-import { useEffect, useMemo, useSyncExternalStore, useState, SetStateAction } from "react";
+import {
+  useEffect,
+  useMemo,
+  useSyncExternalStore,
+  useState,
+  type SetStateAction,
+} from "react";
 import { useUser } from "@clerk/nextjs";
+import type { AtlasEventFeatureCollection } from "@/lib/types";
 import SelectedStateDrawer from "@/app/components/SelectedStateDrawer";
+import { AtlasEventDrawer } from "@/app/components/AtlasEventDrawer";
 import { Sidebar } from "@/app/components/Sidebar";
 import { AtlasCharacterRpgModal } from "./atlas/AtlasCharacterRpgModal";
 import { AtlasHeader } from "./atlas/AtlasHeader";
+import { AtlasLayerToggle } from "./atlas/AtlasLayerToggle";
 import { MapLoader } from "./atlas/AtlasMapControls";
 import { AtlasTimelineFooter } from "./atlas/AtlasTimelineFooter";
-import { QuizModal } from "./QuizModal";
+import { QuizModal, type QuizMode } from "./QuizModal";
 import { CHARACTER_STORAGE_KEY, T } from "./atlas/constants";
 import { QuizLeaderboardPage } from "./leaderboard/QuizLeaderboardPage";
-import { SavedCharacterResult } from "./atlas/types";
+import type { AtlasLayerVisibility, SavedCharacterResult } from "./atlas/types";
 import { useAtlasEditor } from "./atlas/useAtlasEditor";
+import { ensureEditableRing } from "@/lib/geometry";
 
-const CoordEditor = dynamic(
-  () => import("@/app/components/CoordEditor"),
-  { ssr: false }
-) as any;
+const CoordEditor = dynamic(() => import('@/app/components/CoordEditor'), {
+  ssr: false,
+}) as any;
 
-const GlobeMap = dynamic( 
+const GlobeMap = dynamic(
   () => import("@/app/components/Globemap").then((m) => ({ default: m.default })),
   { ssr: false, loading: () => <MapLoader label="Дэлхийн бөмбөрцөг" /> }
 );
 
 const HistoricalMap = dynamic(
-  () => import("@/app/components/HistoricalMap").then((m) => ({ default: m.default })),
-  { ssr: false, loading: () => <MapLoader label="Түүхэн зураг" /> }
+  () =>
+    import('@/app/components/HistoricalMap').then((m) => ({
+      default: m.default,
+    })),
+  { ssr: false, loading: () => <MapLoader label="Түүхэн зураг" /> },
 );
 
 export default function AtlasApp() {
   const { user, isLoaded } = useUser();
   const adminMode = isLoaded && !!user;
   const [year, setYear] = useState(1206);
-  const [mapMode, setMapMode] = useState<"globe" | "historical">("historical");
+  const [mapMode, setMapMode] = useState<'globe' | 'historical'>('historical');
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [characterOpen, setCharacterOpen] = useState(false);
   const [quizOpen, setQuizOpen] = useState(false);
+  const [quizMode, setQuizMode] = useState<QuizMode>('grade');
   const [leaderboardVersion] = useState(0);
-  const [currentView, setCurrentView] = useState<"map" | "leaderboard">("map");
+  const [currentView, setCurrentView] = useState<'map' | 'leaderboard'>('map');
   const [timelineAutoPlaying, setTimelineAutoPlaying] = useState(false);
-  const [liveCharacterResult, setLiveCharacterResult] = useState<SavedCharacterResult | null>(null);
+  const [liveCharacterResult, setLiveCharacterResult] =
+    useState<SavedCharacterResult | null>(null);
+  const [pendingFeedbackCount, setPendingFeedbackCount] = useState(0);
+  const [battleEvents, setBattleEvents] = useState<AtlasEventFeatureCollection | null>(null);
+  const [selectedEventSlug, setSelectedEventSlug] = useState<string | null>(null);
+  const [layerVisibility, setLayerVisibility] = useState<AtlasLayerVisibility>({
+    states: true,
+    labels: true,
+    capitals: true,
+    battles: true,
+  });
+  const [feedbackEditing, setFeedbackEditing] = useState(false);
+  const [feedbackAddPointMode, setFeedbackAddPointMode] = useState(false);
+  const [feedbackDraftRing, setFeedbackDraftRing] = useState<Array<[number, number]>>([]);
+  const [feedbackSelectedVertexIndex, setFeedbackSelectedVertexIndex] = useState<number | null>(null);
   const storedCharacterResultRaw = useSyncExternalStore(
     subscribeCharacterResult,
     readCharacterResultRawSnapshot,
@@ -55,7 +82,8 @@ export default function AtlasApp() {
     }
   }, [storedCharacterResultRaw]);
   const characterResult = liveCharacterResult ?? storedCharacterResult;
-  const playerName = user?.fullName ?? user?.primaryEmailAddress?.emailAddress ?? "Зочин";
+  const playerName =
+    user?.fullName ?? user?.primaryEmailAddress?.emailAddress ?? 'Зочин';
   const isGuest = !user;
 
   const {
@@ -71,18 +99,90 @@ export default function AtlasApp() {
   } = useAtlasEditor(year, adminMode);
 
   useEffect(() => {
+    const controller = new AbortController();
+
+    fetch(`/api/atlas-events?year=${year}`, { signal: controller.signal })
+      .then(async (response) => {
+        if (!response.ok) throw new Error("Event fetch failed");
+        return response.json() as Promise<AtlasEventFeatureCollection>;
+      })
+      .then((data) => setBattleEvents(data))
+      .catch((error) => {
+        if (error instanceof DOMException && error.name === "AbortError") return;
+        setBattleEvents({
+          type: "FeatureCollection",
+          year,
+          features: [],
+        });
+      });
+
+    return () => controller.abort();
+  }, [year]);
+
+  useEffect(() => {
+    setSelectedEventSlug((current) => {
+      if (!current) return null;
+      const exists = battleEvents?.features.some(
+        (feature) => feature.properties.slug === current
+      );
+      return exists ? current : null;
+    });
+  }, [battleEvents, year]);
+
+  useEffect(() => {
+    const coordinates = selectedFeature?.geometry.coordinates[0] as Array<[number, number]> | undefined;
+    setFeedbackEditing(false);
+    setFeedbackAddPointMode(false);
+    setFeedbackSelectedVertexIndex(null);
+    setFeedbackDraftRing(coordinates ? ensureEditableRing(coordinates) : []);
+  }, [selectedFeature?.properties.slug, year]);
+
+  useEffect(() => {
     if (!timelineAutoPlaying || currentView !== "map" || years.length < 2) return;
 
     const timer = window.setInterval(() => {
       setYear((currentYear) => {
-        const currentIndex = years.findIndex((timelineYear) => timelineYear === currentYear);
-        const nextIndex = currentIndex >= 0 ? (currentIndex + 1) % years.length : 0;
+        const currentIndex = years.findIndex(
+          (timelineYear) => timelineYear === currentYear,
+        );
+        const nextIndex =
+          currentIndex >= 0 ? (currentIndex + 1) % years.length : 0;
         return years[nextIndex] ?? currentYear;
       });
     }, 1800);
 
     return () => window.clearInterval(timer);
   }, [currentView, timelineAutoPlaying, years]);
+
+  useEffect(() => {
+    if (!adminMode) {
+      setPendingFeedbackCount(0);
+      return;
+    }
+
+    const controller = new AbortController();
+    const loadPendingFeedbackCount = () => {
+      fetch('/api/atlas/feedback?status=pending', { signal: controller.signal })
+        .then((response) => {
+          if (!response.ok) throw new Error('Feedback notification failed');
+          return response.json() as Promise<{ count?: number }>;
+        })
+        .then((data) => setPendingFeedbackCount(data.count ?? 0))
+        .catch((error) => {
+          if (error instanceof DOMException && error.name === 'AbortError')
+            return;
+          setPendingFeedbackCount(0);
+        });
+    };
+
+    loadPendingFeedbackCount();
+    const timer = window.setInterval(loadPendingFeedbackCount, 30000);
+
+    return () => {
+      controller.abort();
+      window.clearInterval(timer);
+    };
+  }, [adminMode, selectedFeature?.properties.slug, year]);
 
   const drawer = adminMode ? (
     <div className="flex-1 overflow-hidden ">
@@ -92,14 +192,78 @@ export default function AtlasApp() {
     <SelectedStateDrawer
       year={year}
       feature={selectedFeature}
+      adminMode={adminMode}
       onClose={() => setSelectedSlug(null)}
+      feedbackEditor={{
+        isEditing: feedbackEditing,
+        addPointMode: feedbackAddPointMode,
+        draftRing: feedbackDraftRing,
+        onDraftRingChange: setFeedbackDraftRing,
+        selectedVertexIndex: feedbackSelectedVertexIndex,
+        onSelectVertex: setFeedbackSelectedVertexIndex,
+        onStart: () => {
+          const coordinates = selectedFeature?.geometry.coordinates[0] as Array<[number, number]> | undefined;
+          setFeedbackDraftRing((current) => current.length ? current : coordinates ? ensureEditableRing(coordinates) : []);
+          setFeedbackEditing(true);
+          setFeedbackAddPointMode(false);
+          setFeedbackSelectedVertexIndex(null);
+        },
+        onStop: () => {
+          setFeedbackEditing(false);
+          setFeedbackAddPointMode(false);
+          setFeedbackSelectedVertexIndex(null);
+        },
+        onToggleAddPoint: () => setFeedbackAddPointMode((value) => !value),
+        onReset: () => {
+          const coordinates = selectedFeature?.geometry.coordinates[0] as Array<[number, number]> | undefined;
+          setFeedbackDraftRing(coordinates ? ensureEditableRing(coordinates) : []);
+          setFeedbackAddPointMode(false);
+          setFeedbackSelectedVertexIndex(null);
+        },
+      }}
     />
+  );
+
+  const visibleMapProps =
+    !adminMode && feedbackEditing
+      ? {
+          ...sharedMapProps,
+          isEditing: true,
+          isCreating: false,
+          addPointMode: feedbackAddPointMode,
+          draftRing: feedbackDraftRing,
+          onDraftRingChange: setFeedbackDraftRing,
+          selectedVertexIndex: feedbackSelectedVertexIndex,
+          onSelectVertex: setFeedbackSelectedVertexIndex,
+        }
+      : sharedMapProps;
+
+  const selectedEvent = useMemo(
+    () =>
+      battleEvents?.features.find(
+        (feature) => feature.properties.slug === selectedEventSlug
+      ) ?? null,
+    [battleEvents, selectedEventSlug]
+  );
+
+  const mapSceneProps = useMemo(
+    () => ({
+      ...visibleMapProps,
+      battleEvents,
+      selectedEventSlug,
+      onSelectEvent: setSelectedEventSlug,
+      layerVisibility,
+    }),
+    [battleEvents, layerVisibility, selectedEventSlug, visibleMapProps]
   );
 
   return (
     <main
       className="min-h-screen overflow-hidden"
-      style={{ background: T.bg, fontFamily: "'Georgia', 'Times New Roman', serif" }}
+      style={{
+        background: T.bg,
+        fontFamily: 'var(--font-inter), Arial, sans-serif',
+      }}
     >
       {characterOpen && (
         <AtlasCharacterRpgModal
@@ -110,15 +274,15 @@ export default function AtlasApp() {
         />
       )}
 
-<QuizModal
-  isOpen={quizOpen}
-  mode="grade"
-  onClose={() => setQuizOpen(false)}
-  userName={user?.fullName ?? undefined}
-  onScoreSaved={() => {}}
-/>
+      <QuizModal
+        isOpen={quizOpen}
+        mode={quizMode}
+        onClose={() => setQuizOpen(false)}
+        userName={user?.fullName ?? undefined}
+        onScoreSaved={() => {}}
+      />
 
-      <div className="flex min-h-screen flex-col lg:h-screen lg:flex-row lg:overflow-hidden">
+      <div className="flex flex-col min-h-screen lg:h-screen lg:flex-row lg:overflow-hidden">
         <Sidebar
           year={year}
           search={search}
@@ -126,16 +290,25 @@ export default function AtlasApp() {
           mapMode={mapMode}
           onMapModeChange={setMapMode}
           onOpenCharacter={() => setCharacterOpen(true)}
-          onOpenQuiz={() => setQuizOpen(true)}
-          onOpenMap={() => setCurrentView("map")}
-          onOpenLeaderboard={() => setCurrentView("leaderboard")}
-          onSelectSearchResult={(feature: { properties: { year: SetStateAction<number>; slug: any; }; }) => {
-            setCurrentView("map");
+          onOpenQuiz={(mode: QuizMode) => {
+            setQuizMode(mode);
+            setQuizOpen(true);
+          }}
+          onOpenMap={() => setCurrentView('map')}
+          onOpenLeaderboard={() => setCurrentView('leaderboard')}
+          onSelectSearchResult={(feature: {
+            properties: { year: SetStateAction<number>; slug: any };
+          }) => {
+            setCurrentView('map');
             setYear(feature.properties.year);
-            setSelectedSlug(feature.properties.slug);
+            setSelectedSlug(feature.properties.slug, {
+              focus: true,
+              year: Number(feature.properties.year),
+            });
           }}
           currentView={currentView}
           characterResult={characterResult}
+          pendingFeedbackCount={pendingFeedbackCount}
           quizEnabled={!!collection?.features.length}
           adminMode={adminMode}
           user={user}
@@ -144,16 +317,16 @@ export default function AtlasApp() {
         />
 
         <section className="relative flex min-h-[620px] flex-1 flex-col overflow-hidden md:min-h-[720px] lg:h-screen lg:min-h-0">
-          {currentView === "leaderboard" ? (
+          {currentView === 'leaderboard' ? (
             <QuizLeaderboardPage
               version={leaderboardVersion}
               onStartQuiz={() => setQuizOpen(true)}
             />
           ) : (
             <>
-              <div className="absolute inset-x-0 top-0 bottom-44 z-0 md:bottom-48 lg:bottom-44">
-                {mapMode === "globe" && <GlobeMap {...sharedMapProps} />}
-                {mapMode === "historical" && <HistoricalMap {...sharedMapProps} />}
+              <div className="absolute inset-x-0 top-0 bottom-[7.5rem] z-0 md:bottom-32 lg:bottom-[7.5rem]">
+                {mapMode === "globe" && <GlobeMap {...mapSceneProps} />}
+                {mapMode === "historical" && <HistoricalMap {...mapSceneProps} />}
               </div>
 
               <AtlasHeader
@@ -161,15 +334,30 @@ export default function AtlasApp() {
                 collectionCount={collection?.features.length ?? null}
               />
 
+              <AtlasLayerToggle
+                value={layerVisibility}
+                onChange={(key, next) =>
+                  setLayerVisibility((current) => ({
+                    ...current,
+                    [key]: next,
+                  }))
+                }
+              />
+
+              <AtlasEventDrawer
+                event={selectedEvent}
+                onClose={() => setSelectedEventSlug(null)}
+              />
+
               {loadError && (
                 <div
                   className="absolute left-4 top-16 z-30 flex items-center gap-2 rounded-lg px-4 py-2.5 text-xs lg:left-auto lg:right-4"
                   style={{
-                    background: "rgba(20,4,4,0.96)",
-                    border: "1px solid rgba(150,40,40,0.5)",
-                    color: "#f08080",
-                    backdropFilter: "blur(12px)",
-                    fontFamily: "Georgia, serif",
+                    background: 'rgba(20,4,4,0.96)',
+                    border: '1px solid rgba(150,40,40,0.5)',
+                    color: '#f08080',
+                    backdropFilter: 'blur(12px)',
+                    fontFamily: 'var(--font-inter), Arial, sans-serif',
                   }}
                 >
                   <span style={{ fontSize: 11 }}>⚠</span>
@@ -178,8 +366,10 @@ export default function AtlasApp() {
               )}
 
               <div
-                className="absolute bottom-44 right-4 top-16 z-20 hidden w-[340px] flex-col xl:flex"
-                style={{ pointerEvents: selectedFeature || adminMode ? "auto" : "none" }}
+                className="absolute bottom-[7.5rem] right-4 top-16 z-20 hidden w-[340px] flex-col xl:flex"
+                style={{
+                  pointerEvents: selectedFeature || adminMode ? 'auto' : 'none',
+                }}
               >
                 {drawer}
               </div>
@@ -204,18 +394,18 @@ export default function AtlasApp() {
 }
 
 function subscribeCharacterResult(onStoreChange: () => void) {
-  if (typeof window === "undefined") return () => {};
+  if (typeof window === 'undefined') return () => {};
   const handleChange = () => onStoreChange();
-  window.addEventListener("storage", handleChange);
-  window.addEventListener("focus", handleChange);
+  window.addEventListener('storage', handleChange);
+  window.addEventListener('focus', handleChange);
   return () => {
-    window.removeEventListener("storage", handleChange);
-    window.removeEventListener("focus", handleChange);
+    window.removeEventListener('storage', handleChange);
+    window.removeEventListener('focus', handleChange);
   };
 }
 
 function readCharacterResultRawSnapshot(): string | null {
-  if (typeof window === "undefined") return null;
+  if (typeof window === 'undefined') return null;
   try {
     return localStorage.getItem(CHARACTER_STORAGE_KEY);
   } catch {

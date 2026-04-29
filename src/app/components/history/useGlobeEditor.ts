@@ -28,27 +28,28 @@ export function useGlobeEditor({
   addPointMode,
   collection,
   draftRing,
+  focusRequest,
   isCreating,
   isEditing,
   onDraftRingChange,
   onSelectVertex,
-  selectedSlug,
   selectedVertexIndex,
 }: Pick<
   GlobeMapProps,
   | 'addPointMode'
   | 'collection'
   | 'draftRing'
+  | 'focusRequest'
   | 'isCreating'
   | 'isEditing'
   | 'onDraftRingChange'
   | 'onSelectVertex'
-  | 'selectedSlug'
   | 'selectedVertexIndex'
 >) {
   const containerRef = useRef<HTMLDivElement>(null);
   const globeRef = useRef<GlobeInstance | null>(null);
   const hoveredSlugRef = useRef<string | null>(null);
+  const handledFocusRequestIdRef = useRef<number | null>(null);
   const draftRingRef = useRef(draftRing);
   const selectedVertexRef = useRef<number | null>(selectedVertexIndex ?? null);
   const isEditingRef = useRef(isEditing);
@@ -112,9 +113,17 @@ export function useGlobeEditor({
   }, [isEditing, onDraftRingChange, onSelectVertex]);
 
   useEffect(() => {
-    if (!globeRef.current || !selectedSlug || !collection) return;
+    if (
+      !globeRef.current ||
+      !focusRequest ||
+      !collection ||
+      (focusRequest.year !== undefined && collection.year !== focusRequest.year) ||
+      handledFocusRequestIdRef.current === focusRequest.id
+    ) {
+      return;
+    }
     const feature = collection.features.find(
-      (item) => item.properties.slug === selectedSlug,
+      (item) => item.properties.slug === focusRequest.slug,
     );
     if (!feature) return;
     const points = feature.geometry.coordinates[0].slice(0, -1) as [
@@ -133,7 +142,8 @@ export function useGlobeEditor({
       { lat: center.lat, lng: center.lng, altitude: 1.2 },
       900,
     );
-  }, [collection, selectedSlug]);
+    handledFocusRequestIdRef.current = focusRequest.id;
+  }, [collection, focusRequest?.id, focusRequest?.slug]);
 
   return {
     addPointModeRef,

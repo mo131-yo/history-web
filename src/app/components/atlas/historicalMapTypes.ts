@@ -1,14 +1,12 @@
-import type { AtlasFeatureCollection } from "@/lib/types";
+import type { AtlasMapSceneProps } from "./types";
+import type {
+  SelectedFeatureFocusRequest,
+  SelectedSlugOptions,
+} from "./types";
 
-export interface HistoricalMapProps {
-  collection: AtlasFeatureCollection | null;
-  selectedSlug: string | null;
-  onSelectSlug: (slug: string) => void;
-  isEditing: boolean;
-  isCreating: boolean;
-  addPointMode: boolean;
-  draftRing: Array<[number, number]>;
-  onDraftRingChange: (ring: Array<[number, number]>) => void;
+export interface HistoricalMapProps extends AtlasMapSceneProps {
+  focusRequest: SelectedFeatureFocusRequest | null;
+  onSelectSlug: (slug: string, options?: SelectedSlugOptions) => void;
 }
 
 export interface HistoricalMapView {

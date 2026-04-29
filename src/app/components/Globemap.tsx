@@ -27,18 +27,20 @@ import { useGlobeData } from "./history/useGlobeData";
 import { useGlobeEditor } from "./history/useGlobeEditor";
 import { useGlobePointerEditing } from "./history/useGlobePointerEditing";
 import { Globe } from "./history/GlobeLeader";
-import { SharedMapProps } from "./atlas/types";
+import { AtlasMapSceneProps } from "./atlas/types";
 
 const MAPTILER_HYBRID_TILE = (x: number, y: number, level: number) =>
   `https://api.maptiler.com/maps/hybrid-v4/256/${level}/${x}/${y}@2x.png?key=UDHwVf5wxc04GFo8f0PC`;
 
-export default function GlobeMap(props: SharedMapProps) {
+export default function GlobeMap(props: AtlasMapSceneProps) {
   const globeEditor = useGlobeEditor(props);
   const { allPolygons, labelsData, vertexPoints } = useGlobeData({
+    battleEvents: props.battleEvents,
     collection: props.collection,
     draftRing: props.draftRing,
     hoveredVertexIndex: globeEditor.hoveredVertexIndex,
     isEditing: props.isEditing,
+    layerVisibility: props.layerVisibility,
     selectedVertexIndex: props.selectedVertexIndex ?? null,
   });
 
@@ -71,7 +73,9 @@ export default function GlobeMap(props: SharedMapProps) {
         renderGlobeStaticLabel(
           data,
           props.selectedSlug,
-          globeEditor.hoveredSlugRef.current
+          globeEditor.hoveredSlugRef.current,
+          props.selectedEventSlug,
+          props.onSelectEvent
         ),
       htmlElementsData: labelsData,
       htmlLat: "lat",
@@ -105,9 +109,10 @@ export default function GlobeMap(props: SharedMapProps) {
           point ? (point as { index: number }).index : null
         ),
       onPolygonClick: (polygon: object) => {
+        if (props.isEditing) return;
         const slug = (polygon as { properties?: { slug?: string } }).properties?.slug;
         if (!slug || slug === "__draft__") return;
-        props.onSelectSlug(slug);
+        props.onSelectSlug(slug, { focus: true });
       },
       onPolygonHover: (polygon: object | null) =>
         syncHoveredSlug(
@@ -201,14 +206,6 @@ export default function GlobeMap(props: SharedMapProps) {
 
       {props.selectedSlug &&
         renderSelectedBadge(props.collection, props.selectedSlug)}
-
-      <div className="pointer-events-none absolute bottom-6 left-4 rounded-2xl border border-white/10 bg-black/45 px-4 py-3 text-xs text-stone-200 shadow-lg backdrop-blur lg:bottom-10">
-        {props.isEditing
-          ? props.isCreating
-            ? "Create mode: 3D globe дээр дарж шинэ оройнууд нэм."
-            : "Edit mode: 3D globe дээр цэгийг чирж зөөж хилээ зас."
-          : "3D globe view: улс сонгоод хил, түүх, газарзүйг бөмбөрцөг дээр хар."}
-      </div>
     </div>
   );
 }

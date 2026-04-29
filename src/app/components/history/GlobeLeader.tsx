@@ -36,7 +36,7 @@ export const Globe = dynamic(
               fontSize: 10,
               letterSpacing: '0.35em',
               textTransform: 'uppercase',
-              fontFamily: 'Georgia, serif',
+              fontFamily: 'var(--font-inter), Arial, sans-serif',
             }}
           >
             Дэлхийн зураг ачаалж байна

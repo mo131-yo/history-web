@@ -1,19 +1,11 @@
 import type { Metadata } from 'next';
-import { Cinzel, Cinzel_Decorative } from 'next/font/google';
 import { ClerkProvider } from '@clerk/nextjs';
+import type { CSSProperties, ReactNode } from 'react';
 import './global.css';
 
-const cinzel = Cinzel({
-  subsets: ['latin'],
-  variable: '--font-cinzel',
-  weight: ['400', '600', '700'],
-});
-
-const cinzelDecorative = Cinzel_Decorative({
-  subsets: ['latin'],
-  variable: '--font-cinzel-decorative',
-  weight: ['400', '700'],
-});
+const fontVariables: CSSProperties = {
+  ['--font-inter' as string]: 'Inter, Arial, sans-serif',
+};
 
 export const metadata: Metadata = {
   title: 'Монгол Атлас · 1162–1300',
@@ -24,14 +16,11 @@ export const metadata: Metadata = {
 export default function RootLayout({
   children,
 }: {
-  children: React.ReactNode;
+  children: ReactNode;
 }) {
   return (
     <ClerkProvider>
-      <html
-        lang="mn"
-        className={`${cinzel.variable} ${cinzelDecorative.variable}`}
-      >
+      <html lang="mn" style={fontVariables}>
         <body className="antialiased">{children}</body>
       </html>
     </ClerkProvider>

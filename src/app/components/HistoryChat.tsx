@@ -54,7 +54,7 @@ export default function HistoryChat({ currentContext }: { currentContext: unknow
             {messages.length === 0 ? (
               <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: "100%", gap: 12, textAlign: "center", opacity: 0.4, padding: "0 24px" }}>
                 <Bot size={38} strokeWidth={1} color="#c9a45d" />
-                <p style={{ fontSize: 12, lineHeight: 1.7, color: "#c9a45d", fontFamily: "Georgia, serif", fontStyle: "italic", margin: 0 }}>
+                <p style={{ fontSize: 12, lineHeight: 1.7, color: "#c9a45d", fontFamily: "var(--font-inter), Arial, sans-serif", fontStyle: "italic", margin: 0 }}>
                   Монгол гүрний түүх болон тухайн цаг үеийн талаар юуг ч хамаагүй асууж болно.
                 </p>
                 <div style={{ display: "flex", flexDirection: "column", gap: 6, width: "100%", marginTop: 8, opacity: 1 }}>

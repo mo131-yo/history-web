@@ -60,6 +60,7 @@ import type {
   HistoricalMapProps,
 } from "./historicalMapTypes";
 import {
+  createEmptyEventCollection,
   createDraftPolygon,
   createFlagCollection,
   createVertexCollection,
@@ -75,9 +76,7 @@ type MapLibreMap = InstanceType<typeof maplibregl.Map>;
 export function syncCollection(
   map: MapLibreMap | null,
   ready: boolean,
-  collection: HistoricalMapProps["collection"],
-  selectedSlug: string | null,
-  padding: HistoricalMapFocusPadding
+  collection: HistoricalMapProps["collection"]
 ) {
   if (!map) return;
 
@@ -96,13 +95,46 @@ export function syncCollection(
     );
     safeSetData(map, "state-flags", flagCollection);
     void loadFlagImages(map, flagCollection);
+  };
 
-    if (!selectedSlug || !collection) return;
+  if (ready && map.isStyleLoaded()) push();
+  else map.once("load", push);
+}
 
-    const selected = collection.features.find(
-      (feature) => feature.properties.slug === selectedSlug
-    );
+export function syncBattleEvents(
+  map: MapLibreMap | null,
+  ready: boolean,
+  battleEvents: HistoricalMapProps["battleEvents"]
+) {
+  if (!map) return;
 
+  const apply = () => {
+    safeSetData(map, "battle-events", battleEvents ?? createEmptyEventCollection());
+  };
+
+  if (ready && map.isStyleLoaded()) apply();
+  else map.once("load", apply);
+}
+
+export function syncSelectedFeatureFocus(
+  map: MapLibreMap | null,
+  ready: boolean,
+  collection: HistoricalMapProps["collection"],
+  focusRequest: HistoricalMapProps["focusRequest"],
+  padding: HistoricalMapFocusPadding
+) {
+  if (!map || !collection || !focusRequest) return false;
+  if (focusRequest.year !== undefined && collection.year !== focusRequest.year) {
+    return false;
+  }
+
+  const selected = collection.features.find(
+    (feature) => feature.properties.slug === focusRequest.slug
+  );
+
+  if (!selected) return false;
+
+  const focus = () => {
     const shape = selected as GeoJSON.Feature<GeoJSON.Polygon> | undefined;
     const bounds = getFeatureBounds(shape);
 
@@ -113,21 +145,23 @@ export function syncCollection(
     if (bounds) {
       map.fitBounds(bounds, {
         padding,
-        maxZoom: 4,
+        maxZoom: 2.8,
         duration: 700,
         essential: true,
       });
     } else if (center) {
       map.flyTo({
         center,
-        zoom: Math.max(Math.min(map.getZoom(), 3.8), 3),
+        zoom: Math.max(Math.min(map.getZoom(), 2.8), 2.2),
         speed: 0.7,
       });
     }
   };
 
-  if (ready && map.isStyleLoaded()) push();
-  else map.once("load", push);
+  if (ready && map.isStyleLoaded()) focus();
+  else map.once("load", focus);
+
+  return true;
 }
 
 export function syncSelection(
@@ -171,6 +205,33 @@ export function syncDraft(
       "draft-vertices",
       isEditing ? createVertexCollection(draftRing) : createVertexCollection([])
     );
+  };
+
+  if (ready && map.isStyleLoaded()) apply();
+  else map.once("load", apply);
+}
+
+export function syncLayerVisibility(
+  map: MapLibreMap | null,
+  ready: boolean,
+  layerVisibility: HistoricalMapProps["layerVisibility"]
+) {
+  if (!map) return;
+
+  const applyVisibility = (layerId: string, visible: boolean) => {
+    if (map.getLayer(layerId)) {
+      map.setLayoutProperty(layerId, "visibility", visible ? "visible" : "none");
+    }
+  };
+
+  const apply = () => {
+    applyVisibility("states-fill", layerVisibility.states);
+    applyVisibility("states-outline", layerVisibility.states);
+    applyVisibility("states-selected-outline", layerVisibility.states);
+    applyVisibility("states-hover-outline", layerVisibility.states);
+    applyVisibility("states-labels", layerVisibility.labels);
+    applyVisibility("state-flags", layerVisibility.capitals);
+    applyVisibility("battle-events", layerVisibility.battles);
   };
 
   if (ready && map.isStyleLoaded()) apply();

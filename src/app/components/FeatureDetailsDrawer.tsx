@@ -35,7 +35,7 @@ export default function FeatureDetailsDrawer({
             {activeTab === "info" && (
               <div className="animate-in slide-in-from-bottom-2 fade-in space-y-4">
                 <div className="rounded-r-xl border-l-2 border-[#C5A059] bg-[#C5A059]/5 p-4">
-                  <p className="font-serif text-[13px] italic leading-relaxed text-white/80">
+                  <p className="font-sans text-[13px] italic leading-relaxed text-white/80">
                     {props.description || "Түүхэн тэмдэглэл хараахан бичигдээгүй байна."}
                   </p>
                 </div>
@@ -55,7 +55,7 @@ export default function FeatureDetailsDrawer({
                 <div className="grid grid-cols-2 gap-3">
                   <div className="rounded-xl border border-red-500/10 bg-red-500/5 p-4">
                     <p className="mb-1 text-[9px] font-bold uppercase text-red-500/50">Армийн тоо</p>
-                    <p className="font-serif text-lg font-black text-red-500">{meta.military?.total_manpower || "80,000 - 120,000"}</p>
+                    <p className="font-sans text-lg font-black text-red-500">{meta.military?.total_manpower || "80,000 - 120,000"}</p>
                   </div>
                   <div className="rounded-xl border border-orange-500/10 bg-orange-500/5 p-4">
                     <p className="mb-1 text-[9px] font-bold uppercase text-orange-500/50">Гол нэгж</p>

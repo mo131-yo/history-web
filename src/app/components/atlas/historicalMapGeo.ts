@@ -1,5 +1,9 @@
 import maplibregl, { type GeoJSONSource } from "maplibre-gl";
-import type { AtlasFeatureCollection, AtlasStateFeature } from "@/lib/types";
+import type {
+  AtlasEventFeatureCollection,
+  AtlasFeatureCollection,
+  AtlasStateFeature,
+} from "@/lib/types";
 
 type MapLibreMap = InstanceType<typeof maplibregl.Map>;
 
@@ -127,6 +131,14 @@ export function createVertexCollection(ring: Array<[number, number]>) {
   };
 }
 
+export function createEmptyEventCollection(): AtlasEventFeatureCollection {
+  return {
+    type: "FeatureCollection",
+    year: 0,
+    features: [],
+  };
+}
+
 export function createFlagCollection(
   collection: AtlasFeatureCollection | GeoJSON.FeatureCollection | null | undefined,
 ): FlagFeatureCollection {
@@ -192,7 +204,9 @@ export function safeSetData(
 }
 
 function createFlagFeature(feature: AtlasStateFeature): FlagFeature | null {
-  const center = normalizeLngLatLike(feature.properties.center);
+  const center =
+    normalizeLngLatLike(feature.properties.center) ||
+    getFeatureCenter(feature as GeoJSON.Feature<GeoJSON.Polygon>);
   if (!center) return null;
 
   const slug = feature.properties.slug;

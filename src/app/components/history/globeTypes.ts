@@ -1,4 +1,12 @@
-import type { AtlasFeatureCollection } from '@/lib/types';
+import type {
+  AtlasEventFeatureCollection,
+  AtlasFeatureCollection,
+} from '@/lib/types';
+import type {
+  AtlasLayerVisibility,
+  SelectedFeatureFocusRequest,
+  SelectedSlugOptions,
+} from '../atlas/types';
 
 export type GlobePolygon = {
   type: 'Feature';
@@ -26,21 +34,32 @@ export type GlobeLabel = {
   text: string;
   color: string;
   slug: string;
-  kind?: 'label' | 'flag';
+  kind?: 'label' | 'flag' | 'event';
   flagAsset?: string;
   flagUrl?: string;
   flagLabel?: string;
+  eventType?: string;
+  description?: string;
+  startYear?: number;
+  endYear?: number;
+  relatedStates?: string[];
+  importance?: number;
 };
 
 export interface GlobeMapProps {
   collection: AtlasFeatureCollection | null;
+  battleEvents: AtlasEventFeatureCollection | null;
   selectedSlug: string | null;
-  onSelectSlug: (slug: string) => void;
+  selectedEventSlug: string | null;
+  focusRequest: SelectedFeatureFocusRequest | null;
+  onSelectSlug: (slug: string, options?: SelectedSlugOptions) => void;
+  onSelectEvent: (slug: string | null) => void;
   isEditing: boolean;
   isCreating: boolean;
   addPointMode: boolean;
   draftRing: Array<[number, number]>;
   onDraftRingChange: (ring: Array<[number, number]>) => void;
+  layerVisibility: AtlasLayerVisibility;
   selectedVertexIndex?: number | null;
   onSelectVertex?: (index: number | null) => void;
 }

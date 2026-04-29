@@ -49,7 +49,7 @@ export default function CoordEditor(props: CoordEditorProps) {
         background: editorTheme.BG,
         border: `1px solid ${editorTheme.BORDER}`,
         boxShadow: "0 0 40px rgba(0,0,0,0.8), inset 0 0 40px rgba(201,164,93,0.02)",
-        fontFamily: "Georgia, serif",
+        fontFamily: "var(--font-inter), Arial, sans-serif",
       }}
     >
       <div className="h-0.5 shrink-0" style={{ background: `linear-gradient(90deg, transparent, ${editorTheme.GOLD_DIM}, transparent)` }} />

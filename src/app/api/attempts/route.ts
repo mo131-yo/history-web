@@ -23,12 +23,20 @@ export async function POST(req: Request) {
 
     const {
       quizId,
+      userName,
+      period,
+      mode,
+      selectedGrade,
       score,
       totalQuestions,
       passed,
       answers = [],
     }: {
       quizId: string;
+      userName?: string;
+      period?: string;
+      mode?: string;
+      selectedGrade?: number | null;
       score: number;
       totalQuestions: number;
       passed: boolean;
@@ -46,6 +54,16 @@ export async function POST(req: Request) {
       );
     }
 
+    await ensureQuizAttemptTables();
+
+    const storedAnswers = {
+      userName: typeof userName === 'string' ? userName : null,
+      period: typeof period === 'string' ? period : '1162-1300',
+      mode: typeof mode === 'string' ? mode : null,
+      selectedGrade: typeof selectedGrade === 'number' ? selectedGrade : null,
+      answers,
+    };
+
     await sql`
       INSERT INTO quiz_attempts (
         clerk_user_id,
@@ -61,7 +79,7 @@ export async function POST(req: Request) {
         ${score},
         ${totalQuestions},
         ${passed},
-        ${JSON.stringify(answers)}::jsonb
+        ${JSON.stringify(storedAnswers)}::jsonb
       )
     `;
 
@@ -109,4 +127,36 @@ export async function POST(req: Request) {
       { status: 500 },
     );
   }
+}
+
+async function ensureQuizAttemptTables() {
+  await sql`
+    CREATE TABLE IF NOT EXISTS quiz_attempts (
+      id BIGSERIAL PRIMARY KEY,
+      clerk_user_id TEXT NOT NULL,
+      quiz_id TEXT NOT NULL,
+      score INTEGER NOT NULL,
+      total_questions INTEGER NOT NULL,
+      passed BOOLEAN NOT NULL DEFAULT FALSE,
+      answers JSONB NOT NULL DEFAULT '[]'::jsonb,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    )
+  `;
+
+  await sql`
+    CREATE TABLE IF NOT EXISTS quiz_progress (
+      id BIGSERIAL PRIMARY KEY,
+      clerk_user_id TEXT NOT NULL,
+      quiz_id TEXT NOT NULL,
+      best_score INTEGER NOT NULL DEFAULT 0,
+      total_questions INTEGER NOT NULL DEFAULT 0,
+      passed BOOLEAN NOT NULL DEFAULT FALSE,
+      completed_count INTEGER NOT NULL DEFAULT 0,
+      last_completed_at TIMESTAMPTZ,
+      updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+      UNIQUE (clerk_user_id, quiz_id)
+    )
+  `;
+
+  await sql`CREATE INDEX IF NOT EXISTS quiz_attempts_user_idx ON quiz_attempts (clerk_user_id, quiz_id, created_at DESC)`;
 }
