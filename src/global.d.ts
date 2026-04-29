@@ -293,6 +293,9 @@ export class Map {
   addLayer(...args: any[]): any;
   getLayer(id: string): any;
   removeLayer(id: string): any;
+  addImage(...args: any[]): any;
+  hasImage(id: string): boolean;
+  loadImage(url: string): Promise<{ data: HTMLImageElement | ImageBitmap }>;
 
   setPaintProperty(...args: any[]): any;
   setLayoutProperty(...args: any[]): any;

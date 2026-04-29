@@ -8,6 +8,7 @@ import type {
   GlobePolygon,
 } from './globeTypes';
 import { computeCentroid, ringToCoords } from './globeMath';
+import { createFlagCollection } from '../atlas/historicalMapGeo';
 
 export function useGlobeData({
   collection,
@@ -52,7 +53,7 @@ export function useGlobeData({
 
   const labelsData: GlobeLabel[] = useMemo(() => {
     if (!collection) return [];
-    return collection.features.map((feature) => {
+    const stateLabels = collection.features.map((feature) => {
       const centroid = computeCentroid(
         feature.geometry.coordinates[0] as number[][],
       );
@@ -62,8 +63,23 @@ export function useGlobeData({
         text: feature.properties.name,
         color: feature.properties.color ?? '#c9a45d',
         slug: feature.properties.slug,
+        kind: 'label' as const,
       };
     });
+
+    const flagLabels = createFlagCollection(collection).features.map((feature) => ({
+      lat: feature.geometry.coordinates[1],
+      lng: feature.geometry.coordinates[0],
+      text: feature.properties.name,
+      color: '#c9a45d',
+      slug: feature.properties.slug,
+      kind: 'flag' as const,
+      flagAsset: feature.properties.flagAsset,
+      flagUrl: feature.properties.flagUrl,
+      flagLabel: feature.properties.flagLabel,
+    }));
+
+    return [...stateLabels, ...flagLabels];
   }, [collection]);
 
   const vertexPoints: GlobePoint[] = useMemo(

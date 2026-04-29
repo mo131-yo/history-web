@@ -309,17 +309,22 @@ export function useHistoricalMap(
         source?.setData(collectionRef.current);
       }
 
-      map.on("click", ["states-fill", "states-labels"], (event: any) => {
+      map.on("click", ["states-fill", "states-labels", "state-flags"], (event: any) => {
         if (isCreatingRef.current) return;
 
         const slug = event.features?.[0]?.properties?.slug;
 
-        const feature = event.features?.[0] as
-          | GeoJSON.Feature<GeoJSON.Polygon>
-          | undefined;
+        const selectedFeature = collectionRef.current?.features.find(
+          (feature) => feature.properties.slug === slug
+        ) as GeoJSON.Feature<GeoJSON.Polygon> | undefined;
+
+        const feature =
+          selectedFeature ??
+          (event.features?.[0] as GeoJSON.Feature<GeoJSON.Polygon> | undefined);
 
         const center =
-          normalizeLngLatLike(event.features?.[0]?.properties?.center) ||
+          normalizeLngLatLike(selectedFeature?.properties?.center) ||
+          normalizeLngLatLike(event.features?.[0]?.geometry?.coordinates) ||
           getFeatureCenter(feature);
 
         const bounds = getFeatureBounds(feature);
@@ -346,7 +351,7 @@ export function useHistoricalMap(
         }
       });
 
-      map.on("mousemove", ["states-fill", "states-labels"], (event: any) => {
+      map.on("mousemove", ["states-fill", "states-labels", "state-flags"], (event: any) => {
         if (isCreatingRef.current) return;
 
         const slug = event.features?.[0]?.properties?.slug;
@@ -364,13 +369,13 @@ export function useHistoricalMap(
         map.getCanvas().style.cursor = "pointer";
       });
 
-      map.on("mouseenter", ["states-fill", "states-labels"], () => {
+      map.on("mouseenter", ["states-fill", "states-labels", "state-flags"], () => {
         if (!isCreatingRef.current) {
           map.getCanvas().style.cursor = "pointer";
         }
       });
 
-      map.on("mouseleave", ["states-fill", "states-labels"], () => {
+      map.on("mouseleave", ["states-fill", "states-labels", "state-flags"], () => {
         hoveredSlugRef.current = null;
 
         map.setFilter("states-hover-outline", [

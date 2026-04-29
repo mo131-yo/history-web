@@ -30,6 +30,10 @@ export type GlobeLabel = {
   text: string;
   color: string;
   slug: string;
+  kind?: 'label' | 'flag';
+  flagAsset?: string;
+  flagUrl?: string;
+  flagLabel?: string;
 };
 
 export interface GlobeMapProps {
