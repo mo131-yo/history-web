@@ -94,6 +94,7 @@ export function syncCollection(
     );
     safeSetData(map, "state-flags", flagCollection);
     void loadFlagImages(map, flagCollection);
+  };
 
   if (ready && map.isStyleLoaded()) push();
   else map.once("load", push);
