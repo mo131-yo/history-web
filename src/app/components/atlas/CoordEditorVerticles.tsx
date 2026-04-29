@@ -29,8 +29,8 @@ export function CoordEditorVertices({
       <div className="flex flex-col gap-2">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <MapPin className="size-3" style={{ color: editorTheme.GOLD_DIM }} />
-            <p className="text-[8px] uppercase tracking-[0.4em]" style={{ color: editorTheme.TEXT_MUTED }}>
+            <MapPin className="size-5" style={{ color: editorTheme.GOLD_DIM }} />
+            <p className="text-[13px] font-bold uppercase tracking-[0.1em]" style={{ color: editorTheme.TEXT_MUTED }}>
               Координатууд
             </p>
           </div>

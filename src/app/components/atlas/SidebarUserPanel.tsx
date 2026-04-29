@@ -32,7 +32,7 @@ export function SidebarUserPanel({
   const initials = getInitials(name, email);
 
   return (
-    <div className="shrink-0 px-3 pb-3 pt-2" style={{ borderTop: `1px solid ${T.border}` }}>
+    <div className="px-3 pt-2 pb-3 shrink-0" style={{ background: T.bg, borderTop: `1px solid ${T.border}` }}>
       {user ? (
         <div
           className="overflow-hidden rounded-lg"
@@ -45,10 +45,10 @@ export function SidebarUserPanel({
           <div className="flex items-center gap-3 px-3 py-3">
             <div className="relative shrink-0">
               {user.imageUrl ? (
-                <img src={user.imageUrl} alt="" className="h-11 w-11 rounded-lg border object-cover" style={{ borderColor: `${T.amber}55` }} />
+                <img src={user.imageUrl} alt="" className="object-cover border rounded-lg h-11 w-11" style={{ borderColor: `${T.amber}55` }} />
               ) : (
                 <div
-                  className="flex h-11 w-11 items-center justify-center rounded-lg border text-sm font-bold"
+                  className="flex items-center justify-center text-sm font-bold border rounded-lg h-11 w-11"
                   style={{ borderColor: `${T.amber}55`, background: T.amberGlow, color: T.amber }}
                 >
                   {initials || <User className="size-5" />}
@@ -61,9 +61,9 @@ export function SidebarUserPanel({
                 <ShieldCheck className="size-2.5" style={{ color: adminMode ? "#111827" : "#052e16" }} />
               </span>
             </div>
-            <div className="min-w-0 flex-1">
+            <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2">
-                <p className="min-w-0 truncate text-sm font-semibold leading-tight" style={{ color: T.text }}>
+                <p className="min-w-0 text-sm font-semibold leading-tight truncate" style={{ color: T.text }}>
                   {name}
                 </p>
               </div>
@@ -89,7 +89,7 @@ export function SidebarUserPanel({
             <button
               type="button"
               onClick={onSignOut}
-              className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md transition-colors hover:opacity-70"
+              className="flex items-center justify-center w-8 h-8 transition-colors rounded-md shrink-0 hover:opacity-70"
               style={{ border: `1px solid ${T.border}`, color: T.textMuted, background: "rgba(8,13,24,0.72)" }}
               title="Гарах"
             >

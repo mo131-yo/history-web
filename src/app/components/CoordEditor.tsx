@@ -44,7 +44,7 @@ export default function CoordEditor(props: CoordEditorProps) {
 
   return (
     <aside
-      className="flex h-full min-h-105 flex-col overflow-hidden rounded-[28px]"
+      className="flex h-auto min-h-105 flex-col overflow-hidden rounded-[35px] "
       style={{
         background: editorTheme.BG,
         border: `1px solid ${editorTheme.BORDER}`,
@@ -53,7 +53,7 @@ export default function CoordEditor(props: CoordEditorProps) {
       }}
     >
       <div className="h-0.5 shrink-0" style={{ background: `linear-gradient(90deg, transparent, ${editorTheme.GOLD_DIM}, transparent)` }} />
-      <div className="flex flex-1 flex-col gap-3 overflow-y-auto px-4 py-4" style={{ scrollbarWidth: "thin", scrollbarColor: `${editorTheme.BORDER} transparent` }}>
+      <div className="flex flex-1 flex-col gap-3 overflow-y-auto px-4 py-4 " style={{ scrollbarWidth: "thin", scrollbarColor: `${editorTheme.BORDER} transparent` }}>
         <CoordEditorHeader
           year={year}
           title={title}
