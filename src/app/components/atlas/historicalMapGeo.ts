@@ -192,7 +192,9 @@ export function safeSetData(
 }
 
 function createFlagFeature(feature: AtlasStateFeature): FlagFeature | null {
-  const center = normalizeLngLatLike(feature.properties.center);
+  const center =
+    normalizeLngLatLike(feature.properties.center) ||
+    getFeatureCenter(feature as GeoJSON.Feature<GeoJSON.Polygon>);
   if (!center) return null;
 
   const slug = feature.properties.slug;

@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState, type FormEvent } from "react";
 import { useUser } from "@clerk/nextjs";
-import { Check, Crown, Loader2, MapPin, Plus, RotateCcw, Scroll, Send, Sparkles, Star, Swords, X } from "lucide-react";
+import { Check, ChevronDown, ChevronUp, Crown, Loader2, MapPin, Plus, RotateCcw, Scroll, Send, Sparkles, Star, Swords, X } from "lucide-react";
 import type { AtlasStateFeature } from "@/lib/types";
 import { normalizeClosedRing } from "@/lib/geometry";
 import { SelectedStateMarkdown } from "./atlas/SelectedStateMarkdown";
@@ -58,6 +58,11 @@ export default function SelectedStateDrawer({
   const { insight, insightLoading, insightError, isCached } = useStateInsight(year, feature);
   const { user } = useUser();
   const userName = user?.fullName ?? user?.username ?? user?.primaryEmailAddress?.emailAddress ?? "Зочин";
+  const [insightExpanded, setInsightExpanded] = useState(false);
+
+  useEffect(() => {
+    setInsightExpanded(false);
+  }, [feature?.properties.slug, year]);
 
   if (!feature) {
     return (
@@ -136,7 +141,30 @@ export default function SelectedStateDrawer({
             ) : insightError ? (
               <p className="py-2 text-xs" style={{ color: "#f87171" }}>{insightError}</p>
             ) : (
-              <SelectedStateMarkdown text={insight} />
+              <>
+                <div className="relative">
+                  <div className={insightExpanded ? "" : "max-h-36 overflow-hidden"}>
+                    <SelectedStateMarkdown text={insight} />
+                  </div>
+                  {!insightExpanded && (
+                    <div
+                      className="pointer-events-none absolute inset-x-0 bottom-0 h-10"
+                      style={{ background: "linear-gradient(180deg, rgba(15,23,42,0), rgba(15,23,42,0.96))" }}
+                    />
+                  )}
+                </div>
+                {insight && (
+                  <button
+                    type="button"
+                    onClick={() => setInsightExpanded((value) => !value)}
+                    className="mt-2 flex h-8 w-full items-center justify-center gap-1 rounded-md text-[10px] font-semibold transition hover:opacity-80"
+                    style={{ border: `1px solid ${T.border}`, color: T.amber, background: "rgba(245,158,11,0.08)" }}
+                  >
+                    {insightExpanded ? <ChevronUp className="size-3" /> : <ChevronDown className="size-3" />}
+                    {insightExpanded ? "Хураах" : "Дэлгэрэнгүй унших"}
+                  </button>
+                )}
+              </>
             )}
           </div>
 

@@ -394,6 +394,7 @@ export function addHistoricalMapLayers(
   }
 
   if (map.getLayer("draft-vertices")) {
+    if (map.getLayer("state-flags")) map.moveLayer("state-flags");
     map.moveLayer("draft-vertices");
   }
 }
