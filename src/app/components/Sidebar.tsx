@@ -8,6 +8,7 @@ import {
   Check,
   ChevronDown,
   CircleHelp,
+  Globe,
   ListChecks,
   Map,
   MapPinned,
@@ -458,7 +459,7 @@ export function Sidebar({
                   <div className="grid grid-cols-2 gap-2 mt-2">
                     <MapModeButton
                       active={mapMode === 'globe'}
-                      icon={<Sparkles className="size-4" />}
+                      icon={<Globe className="size-4" />}
                       label="3D"
                       onClick={() => onMapModeChange('globe')}
                     />
@@ -720,9 +721,9 @@ function MapModeButton({
       onClick={onClick}
       className="flex h-10 items-center justify-center gap-2 rounded-lg text-[10px] font-semibold uppercase tracking-widest transition-colors"
       style={{
-        background: active ? 'rgba(245,158,11,0.16)' : 'rgba(8,13,24,0.66)',
+        background: active ? T.amber : T.textMuted + '80',
         border: active ? `1px solid ${T.amber}55` : `1px solid ${T.border}`,
-        color: active ? T.amber : T.textSub,
+        color: active ? T.bg : T.bg,
       }}
     >
       {icon}
