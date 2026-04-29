@@ -1,7 +1,6 @@
 "use client";
 
 import { useMemo } from "react";
-import { Globe } from "./history/GlobeLoader";
 import {
   handleGlobeClick,
   toggleSelectedPoint,
@@ -27,7 +26,8 @@ import {
 import { useGlobeData } from "./history/useGlobeData";
 import { useGlobeEditor } from "./history/useGlobeEditor";
 import { useGlobePointerEditing } from "./history/useGlobePointerEditing";
-import type { SharedMapProps } from "./atlas/types";
+import { Globe } from "./history/GlobeLeader";
+import { SharedMapProps } from "./atlas/types";
 
 const MAPTILER_HYBRID_TILE = (x: number, y: number, level: number) =>
   `https://api.maptiler.com/maps/hybrid-v4/256/${level}/${x}/${y}@2x.png?key=UDHwVf5wxc04GFo8f0PC`;

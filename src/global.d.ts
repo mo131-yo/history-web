@@ -26,6 +26,7 @@ declare module "@clerk/nextjs" {
   export const UserButton: any;
   export const useUser: any;
   export const useAuth: any;
+  export const Show: any;
 }
 
 declare module "@clerk/nextjs/server" {
