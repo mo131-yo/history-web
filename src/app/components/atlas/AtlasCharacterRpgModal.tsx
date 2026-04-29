@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { T } from './constants';
+import { sidebarTheme as T } from './sidebarTheme';
 import { AtlasCharacterQuiz } from './AtlasCharacterQuiz';
 import { AtlasCharacterResult } from './AtlasCharacterResult';
 import {
@@ -62,7 +62,7 @@ export function AtlasCharacterRpgModal({
       className="fixed inset-0 z-50 flex items-center justify-center p-4"
       style={{
         background:
-          'radial-gradient(circle at 50% 20%, rgba(201,164,93,0.18), transparent 35%), rgba(0,0,0,0.76)',
+          'radial-gradient(circle at 50% 20%, rgba(12,96,169,0.14), transparent 35%), rgba(252,252,252,0.82)',
         backdropFilter: 'blur(8px)',
       }}
       role="dialog"
@@ -71,9 +71,9 @@ export function AtlasCharacterRpgModal({
       <div
         className="w-full max-w-[620px] overflow-hidden rounded-2xl"
         style={{
-          background: 'rgba(8,5,2,0.97)',
-          border: '1px solid rgba(201,164,93,0.35)',
-          boxShadow: '0 30px 90px rgba(0,0,0,0.75)',
+          background: T.bg,
+          border: `1px solid ${T.border}`,
+          boxShadow: '0 30px 80px rgba(12,96,169,0.16)',
           fontFamily: 'var(--font-inter), Arial, sans-serif',
         }}
       >
@@ -90,7 +90,7 @@ export function AtlasCharacterRpgModal({
             </div>
             <h2
               className="mt-1 text-lg font-bold"
-              style={{ color: T.amberBright }}
+              style={{ color: T.amber }}
             >
               Чи Их Монголын үед хэн байх байсан бэ?
             </h2>
@@ -100,8 +100,8 @@ export function AtlasCharacterRpgModal({
             onClick={onClose}
             className="rounded-lg h-9 w-9"
             style={{
-              border: `1px solid ${T.borderMid}`,
-              background: 'rgba(255,255,255,0.03)',
+              border: `1px solid ${T.border}`,
+              background: 'rgba(12,96,169,0.05)',
               color: T.textSub,
             }}
           >

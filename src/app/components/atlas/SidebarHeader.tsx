@@ -14,14 +14,6 @@ export function SidebarHeader({
 }) {
   return (
     <div className="px-4 py-4 shrink-0 sm:px-5 sm:py-5" style={{background: T.bg, borderBottom: `1px solid ${T.border}` }}>
-      <div className="flex items-center gap-3 mb-4 sm:mb-5">
-        <div className="flex-1 h-px" style={{ background: `linear-gradient(90deg, transparent, ${T.amber}66)` }} />
-        <svg width="16" height="16" viewBox="0 0 16 16">
-          <polygon points="8,1 9.5,5.5 14.5,5.5 10.3,8.8 11.8,13.5 8,10.8 4.2,13.5 5.7,8.8 1.5,5.5 6.5,5.5" fill={T.amber} opacity="0.8" />
-        </svg>
-        <div className="flex-1 h-px" style={{ background: `linear-gradient(90deg, ${T.amber}66, transparent)` }} />
-      </div>
-
       <div className={`flex gap-3 ${collapsed ? "items-center justify-center lg:flex-col" : "items-start justify-between"}`}>
         {!collapsed && (
           <div>

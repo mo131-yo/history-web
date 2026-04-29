@@ -1,6 +1,6 @@
 'use client';
 
-import { T } from './constants';
+import { sidebarTheme as T } from './sidebarTheme';
 import { CharacterRole } from './types';
 
 export function AtlasCharacterResult({
@@ -23,7 +23,7 @@ export function AtlasCharacterResult({
       >
         {userName}-ийн дүр
       </div>
-      <h3 className="mt-2 text-3xl font-bold" style={{ color: T.amberBright }}>
+      <h3 className="mt-2 text-3xl font-bold" style={{ color: T.amber }}>
         {result.name}
       </h3>
       <div className="mt-1 text-sm" style={{ color: T.textSub }}>
@@ -41,9 +41,9 @@ export function AtlasCharacterResult({
             key={strength}
             className="rounded-full px-3 py-1 text-xs"
             style={{
-              background: 'rgba(201,164,93,0.12)',
-              border: '1px solid rgba(201,164,93,0.25)',
-              color: T.amberBright,
+              background: 'rgba(12,96,169,0.08)',
+              border: '1px solid rgba(12,96,169,0.24)',
+              color: T.amber,
             }}
           >
             {strength}
@@ -56,8 +56,8 @@ export function AtlasCharacterResult({
           onClick={onRestart}
           className="rounded-xl px-4 py-3 text-sm font-bold"
           style={{
-            background: 'rgba(255,255,255,0.04)',
-            border: `1px solid ${T.borderMid}`,
+            background: 'rgba(12,96,169,0.05)',
+            border: `1px solid ${T.border}`,
             color: T.text,
           }}
         >
@@ -68,8 +68,8 @@ export function AtlasCharacterResult({
           onClick={onClose}
           className="rounded-xl px-4 py-3 text-sm font-bold"
           style={{
-            background: `linear-gradient(135deg, ${T.amber}, ${T.amberDim})`,
-            color: '#120b03',
+            background: T.amber,
+            color: T.bg,
             border: 'none',
           }}
         >

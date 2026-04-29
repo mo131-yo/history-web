@@ -202,7 +202,7 @@
 "use client";
 
 import HistoryQuiz from "./Historyquiz";
-import { T } from "./atlas/constants";
+import { sidebarTheme as T } from "./atlas/sidebarTheme";
 
 export type QuizMode = "knowledge" | "grade";
 
@@ -225,7 +225,7 @@ export const QuizModal = ({
     <div
       className="absolute inset-0 z-40 overflow-y-auto backdrop-blur-md animate-in fade-in duration-300"
       style={{
-        background: `rgba(8,5,2,0.94)`,
+        background: "rgba(252,252,252,0.96)",
         borderLeft: `1px solid ${T.border}`,
       }}
     >

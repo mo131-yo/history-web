@@ -1,6 +1,7 @@
 'use client';
 
-import { RPG_QUESTIONS, T } from './constants';
+import { RPG_QUESTIONS } from './constants';
+import { sidebarTheme as T } from './sidebarTheme';
 import { RoleId, RoleScore } from './types';
 
 export function AtlasCharacterQuiz({
@@ -23,13 +24,13 @@ export function AtlasCharacterQuiz({
         </span>
         <div
           className="h-2 w-40 overflow-hidden rounded-full"
-          style={{ background: '#1a1208' }}
+          style={{ background: 'rgba(12,96,169,0.10)' }}
         >
           <div
             className="h-full rounded-full"
             style={{
               width: `${((step + 1) / RPG_QUESTIONS.length) * 100}%`,
-              background: `linear-gradient(90deg, ${T.amberDim}, ${T.amberBright})`,
+              background: T.amber,
             }}
           />
         </div>
@@ -51,8 +52,8 @@ export function AtlasCharacterQuiz({
             className="rounded-xl px-4 py-4 text-left transition-all hover:scale-[1.01]"
             style={{
               background:
-                'linear-gradient(135deg, rgba(201,164,93,0.08), rgba(255,255,255,0.025))',
-              border: `1px solid ${T.borderMid}`,
+                'linear-gradient(135deg, rgba(12,96,169,0.08), rgba(255,255,255,0.95))',
+              border: `1px solid ${T.border}`,
               color: T.text,
               fontFamily: 'var(--font-inter), Arial, sans-serif',
             }}
@@ -60,9 +61,9 @@ export function AtlasCharacterQuiz({
             <span
               className="mr-3 inline-flex h-6 w-6 items-center justify-center rounded-full text-[11px]"
               style={{
-                background: 'rgba(201,164,93,0.14)',
-                color: T.amberBright,
-                border: '1px solid rgba(201,164,93,0.25)',
+                background: 'rgba(12,96,169,0.10)',
+                color: T.amber,
+                border: '1px solid rgba(12,96,169,0.24)',
               }}
             >
               {idx + 1}
