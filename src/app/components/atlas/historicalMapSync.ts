@@ -62,11 +62,9 @@ import type {
 import {
   createEmptyEventCollection,
   createDraftPolygon,
-  createFlagCollection,
   createVertexCollection,
   getFeatureBounds,
   getFeatureCenter,
-  loadFlagImages,
   normalizeLngLatLike,
   safeSetData,
 } from "./historicalMapGeo";
@@ -87,7 +85,6 @@ export function syncCollection(
       features: [],
     };
     const nextCollection = collection ?? emptyCollection;
-    const flagCollection = createFlagCollection(nextCollection);
     const selectedYear =
       Number((nextCollection as typeof nextCollection & { year?: number }).year) || 0;
 
@@ -96,9 +93,7 @@ export function syncCollection(
       "atlas-states",
       nextCollection
     );
-    safeSetData(map, "state-flags", flagCollection);
     safeSetData(map, "battle-markers", createBattleCollection(selectedYear));
-    void loadFlagImages(map, flagCollection);
   };
 
   if (ready && map.isStyleLoaded()) push();
@@ -176,6 +171,14 @@ export function syncSelection(
   if (!map) return;
 
   const apply = () => {
+    if (map.getLayer("states-selected-fill")) {
+      map.setFilter("states-selected-fill", [
+        "==",
+        ["get", "slug"],
+        selectedSlug ?? "",
+      ]);
+    }
+
     if (!map.getLayer("states-selected-outline")) return;
 
     map.setFilter("states-selected-outline", [
@@ -215,6 +218,48 @@ export function syncDraft(
   else map.once("load", apply);
 }
 
+export function syncFeedbackPreview(
+  map: MapLibreMap | null,
+  ready: boolean,
+  feedbackPreviewRing: Array<[number, number]> | undefined
+) {
+  if (!map) return;
+
+  const apply = () => {
+    safeSetData(
+      map,
+      "feedback-polygon",
+      feedbackPreviewRing?.length
+        ? createDraftPolygon(feedbackPreviewRing)
+        : createDraftPolygon([])
+    );
+  };
+
+  if (ready && map.isStyleLoaded()) apply();
+  else map.once("load", apply);
+}
+
+export function syncFeedbackReviewHighlight(
+  map: MapLibreMap | null,
+  ready: boolean,
+  feedbackReviewSlug: string | null | undefined
+) {
+  if (!map) return;
+
+  const apply = () => {
+    if (!map.getLayer("states-hover-outline")) return;
+
+    map.setFilter("states-hover-outline", [
+      "==",
+      ["get", "slug"],
+      feedbackReviewSlug ?? "",
+    ]);
+  };
+
+  if (ready && map.isStyleLoaded()) apply();
+  else map.once("load", apply);
+}
+
 export function syncLayerVisibility(
   map: MapLibreMap | null,
   ready: boolean,
@@ -232,12 +277,15 @@ export function syncLayerVisibility(
   const apply = () => {
     applyVisibility("states-fill", layerVisibility.states);
     applyVisibility("states-outline", layerVisibility.states);
+    applyVisibility("states-selected-fill", layerVisibility.states);
     applyVisibility("states-selected-outline", layerVisibility.states);
     applyVisibility("states-hover-outline", layerVisibility.states);
     applyVisibility("states-labels", layerVisibility.labels);
-    applyVisibility("state-flags", layerVisibility.capitals);
     applyVisibility("battle-events", layerVisibility.battles);
-    applyVisibility("battle-markers", layerVisibility.battles && showBattleMarkers);
+    applyVisibility(
+      "battle-markers",
+      layerVisibility.capitals && showBattleMarkers,
+    );
   };
 
   if (ready && map.isStyleLoaded()) apply();

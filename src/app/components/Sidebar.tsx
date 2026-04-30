@@ -226,11 +226,11 @@ export function Sidebar({
         collapsed ? 'lg:w-20' : 'lg:w-[280px]'
       }`}
       style={{
-        background: collapsed ? 'rgba(9,14,26,0.99)' : T.bg,
+        background: collapsed ? 'rgba(255,255,255,0.96)' : T.bg,
         borderRight: collapsed
-          ? `1px solid ${T.amber}33`
+          ? `1px solid ${T.border}`
           : `1px solid ${T.border}`,
-        boxShadow: collapsed ? '8px 0 24px rgba(0,0,0,0.34)' : 'none',
+        boxShadow: collapsed ? '8px 0 26px rgba(37,99,235,0.16)' : 'none',
         fontFamily: 'var(--font-inter), Arial, sans-serif',
       }}
     >
@@ -258,7 +258,7 @@ export function Sidebar({
             <input
               value={search}
               onChange={(event) => onSearchChange(event.target.value)}
-              placeholder="Улс хайх"
+              placeholder="Улс эсвэл он хайх"
               className="flex-1 min-w-0 text-xs bg-transparent outline-none placeholder:opacity-45"
               style={{
                 color: T.text,
@@ -274,6 +274,15 @@ export function Sidebar({
             className="p-2 overflow-y-auto rounded-lg max-h-72 shrink-0"
             style={{ background: T.bg, border: `1px solid ${T.border}` }}
           >
+            {/^\d{3,4}$/.test(trimmedSearch) && searchResults.length > 0 && (
+              <p
+                className="px-2 pb-2 text-[10px] font-semibold uppercase tracking-[0.14em]"
+                style={{ color: T.textMuted }}
+              >
+                {trimmedSearch} оны бүх улс
+              </p>
+            )}
+
             {searchStatus === 'loading' && (
               <p className="px-2 py-3 text-xs" style={{ color: T.text }}>
                 Хайж байна...
@@ -502,10 +511,6 @@ export function Sidebar({
           })}
         </nav>
 
-        {adminMode && !collapsed && (
-          <AdminFeedbackNotice pendingFeedbackCount={pendingFeedbackCount} />
-        )}
-
         {isLoaded && !collapsed && (
           <SidebarUserPanel
             adminMode={adminMode}
@@ -532,14 +537,35 @@ type PendingFeedback = {
   proposedGeometry?: GeoJSON.Polygon | null;
 };
 
-function AdminFeedbackNotice({
+export function AdminFeedbackNotice({
+  activeFeedbackId,
+  addPointMode = false,
+  draftRing = [],
+  editingFeedback = false,
+  onApproveEdited,
+  onCancelPreview,
+  onPreviewGeometry,
+  onReviewed,
+  onStartEdit,
+  onToggleAddPoint,
   pendingFeedbackCount,
 }: {
+  activeFeedbackId?: string | null;
+  addPointMode?: boolean;
+  draftRing?: Array<[number, number]>;
+  editingFeedback?: boolean;
+  onApproveEdited?: (id: string) => Promise<AtlasStateFeature | null | undefined>;
+  onCancelPreview?: () => void;
+  onPreviewGeometry?: (item: PendingFeedback) => void;
+  onReviewed?: (feature?: AtlasStateFeature | null) => void;
+  onStartEdit?: () => void;
+  onToggleAddPoint?: () => void;
   pendingFeedbackCount: number;
 }) {
   const [open, setOpen] = useState(pendingFeedbackCount > 0);
   const [items, setItems] = useState<PendingFeedback[]>([]);
   const [status, setStatus] = useState<'idle' | 'loading' | 'error'>('idle');
+  const activeItem = items.find((item) => item.id === activeFeedbackId);
 
   useEffect(() => {
     if (pendingFeedbackCount <= 0) {
@@ -584,26 +610,42 @@ function AdminFeedbackNotice({
       return;
     }
 
+    const data = (await response.json().catch(() => null)) as {
+      feature?: AtlasStateFeature | null;
+    } | null;
     setItems((current) => current.filter((item) => item.id !== id));
+    onReviewed?.(data?.feature ?? null);
+  }
+
+  async function approveEditedFeedback(id: string) {
+    if (!onApproveEdited) {
+      await reviewFeedback(id, 'approve');
+      return;
+    }
+
+    const feature = await onApproveEdited(id);
+    setItems((current) => current.filter((item) => item.id !== id));
+    onReviewed?.(feature ?? null);
   }
 
   return (
     <div
-      className="p-2 rounded-lg"
+      className="p-2 rounded-xl"
       style={{
         background:
           pendingFeedbackCount > 0
-            ? 'rgba(245,158,11,0.14)'
-            : 'rgba(248,250,252,0.86)',
+            ? 'rgba(255,255,255,0.96)'
+            : 'rgba(255,255,255,0.9)',
         backdropFilter: 'blur(14px)',
-        border: '1px solid rgba(59,130,246,0.18)',
+        border: '1px solid rgba(59,130,246,0.28)',
+        boxShadow: '0 14px 34px rgba(37,99,235,0.16)',
       }}
     >
       <button
         type="button"
         onClick={() => setOpen((value) => !value)}
-        className="flex items-center w-full gap-2 px-2 py-2 text-left rounded-md"
-        style={{ color: pendingFeedbackCount > 0 ? T.amber : T.textSub }}
+        className="flex items-center w-full gap-2 px-2 py-2 text-left rounded-lg"
+        style={{ color: pendingFeedbackCount > 0 ? T.amber : T.textMuted }}
       >
         <Bell className="size-4 shrink-0" />
         <span className="flex-1 min-w-0 text-xs font-semibold truncate">
@@ -611,7 +653,10 @@ function AdminFeedbackNotice({
         </span>
         <span
           className="rounded-full px-2 py-0.5 text-[10px] font-bold"
-          style={{ background: `${T.amber}22` }}
+          style={{
+            background: pendingFeedbackCount > 0 ? T.amber : 'rgba(37,99,235,0.1)',
+            color: pendingFeedbackCount > 0 ? '#ffffff' : T.amber,
+          }}
         >
           {pendingFeedbackCount}
         </span>
@@ -640,13 +685,44 @@ function AdminFeedbackNotice({
           {items.map((item) => (
             <div
               key={item.id}
-              className="rounded-lg px-2.5 py-2"
+              role={item.proposedGeometry ? 'button' : undefined}
+              tabIndex={item.proposedGeometry ? 0 : undefined}
+              onClick={() => {
+                if (!item.proposedGeometry || activeFeedbackId === item.id) {
+                  return;
+                }
+
+                onPreviewGeometry?.(item);
+              }}
+              onKeyDown={(event) => {
+                if (
+                  !item.proposedGeometry ||
+                  activeFeedbackId === item.id ||
+                  (event.key !== 'Enter' && event.key !== ' ')
+                ) {
+                  return;
+                }
+
+                event.preventDefault();
+                onPreviewGeometry?.(item);
+              }}
+              className="rounded-lg px-2.5 py-2 transition-all duration-200"
               style={{
-                background: 'rgba(255,255,255,0.9)',
+                background:
+                  activeFeedbackId === item.id
+                    ? 'linear-gradient(135deg, rgba(236,253,245,0.98), rgba(255,255,255,0.96))'
+                    : 'rgba(255,255,255,0.9)',
                 backdropFilter: 'blur(12px)',
-                border: '1px solid rgba(59,130,246,0.15)',
-                boxShadow: '0 8px 24px rgba(0,0,0,0.08)',
+                border:
+                  activeFeedbackId === item.id
+                    ? '1px solid rgba(34,197,94,0.48)'
+                    : '1px solid rgba(59,130,246,0.15)',
+                boxShadow:
+                  activeFeedbackId === item.id
+                    ? '0 12px 30px rgba(16,185,129,0.22)'
+                    : '0 8px 24px rgba(0,0,0,0.08)',
                 borderRadius: '16px',
+                cursor: item.proposedGeometry ? 'pointer' : 'default',
               }}
             >
               <div className="flex items-center justify-between gap-2">
@@ -677,29 +753,144 @@ function AdminFeedbackNotice({
                   : 'Guest feedback'}
               </p>
 
+              {item.proposedGeometry && (
+                <div className="mt-2 grid gap-2">
+                  <button
+                    type="button"
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      if (activeFeedbackId === item.id) return;
+                      onPreviewGeometry?.(item);
+                    }}
+                    disabled={activeFeedbackId === item.id}
+                    className="h-8 rounded-md text-[10px] font-semibold disabled:cursor-default"
+                    style={{
+                      background:
+                        activeFeedbackId === item.id
+                          ? 'rgba(34,197,94,0.14)'
+                          : 'rgba(12,96,169,0.08)',
+                      border:
+                        activeFeedbackId === item.id
+                          ? '1px solid rgba(34,197,94,0.36)'
+                          : '1px solid rgba(12,96,169,0.28)',
+                      color: activeFeedbackId === item.id ? '#15803d' : T.amber,
+                    }}
+                  >
+                    {activeFeedbackId === item.id ? '✓ Харагдаж байна' : 'Map дээр харах'}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      onCancelPreview?.();
+                    }}
+                    disabled={activeFeedbackId !== item.id}
+                    className="hidden h-8 rounded-md text-[10px] font-semibold disabled:opacity-45"
+                    style={{
+                      background: 'rgba(148,163,184,0.12)',
+                      border: '1px solid rgba(148,163,184,0.25)',
+                      color: '#475569',
+                    }}
+                  >
+                    Хаах
+                  </button>
+                </div>
+              )}
+
+              {false && activeFeedbackId === item.id && (
+                <div className="mt-2 grid gap-2">
+                  <p className="text-[10px]" style={{ color: T.textMuted }}>
+                    {editingFeedback
+                      ? `Засварлаж байна. Цэгийг чирж засна, double click устгана. Одоо ${draftRing.length} цэг байна.`
+                      : 'Одоогоор зөвхөн харж байна. Засах бол доорх товчийг дарна.'}
+                  </p>
+                  <div className="grid grid-cols-2 gap-2">
+                    <span
+                      className="rounded-md px-2 py-1 text-[10px] font-semibold"
+                      style={{ background: 'rgba(245,158,11,0.12)', color: '#b45309' }}
+                    >
+                      Үндсэн polygon
+                    </span>
+                    <span
+                      className="rounded-md px-2 py-1 text-[10px] font-semibold"
+                      style={{ background: 'rgba(34,197,94,0.12)', color: '#15803d' }}
+                    >
+                      Feedback polygon
+                    </span>
+                  </div>
+                  {!editingFeedback && (
+                    <button
+                      type="button"
+                      onClick={onStartEdit}
+                      className="h-8 rounded-md text-[10px] font-semibold"
+                      style={{
+                        background: 'rgba(12,96,169,0.1)',
+                        border: '1px solid rgba(12,96,169,0.3)',
+                        color: T.amber,
+                      }}
+                    >
+                      Засах горим асаах
+                    </button>
+                  )}
+                  <button
+                    type="button"
+                    onClick={onToggleAddPoint}
+                    disabled={!editingFeedback}
+                    className="h-8 rounded-md text-[10px] font-semibold disabled:opacity-45"
+                    style={{
+                      background: addPointMode
+                        ? 'rgba(34,197,94,0.14)'
+                        : 'rgba(12,96,169,0.08)',
+                      border: addPointMode
+                        ? '1px solid rgba(34,197,94,0.36)'
+                        : '1px solid rgba(12,96,169,0.28)',
+                      color: addPointMode ? '#15803d' : T.amber,
+                    }}
+                  >
+                    {addPointMode ? 'Цэг нэмэх горим асаалттай' : 'Цэг нэмэх'}
+                  </button>
+                </div>
+              )}
+
               <div className="grid grid-cols-2 gap-2 mt-2">
                 <button
                   type="button"
-                  onClick={() => reviewFeedback(item.id, 'approve')}
-                  className="flex h-8 items-center justify-center gap-1 rounded-md text-[10px] font-semibold"
+                  onClick={(event) => {
+                    event.stopPropagation();
+                    activeFeedbackId === item.id
+                      ? approveEditedFeedback(item.id)
+                      : reviewFeedback(item.id, 'approve');
+                  }}
+                  disabled={Boolean(item.proposedGeometry && activeFeedbackId !== item.id)}
+                  className="flex h-8 items-center justify-center gap-1 rounded-md text-[10px] font-semibold disabled:opacity-45"
                   style={{
+                    display: item.proposedGeometry ? 'none' : undefined,
                     background: 'rgba(34,197,94,0.13)',
                     border: '1px solid rgba(34,197,94,0.35)',
-                    color: '#86efac',
+                    color: '#15803d',
                   }}
                 >
                   <Check className="size-3" />
-                  {item.proposedGeometry ? 'Зөвшөөрөх' : 'Нийтлэх'}
+                  {activeFeedbackId === item.id
+                    ? editingFeedback
+                      ? 'Засвараар approve'
+                      : 'Харагдаж буйгаар approve'
+                    : item.proposedGeometry
+                      ? 'Эхлээд харах'
+                      : 'Нийтлэх'}
                 </button>
 
                 <button
                   type="button"
-                  onClick={() => reviewFeedback(item.id, 'reject')}
+                  onClick={(event) => {
+                    event.stopPropagation();
+                    reviewFeedback(item.id, 'reject');
+                  }}
                   className="flex h-8 items-center justify-center gap-1 rounded-md text-[10px] font-semibold"
                   style={{
                     background: 'rgba(239,68,68,0.12)',
                     border: '1px solid rgba(239,68,68,0.35)',
-                    color: '#fca5a5',
+                    color: '#dc2626',
                   }}
                 >
                   <XCircle className="size-3" />
@@ -708,6 +899,79 @@ function AdminFeedbackNotice({
               </div>
             </div>
           ))}
+
+          {activeItem?.proposedGeometry && (
+            <div
+              className="sticky bottom-0 grid gap-2 rounded-xl p-3"
+              style={{
+                background: 'rgba(248,250,252,0.98)',
+                border: '1px solid rgba(34,197,94,0.3)',
+                boxShadow: '0 -10px 28px rgba(15,23,42,0.12)',
+              }}
+            >
+              <div className="flex items-center justify-between gap-2">
+                <div>
+                  <p className="text-[10px] font-bold uppercase tracking-[0.16em]" style={{ color: '#15803d' }}>
+                    Feedback review
+                  </p>
+                  <p className="mt-0.5 text-[10px]" style={{ color: T.textMuted }}>
+                    {editingFeedback
+                      ? `${draftRing.length} цэгтэй засварлаж байна`
+                      : 'User feedback харагдаж байна. Дараагийн алхмаа сонгоно уу.'}
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={onCancelPreview}
+                  className="h-7 rounded-md px-2 text-[10px] font-semibold"
+                  style={{ background: 'rgba(148,163,184,0.12)', color: '#475569' }}
+                >
+                  Хаах
+                </button>
+              </div>
+
+              <div className="grid grid-cols-3 gap-2">
+                <button
+                  type="button"
+                  onClick={onStartEdit}
+                  disabled={editingFeedback}
+                  className="h-9 rounded-md text-[10px] font-semibold disabled:opacity-45"
+                  style={{
+                    background: 'rgba(12,96,169,0.1)',
+                    border: '1px solid rgba(12,96,169,0.3)',
+                    color: T.amber,
+                  }}
+                >
+                  Засах
+                </button>
+                <button
+                  type="button"
+                  onClick={onToggleAddPoint}
+                  disabled={!editingFeedback}
+                  className="h-9 rounded-md text-[10px] font-semibold disabled:opacity-45"
+                  style={{
+                    background: addPointMode ? 'rgba(34,197,94,0.14)' : 'rgba(12,96,169,0.08)',
+                    border: addPointMode ? '1px solid rgba(34,197,94,0.36)' : '1px solid rgba(12,96,169,0.28)',
+                    color: addPointMode ? '#15803d' : T.amber,
+                  }}
+                >
+                  {addPointMode ? 'Цэг нэмэх ON' : 'Цэг нэмэх'}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => approveEditedFeedback(activeItem.id)}
+                  className="h-9 rounded-md text-[10px] font-semibold"
+                  style={{
+                    background: 'rgba(34,197,94,0.15)',
+                    border: '1px solid rgba(34,197,94,0.4)',
+                    color: '#15803d',
+                  }}
+                >
+                  Approve
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       )}
     </div>

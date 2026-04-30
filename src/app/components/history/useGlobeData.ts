@@ -8,7 +8,6 @@ import type {
   GlobePolygon,
 } from './globeTypes';
 import { computeCentroid, ringToCoords } from './globeMath';
-import { createFlagCollection } from '../atlas/historicalMapGeo';
 
 export function useGlobeData({
   battleEvents,
@@ -76,23 +75,8 @@ export function useGlobeData({
           })
         : [];
 
-    const flagLabels =
-      collection && layerVisibility.capitals
-        ? createFlagCollection(collection).features.map((feature) => ({
-            lat: feature.geometry.coordinates[1],
-            lng: feature.geometry.coordinates[0],
-            text: feature.properties.name,
-            color: '#c9a45d',
-            slug: feature.properties.slug,
-            kind: 'flag' as const,
-            flagAsset: feature.properties.flagAsset,
-            flagUrl: feature.properties.flagUrl,
-            flagLabel: feature.properties.flagLabel,
-          }))
-        : [];
-
     const eventLabels =
-      battleEvents && layerVisibility.battles
+      battleEvents && layerVisibility.battles && layerVisibility.capitals
         ? battleEvents.features.map((feature) => ({
             lat: feature.geometry.coordinates[1],
             lng: feature.geometry.coordinates[0],
@@ -109,7 +93,7 @@ export function useGlobeData({
           }))
         : [];
 
-    return [...stateLabels, ...flagLabels, ...eventLabels];
+    return [...stateLabels, ...eventLabels];
   }, [battleEvents, collection, layerVisibility.battles, layerVisibility.capitals, layerVisibility.labels]);
 
   const vertexPoints: GlobePoint[] = useMemo(

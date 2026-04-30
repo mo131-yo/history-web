@@ -29,15 +29,22 @@ export async function GET(request: Request) {
       ORDER BY year ASC, name ASC
     `) as AtlasRow[];
 
-    const normalizedQueries = normalizeSearchVariants(query);
-    const results = rows
-      .filter((row) => {
-        const haystackVariants = normalizeSearchVariants([row.name, row.leader, row.capital, row.summary].join(" "));
-        return normalizedQueries.some((normalizedQuery) =>
-          haystackVariants.some((haystack) => haystack.includes(normalizedQuery)),
-        );
-      })
-      .slice(0, 20);
+    const requestedYear = Number.parseInt(query, 10);
+    const isYearSearch = /^\d{3,4}$/.test(query) && Number.isInteger(requestedYear);
+
+    const results = isYearSearch
+      ? rows.filter((row) => row.year === requestedYear)
+      : rows
+          .filter((row) => {
+            const normalizedQueries = normalizeSearchVariants(query);
+            const haystackVariants = normalizeSearchVariants(
+              [row.name, row.leader, row.capital, row.summary, String(row.year)].join(" "),
+            );
+            return normalizedQueries.some((normalizedQuery) =>
+              haystackVariants.some((haystack) => haystack.includes(normalizedQuery)),
+            );
+          })
+          .slice(0, 20);
 
     return Response.json({ results: results.map(toFeature) });
   } catch (err) {

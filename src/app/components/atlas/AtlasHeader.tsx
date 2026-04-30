@@ -1,91 +1,108 @@
 "use client";
 
-import { sidebarTheme as T } from "./sidebarTheme";
+import { Compass } from "lucide-react";
+
+type MapLike = {
+  rotateTo?: (bearing: number) => void;
+  easeTo?: (options: { bearing: number }) => void;
+};
+
+type AtlasHeaderProps = {
+  bearing?: number;
+  mapBearing?: number;
+  currentBearing?: number;
+  onCompassClick?: () => void;
+  onResetNorth?: () => void;
+  onResetDirection?: () => void;
+  onResetView?: () => void;
+  [key: string]: unknown;
+};
+
+function resetMapDirectionFallback() {
+  const windowWithMaps = window as typeof window & {
+    map?: MapLike;
+    atlasMap?: MapLike;
+    __MONGOL_ATLAS_MAP__?: MapLike;
+  };
+  const map =
+    windowWithMaps.__MONGOL_ATLAS_MAP__ ??
+    windowWithMaps.atlasMap ??
+    windowWithMaps.map;
+
+  if (map?.easeTo) {
+    map.easeTo({ bearing: 0 });
+    return;
+  }
+
+  if (map?.rotateTo) {
+    map.rotateTo(0);
+    return;
+  }
+
+  const mapboxCompass = document.querySelector<HTMLButtonElement>(
+    ".mapboxgl-ctrl-compass",
+  );
+
+  if (mapboxCompass) {
+    mapboxCompass.click();
+    return;
+  }
+
+  window.dispatchEvent(new CustomEvent("mongol-atlas:reset-direction"));
+}
 
 export function AtlasHeader({
-  adminMode,
-  collectionCount,
-}: {
-  adminMode: boolean;
-  collectionCount: number | null;
-}) {
+  bearing,
+  mapBearing,
+  currentBearing,
+  onCompassClick,
+  onResetNorth,
+  onResetDirection,
+  onResetView,
+}: AtlasHeaderProps) {
+  const nextBearing = bearing ?? mapBearing ?? currentBearing ?? 0;
+  const normalizedBearing = Number.isFinite(nextBearing) ? nextBearing : 0;
+
+  const handleCompassClick = () => {
+    const resetDirection =
+      onCompassClick ?? onResetNorth ?? onResetDirection ?? onResetView;
+
+    if (resetDirection) {
+      resetDirection();
+      return;
+    }
+
+    resetMapDirectionFallback();
+  };
+
   return (
-    <div className="pointer-events-none relative z-20 flex flex-col gap-3 px-3 pt-3 sm:px-4 lg:flex-row lg:items-start lg:justify-between">
-      <div
-        className="pointer-events-auto flex w-full items-center gap-3 rounded-xl py-2.5 pl-3 pr-4 lg:w-auto"
-        style={{
-          background: T.bg,
-          border: `1px solid ${T.border}`,
-          backdropFilter: "blur(16px)",
-          boxShadow: "0 12px 32px rgba(12,96,169,0.10), inset 0 1px 0 rgba(255,255,255,0.85)",
-          fontFamily: "var(--font-inter), Arial, sans-serif",
-        }}
+    <div className="pointer-events-auto inline-flex w-fit max-w-[calc(100vw-2rem)] items-center gap-3 rounded-xl border border-blue-500/30 bg-white/90 px-3 py-2 shadow-lg shadow-blue-950/10 backdrop-blur-md">
+      <button
+        type="button"
+        onClick={handleCompassClick}
+        className="group relative flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-blue-400/35 bg-blue-50 text-blue-700 shadow-inner shadow-white/70 transition hover:border-blue-500/70 hover:bg-blue-100 hover:text-blue-800"
+        aria-label="Зүг чигийг хойд зүг рүү тохируулах"
+        title="Зүг чигийг хойд зүг рүү тохируулах"
       >
-        <div className="relative flex shrink-0 items-center justify-center rounded-lg" style={{ width: 32, height: 32, background: "rgba(12,96,169,0.08)", border: "1px solid rgba(12,96,169,0.22)" }}>
-          <div
-            className="absolute inset-0 rounded-full"
-            style={{
-              background: "radial-gradient(circle at 40% 35%, rgba(12,96,169,0.16), transparent 70%)",
-            }}
-          />
-          <svg width="20" height="20" viewBox="0 0 20 20">
-            <polygon
-              points="10,1 12.2,7 18.5,7 13.4,11 15.4,17.5 10,14 4.6,17.5 6.6,11 1.5,7 7.8,7"
-              fill={T.amber}
-              opacity="0.9"
-            />
-          </svg>
-        </div>
-        <div className="min-w-0">
-          <p className="text-[10px] font-bold uppercase tracking-[0.22em]" style={{ color: T.amber }}>
-            Монгол Атлас
-          </p>
-          <p className="mt-0.5 text-[10px]" style={{ color: T.textMuted }}>
-            Түүхэн газрын зураг
-          </p>
-        </div>
-      </div>
+        <Compass
+          size={21}
+          strokeWidth={2.2}
+          className="transition-transform duration-300 ease-out"
+          style={{ transform: `rotate(${-normalizedBearing}deg)` }}
+        />
+        <span className="pointer-events-none absolute top-1 h-1.5 w-px rounded-full bg-blue-700" />
+      </button>
 
-      <div className="pointer-events-auto flex w-full flex-wrap items-center justify-start gap-2 lg:w-auto lg:justify-end">
-        {adminMode && (
-          <div
-            className="flex min-h-10 items-center gap-1.5 rounded-xl px-3 py-2 text-[10px] uppercase tracking-widest"
-            style={{
-              background: T.bg,
-              border: "1px solid rgba(12,96,169,0.30)",
-              color: T.amber,
-              backdropFilter: "blur(16px)",
-              boxShadow: "0 10px 28px rgba(12,96,169,0.08)",
-              fontFamily: "var(--font-inter), Arial, sans-serif",
-              letterSpacing: "0.1em",
-            }}
-          >
-            <svg width="9" height="9" viewBox="0 0 10 10">
-              <polygon
-                points="5,0 6.2,3.5 10,3.5 7,5.7 8,9.5 5,7.5 2,9.5 3,5.7 0,3.5 3.8,3.5"
-                fill={T.amber}
-              />
-            </svg>
-            Хаан · Засах эрхтэй
-          </div>
-        )}
-
-        {collectionCount !== null && (
-          <div
-            className="min-h-10 rounded-xl px-3 py-2 text-[10px] uppercase tracking-widest tabular-nums"
-            style={{
-              background: T.bg,
-              border: `1px solid ${T.border}`,
-              color: T.textMuted,
-              backdropFilter: "blur(16px)",
-              boxShadow: "0 10px 28px rgba(12,96,169,0.08)",
-              fontFamily: "var(--font-inter), Arial, sans-serif",
-            }}
-          >
-            {collectionCount} улс
-          </div>
-        )}
+      <div className="min-w-0">
+        <p className="text-[10px] font-bold uppercase tracking-[0.32em] text-blue-700">
+          Монгол Атлас
+        </p>
+        <p className="mt-0.5 truncate text-[11px] font-medium text-blue-600/85">
+          Түүхэн газрын зураг
+        </p>
       </div>
     </div>
   );
 }
+
+export default AtlasHeader;

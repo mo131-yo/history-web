@@ -1,69 +1,132 @@
 "use client";
 
-import { sidebarTheme as T } from "./sidebarTheme";
-import type { AtlasLayerVisibility } from "./types";
+type ToggleHandler = () => void;
+type LayerKey = "states" | "labels" | "capitals" | "battles";
 
-const LAYERS: Array<{
-  key: keyof AtlasLayerVisibility;
+type AtlasLayerToggleProps = {
+  value?: Partial<Record<LayerKey, boolean>>;
+  onChange?: (key: LayerKey, next: boolean) => void;
+  showStates?: boolean;
+  showLabels?: boolean;
+  showCapitals?: boolean;
+  statesVisible?: boolean;
+  labelsVisible?: boolean;
+  capitalsVisible?: boolean;
+  isStatesVisible?: boolean;
+  isLabelsVisible?: boolean;
+  isCapitalsVisible?: boolean;
+  onToggleStates?: ToggleHandler;
+  onToggleLabels?: ToggleHandler;
+  onToggleCapitals?: ToggleHandler;
+  onStatesToggle?: ToggleHandler;
+  onLabelsToggle?: ToggleHandler;
+  onCapitalsToggle?: ToggleHandler;
+  toggleStates?: ToggleHandler;
+  toggleLabels?: ToggleHandler;
+  toggleCapitals?: ToggleHandler;
+  [key: string]: unknown;
+};
+
+type LayerToggleItem = {
+  key: string;
   label: string;
-}> = [
-  { key: "states", label: "States" },
-  { key: "labels", label: "Labels" },
-  { key: "capitals", label: "Capitals" },
-  { key: "battles", label: "Battles / Campaigns" },
-];
+  active: boolean;
+  onClick?: ToggleHandler;
+};
 
-export function AtlasLayerToggle({
-  value,
-  onChange,
-}: {
-  value: AtlasLayerVisibility;
-  onChange: (key: keyof AtlasLayerVisibility, next: boolean) => void;
-}) {
+function pickBoolean(...values: Array<boolean | undefined>) {
+  return values.find((value) => typeof value === "boolean") ?? false;
+}
+
+function pickHandler(...handlers: Array<ToggleHandler | undefined>) {
+  return handlers.find((handler) => typeof handler === "function");
+}
+
+function LayerButton({ label, active, onClick }: LayerToggleItem) {
   return (
-    <div
-      className="pointer-events-auto absolute left-4 top-16 z-20 flex flex-wrap gap-2 rounded-xl px-3 py-2"
-      style={{
-        background: T.bg,
-        border: `1px solid ${T.border}`,
-        backdropFilter: "blur(14px)",
-        boxShadow: "0 12px 32px rgba(12,96,169,0.12), inset 0 1px 0 rgba(255,255,255,0.85)",
-        fontFamily: "var(--font-inter), Arial, sans-serif",
-      }}
+    <button
+      type="button"
+      onClick={onClick}
+      aria-pressed={active}
+      className={`relative h-8 shrink-0 rounded-full border px-4 text-[11px] font-bold uppercase tracking-[0.18em] transition ${
+        active
+          ? "border-blue-600 bg-blue-600 text-white shadow-[0_0_0_3px_rgba(37,99,235,0.18),0_8px_18px_rgba(37,99,235,0.28)]"
+          : "border-blue-500/30 bg-blue-50/85 text-blue-700 hover:border-blue-500/70 hover:bg-blue-100"
+      }`}
     >
-      {LAYERS.map(({ key, label }) => {
-        const active = value[key];
-        return (
-          <button
-            key={key}
-            type="button"
-            onClick={() => onChange(key, !active)}
-            className="rounded-full px-3 py-1.5 text-[10px] uppercase tracking-[0.18em] transition"
-            style={{
-              background: active
-                ? "rgba(12,96,169,0.10)"
-                : "rgba(12,96,169,0.03)",
-              border: `1px solid ${
-                active ? "rgba(12,96,169,0.34)" : T.border
-              }`,
-              color: active ? T.amber : T.textMuted,
-            }}
-          >
-            {label}
-          </button>
-        );
-      })}
-      <div
-        className="flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.16em]"
-        style={{
-          background: "rgba(12,96,169,0.06)",
-          border: "1px solid rgba(12,96,169,0.22)",
-          color: T.amber,
-        }}
-      >
-        <span aria-hidden="true">⚔</span>
-        <span>Battle / conflict</span>
-      </div>
+      {active && (
+        <span className="absolute inset-x-3 -bottom-1 h-0.5 rounded-full bg-blue-500/80" />
+      )}
+      {label}
+    </button>
+  );
+}
+
+export function AtlasLayerToggle(props: AtlasLayerToggleProps) {
+  const items: LayerToggleItem[] = [
+    {
+      key: "states",
+      label: "States",
+      active: pickBoolean(
+        props.value?.states,
+        props.showStates,
+        props.statesVisible,
+        props.isStatesVisible,
+      ),
+      onClick: pickHandler(
+        props.onChange
+          ? () => props.onChange?.("states", !(props.value?.states ?? false))
+          : undefined,
+        props.onToggleStates,
+        props.onStatesToggle,
+        props.toggleStates,
+      ),
+    },
+    {
+      key: "labels",
+      label: "Labels",
+      active: pickBoolean(
+        props.value?.labels,
+        props.showLabels,
+        props.labelsVisible,
+        props.isLabelsVisible,
+      ),
+      onClick: pickHandler(
+        props.onChange
+          ? () => props.onChange?.("labels", !(props.value?.labels ?? false))
+          : undefined,
+        props.onToggleLabels,
+        props.onLabelsToggle,
+        props.toggleLabels,
+      ),
+    },
+    {
+      key: "capitals",
+      label: "War",
+      active: pickBoolean(
+        props.value?.capitals,
+        props.showCapitals,
+        props.capitalsVisible,
+        props.isCapitalsVisible,
+      ),
+      onClick: pickHandler(
+        props.onChange
+          ? () => props.onChange?.("capitals", !(props.value?.capitals ?? false))
+          : undefined,
+        props.onToggleCapitals,
+        props.onCapitalsToggle,
+        props.toggleCapitals,
+      ),
+    },
+  ];
+
+  return (
+    <div className="pointer-events-auto inline-flex w-fit max-w-[calc(100vw-2rem)] items-center gap-2 rounded-xl border border-blue-500/30 bg-white/90 p-2 shadow-lg shadow-blue-950/10 backdrop-blur-md">
+      {items.map(({ key, ...item }) => (
+        <LayerButton key={key} {...item} />
+      ))}
     </div>
   );
 }
+
+export default AtlasLayerToggle;

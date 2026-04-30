@@ -1,9 +1,7 @@
-import type { LeaderboardScore } from "./QuizLeaderboardPage";
+import type { LeaderboardCategory, LeaderboardScore } from "./QuizLeaderboardPage";
 
 import { CrownIcon } from "./CrownIcon";
 import { MedalIcon } from "./Medalicon";
-import { sidebarTheme as T } from "../atlas/sidebarTheme";
-import type { LeaderboardCategory } from "./QuizLeaderboardPage";
 
 type PodiumConfig = {
   dataIdx: number;
@@ -19,7 +17,6 @@ type PodiumConfig = {
   pedBg: string;
   pedBorder: string;
   pedRankColor: string;
-  label: string;
 };
 
 const PODIUM_CONFIGS: PodiumConfig[] = [
@@ -27,56 +24,53 @@ const PODIUM_CONFIGS: PodiumConfig[] = [
     dataIdx: 1,
     order: 0,
     pedHeight: 56,
-    label: "2-р байр",
-    labelColor: "#94a3b8",
-    scoreColor: "#cbd5e1",
-    cardBg: "rgba(12,96,169,0.04)",
-    cardBorder: "rgba(12,96,169,0.18)",
-    avatarBg: "rgba(12,96,169,0.07)",
-    avatarColor: "#94a3b8",
-    avatarBorder: "rgba(12,96,169,0.20)",
-    pedBg: "rgba(12,96,169,0.07)",
-    pedBorder: "rgba(12,96,169,0.20)",
-    pedRankColor: "#94a3b8",
+    labelColor: "#475569",
+    scoreColor: "#64748b",
+    cardBg: "linear-gradient(180deg,#f8fafc,#e2e8f0)",
+    cardBorder: "rgba(100,116,139,0.36)",
+    avatarBg: "#e2e8f0",
+    avatarColor: "#475569",
+    avatarBorder: "rgba(100,116,139,0.42)",
+    pedBg: "linear-gradient(180deg,#cbd5e1,#94a3b8)",
+    pedBorder: "rgba(100,116,139,0.42)",
+    pedRankColor: "#ffffff",
   },
   {
     dataIdx: 0,
     order: 1,
     pedHeight: 88,
-    label: "1-р байр",
-    labelColor: "#0c60a9",
-    scoreColor: "#0c60a9",
-    cardBg: "rgba(12,96,169,0.10)",
-    cardBorder: "rgba(12,96,169,0.35)",
-    avatarBg: "rgba(12,96,169,0.14)",
-    avatarColor: "#0c60a9",
-    avatarBorder: "rgba(12,96,169,0.40)",
-    pedBg: "rgba(12,96,169,0.14)",
-    pedBorder: "rgba(12,96,169,0.30)",
-    pedRankColor: "#0c60a9",
+    labelColor: "#92400e",
+    scoreColor: "#d97706",
+    cardBg: "linear-gradient(180deg,#fffbeb,#fde68a)",
+    cardBorder: "rgba(217,119,6,0.42)",
+    avatarBg: "#fef3c7",
+    avatarColor: "#92400e",
+    avatarBorder: "rgba(217,119,6,0.46)",
+    pedBg: "linear-gradient(180deg,#fbbf24,#d97706)",
+    pedBorder: "rgba(180,83,9,0.45)",
+    pedRankColor: "#ffffff",
   },
   {
     dataIdx: 2,
     order: 2,
     pedHeight: 40,
-    label: "3-р байр",
-    labelColor: "#3679c4",
-    scoreColor: "#3679c4",
-    cardBg: "rgba(12,96,169,0.06)",
-    cardBorder: "rgba(12,96,169,0.22)",
-    avatarBg: "rgba(12,96,169,0.09)",
-    avatarColor: "#3679c4",
-    avatarBorder: "rgba(12,96,169,0.24)",
-    pedBg: "rgba(12,96,169,0.09)",
-    pedBorder: "rgba(12,96,169,0.22)",
-    pedRankColor: "#3679c4",
+    labelColor: "#9a3412",
+    scoreColor: "#c2410c",
+    cardBg: "linear-gradient(180deg,#fff7ed,#fed7aa)",
+    cardBorder: "rgba(194,65,12,0.36)",
+    avatarBg: "#ffedd5",
+    avatarColor: "#9a3412",
+    avatarBorder: "rgba(194,65,12,0.40)",
+    pedBg: "linear-gradient(180deg,#fb923c,#c2410c)",
+    pedBorder: "rgba(154,52,18,0.42)",
+    pedRankColor: "#ffffff",
   },
 ];
 
 function initials(name: string) {
   return name
     .split(" ")
-    .map((p) => p[0])
+    .map((part) => part[0])
     .join("")
     .slice(0, 2)
     .toUpperCase();
@@ -96,7 +90,7 @@ export function OlympicPodium({
         alignItems: "flex-end",
         justifyContent: "center",
         gap: 0,
-        padding: "24px 16px 0",
+        padding: "28px 16px 0",
       }}
     >
       {PODIUM_CONFIGS.map((cfg) => {
@@ -116,7 +110,14 @@ export function OlympicPodium({
               order: cfg.order,
             }}
           >
-            <div style={{ marginBottom: 6, height: 36, display: "flex", alignItems: "center" }}>
+            <div
+              style={{
+                marginBottom: 6,
+                height: 36,
+                display: "flex",
+                alignItems: "center",
+              }}
+            >
               {rank === 1 ? (
                 <CrownIcon size={32} />
               ) : (
@@ -136,6 +137,7 @@ export function OlympicPodium({
                 flexDirection: "column",
                 alignItems: "center",
                 gap: 6,
+                boxShadow: "inset 0 1px 0 rgba(255,255,255,0.72)",
               }}
             >
               <div
@@ -149,7 +151,7 @@ export function OlympicPodium({
                   alignItems: "center",
                   justifyContent: "center",
                   fontSize: 14,
-                  fontWeight: 600,
+                  fontWeight: 700,
                   color: cfg.avatarColor,
                   flexShrink: 0,
                 }}
@@ -160,8 +162,8 @@ export function OlympicPodium({
               <p
                 style={{
                   fontSize: 12,
-                  fontWeight: 600,
-                  color: T.text,
+                  fontWeight: 700,
+                  color: "#0f172a",
                   textAlign: "center",
                   maxWidth: 120,
                   overflow: "hidden",
@@ -175,13 +177,21 @@ export function OlympicPodium({
               </p>
 
               <p style={{ margin: 0, lineHeight: 1 }}>
-                <span style={{ fontSize: 26, fontWeight: 700, color: cfg.scoreColor }}>
+                <span
+                  style={{
+                    fontSize: 26,
+                    fontWeight: 800,
+                    color: cfg.scoreColor,
+                  }}
+                >
                   {entry.score}
                 </span>
-                <span style={{ fontSize: 13, color: T.textMuted }}>/{entry.total}</span>
+                <span style={{ fontSize: 13, color: "#64748b" }}>
+                  /{entry.total}
+                </span>
               </p>
 
-              <p style={{ fontSize: 11, color: T.textMuted, margin: 0 }}>
+              <p style={{ fontSize: 11, color: cfg.labelColor, margin: 0 }}>
                 {formatPodiumMeta(entry, category)}
               </p>
             </div>
@@ -197,14 +207,15 @@ export function OlympicPodium({
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
+                boxShadow: "inset 0 1px 0 rgba(255,255,255,0.35)",
               }}
             >
               <span
                 style={{
                   fontSize: 22,
-                  fontWeight: 700,
+                  fontWeight: 800,
                   color: cfg.pedRankColor,
-                  opacity: 0.6,
+                  textShadow: "0 1px 8px rgba(15,23,42,0.18)",
                 }}
               >
                 #{rank}
@@ -217,7 +228,10 @@ export function OlympicPodium({
   );
 }
 
-function formatPodiumMeta(entry: LeaderboardScore, category: LeaderboardCategory) {
+function formatPodiumMeta(
+  entry: LeaderboardScore,
+  category: LeaderboardCategory,
+) {
   if (category === "grade") {
     return entry.selectedLevel ? `Level ${entry.selectedLevel}` : "Level quiz";
   }

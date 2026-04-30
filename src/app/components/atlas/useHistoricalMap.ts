@@ -168,6 +168,8 @@ import {
   syncBattleEvents,
   syncCollection,
   syncDraft,
+  syncFeedbackPreview,
+  syncFeedbackReviewHighlight,
   syncLayerVisibility,
   syncSelection,
   syncSelectedFeatureFocus,
@@ -201,6 +203,8 @@ export function useHistoricalMap(
     isCreating,
     addPointMode,
     draftRing,
+    feedbackPreviewRing,
+    feedbackReviewSlug,
     onDraftRingChange,
   }: HistoricalMapProps,
   view?: HistoricalMapView
@@ -211,6 +215,7 @@ export function useHistoricalMap(
 
   const collectionRef = useRef(collection);
   const selectedSlugRef = useRef(selectedSlug);
+  const feedbackReviewSlugRef = useRef(feedbackReviewSlug);
   const selectedEventSlugRef = useRef(selectedEventSlug);
   const onSelectEventRef = useRef(onSelectEvent);
   const hoveredSlugRef = useRef<string | null>(null);
@@ -235,6 +240,7 @@ export function useHistoricalMap(
   useEffect(() => {
     collectionRef.current = collection;
     selectedSlugRef.current = selectedSlug;
+    feedbackReviewSlugRef.current = feedbackReviewSlug ?? null;
     selectedEventSlugRef.current = selectedEventSlug;
     onSelectEventRef.current = onSelectEvent;
     isEditingRef.current = isEditing;
@@ -333,7 +339,7 @@ export function useHistoricalMap(
         }
       );
 
-      map.on("click", ["states-fill", "states-labels", "state-flags"], (event: any) => {
+      map.on("click", ["states-fill", "states-labels"], (event: any) => {
         if (isCreatingRef.current || isEditingRef.current) return;
 
         const slug = event.features?.[0]?.properties?.slug;
@@ -399,16 +405,29 @@ export function useHistoricalMap(
         selectedBattlePopup = new maplibregl.Popup({
           closeButton: true,
           closeOnClick: true,
-          maxWidth: "320px",
-          offset: 14,
+          className: "mongol-atlas-battle-popup-shell",
+          maxWidth: "380px",
+          offset: 18,
         })
           .setLngLat(event.lngLat)
           .setHTML(renderBattlePopup(feature.properties))
           .addTo(map);
       });
 
-      map.on("mousemove", ["states-fill", "states-labels", "state-flags"], (event: any) => {
+      map.on("mousemove", ["states-fill", "states-labels"], (event: any) => {
         if (isCreatingRef.current || isEditingRef.current) return;
+
+        const reviewSlug = feedbackReviewSlugRef.current;
+        if (reviewSlug) {
+          hoveredSlugRef.current = reviewSlug;
+          map.setFilter("states-hover-outline", [
+            "==",
+            ["get", "slug"],
+            reviewSlug,
+          ]);
+          map.getCanvas().style.cursor = "pointer";
+          return;
+        }
 
         const slug = event.features?.[0]?.properties?.slug;
 
@@ -425,7 +444,7 @@ export function useHistoricalMap(
         map.getCanvas().style.cursor = "pointer";
       });
 
-      map.on("mouseenter", ["states-fill", "states-labels", "state-flags"], () => {
+      map.on("mouseenter", ["states-fill", "states-labels"], () => {
         if (!isCreatingRef.current && !isEditingRef.current) {
           map.getCanvas().style.cursor = "pointer";
         }
@@ -447,23 +466,23 @@ export function useHistoricalMap(
         hoverBattlePopup = new maplibregl.Popup({
           closeButton: false,
           closeOnClick: false,
-          offset: 10,
-          maxWidth: "220px",
+          className: "mongol-atlas-battle-hover-shell",
+          offset: 14,
+          maxWidth: "260px",
         })
           .setLngLat(event.lngLat)
-          .setHTML(
-            `<div style="font-size:12px;font-weight:700;color:#111827;">${escapeHtml(name)}</div>`,
-          )
+          .setHTML(renderBattleHoverPopup(name))
           .addTo(map);
       });
 
-      map.on("mouseleave", ["states-fill", "states-labels", "state-flags"], () => {
-        hoveredSlugRef.current = null;
+      map.on("mouseleave", ["states-fill", "states-labels"], () => {
+        const reviewSlug = feedbackReviewSlugRef.current ?? "";
+        hoveredSlugRef.current = reviewSlug || null;
 
         map.setFilter("states-hover-outline", [
           "==",
           ["get", "slug"],
-          "",
+          reviewSlug,
         ]);
 
         map.getCanvas().style.cursor = "";
@@ -583,6 +602,18 @@ export function useHistoricalMap(
   }, [draftRing, isEditing]);
 
   useEffect(() => {
+    syncFeedbackPreview(mapRef.current, mapReadyRef.current, feedbackPreviewRing);
+  }, [feedbackPreviewRing]);
+
+  useEffect(() => {
+    syncFeedbackReviewHighlight(
+      mapRef.current,
+      mapReadyRef.current,
+      feedbackReviewSlug,
+    );
+  }, [feedbackReviewSlug]);
+
+  useEffect(() => {
     syncLayerVisibility(
       mapRef.current,
       mapReadyRef.current,
@@ -595,21 +626,93 @@ export function useHistoricalMap(
 }
 
 function renderBattlePopup(properties: GeoJSON.GeoJsonProperties) {
-  const name = readTextProperty(properties, "name", "Battle");
+  const name = readTextProperty(properties, "name", "Тулалдаан");
   const year = readTextProperty(properties, "year", "");
-  const locationName = readTextProperty(properties, "locationName", "Approximate location");
-  const result = readTextProperty(properties, "result", "Result unknown");
+  const locationName = readTextProperty(properties, "locationName", "Ойролцоо байршил");
+  const result = readTextProperty(properties, "result", "Үр дүн тодорхойгүй");
   const summary = readTextProperty(properties, "summary", "");
   const sides = readSidesProperty(properties?.sides);
 
   return `
-    <div style="font-family:var(--font-inter),Arial,sans-serif;color:#111827;line-height:1.45;">
-      <div style="font-size:11px;font-weight:800;letter-spacing:0.14em;text-transform:uppercase;color:#f97316;">${escapeHtml(year)}</div>
-      <div style="margin-top:2px;font-size:15px;font-weight:800;color:#111827;">${escapeHtml(name)}</div>
-      <div style="margin-top:6px;font-size:12px;color:#4b5563;">${escapeHtml(locationName)}</div>
-      <div style="margin-top:8px;font-size:12px;"><strong>Sides:</strong> ${escapeHtml(sides)}</div>
-      <div style="margin-top:4px;font-size:12px;"><strong>Result:</strong> ${escapeHtml(result)}</div>
-      <div style="margin-top:8px;font-size:12px;color:#374151;">${escapeHtml(summary)}</div>
+    <style>
+      .mongol-atlas-battle-popup-shell .maplibregl-popup-content {
+        padding: 0;
+        overflow: hidden;
+        border: 1px solid rgba(239, 68, 68, 0.35);
+        border-radius: 18px;
+        background: transparent;
+        box-shadow: 0 20px 55px rgba(15, 23, 42, 0.28);
+        animation: battlePopupIn 180ms ease-out both;
+      }
+
+      .mongol-atlas-battle-popup-shell .maplibregl-popup-close-button {
+        top: 10px;
+        right: 10px;
+        width: 26px;
+        height: 26px;
+        border-radius: 999px;
+        color: #7f1d1d;
+        background: rgba(255, 255, 255, 0.74);
+        font-size: 18px;
+        line-height: 24px;
+      }
+
+      .mongol-atlas-battle-popup-shell .maplibregl-popup-tip {
+        border-top-color: rgba(255, 247, 237, 0.98);
+        border-bottom-color: rgba(255, 247, 237, 0.98);
+      }
+
+      .mongol-atlas-battle-hover-shell .maplibregl-popup-content {
+        padding: 0;
+        border: 1px solid rgba(248, 113, 113, 0.45);
+        border-radius: 999px;
+        background: rgba(127, 29, 29, 0.94);
+        box-shadow: 0 12px 34px rgba(15, 23, 42, 0.28);
+        animation: battlePopupIn 150ms ease-out both;
+      }
+
+      .mongol-atlas-battle-hover-shell .maplibregl-popup-tip {
+        border-top-color: rgba(127, 29, 29, 0.94);
+        border-bottom-color: rgba(127, 29, 29, 0.94);
+      }
+
+      @keyframes battlePopupIn {
+        from { opacity: 0; transform: translateY(8px) scale(0.96); }
+        to { opacity: 1; transform: translateY(0) scale(1); }
+      }
+    </style>
+    <div style="position:relative;font-family:var(--font-inter),Arial,sans-serif;color:#111827;line-height:1.45;background:linear-gradient(135deg,#fff7ed 0%,#ffffff 58%,#fee2e2 100%);">
+      <div style="position:absolute;inset:0;background:radial-gradient(circle at top left,rgba(239,68,68,0.18),transparent 40%);pointer-events:none;"></div>
+      <div style="position:relative;padding:16px 18px 15px 18px;">
+        <div style="display:flex;align-items:flex-start;gap:12px;padding-right:24px;">
+          <div style="display:flex;height:42px;width:42px;flex:none;align-items:center;justify-content:center;border-radius:14px;background:#fee2e2;border:1px solid rgba(239,68,68,0.34);box-shadow:inset 0 1px 0 rgba(255,255,255,0.85);font-size:22px;">⚔</div>
+          <div style="min-width:0;">
+            <div style="display:inline-flex;align-items:center;border-radius:999px;background:#7f1d1d;color:#fff7ed;padding:3px 9px;font-size:11px;font-weight:900;letter-spacing:0.12em;">${escapeHtml(year)} ОН</div>
+            <div style="margin-top:7px;font-size:17px;font-weight:900;color:#111827;">${escapeHtml(name)}</div>
+            <div style="margin-top:5px;font-size:12px;font-weight:700;color:#7f1d1d;">${escapeHtml(locationName)}</div>
+          </div>
+        </div>
+        <div style="margin-top:13px;display:grid;gap:8px;">
+          <div style="border-radius:12px;border:1px solid rgba(248,113,113,0.26);background:rgba(255,255,255,0.72);padding:9px 10px;">
+            <div style="font-size:10px;font-weight:900;letter-spacing:0.12em;color:#b91c1c;text-transform:uppercase;">Талууд</div>
+            <div style="margin-top:3px;font-size:12px;font-weight:700;color:#1f2937;">${escapeHtml(sides)}</div>
+          </div>
+          <div style="border-radius:12px;border:1px solid rgba(245,158,11,0.34);background:rgba(255,251,235,0.8);padding:9px 10px;">
+            <div style="font-size:10px;font-weight:900;letter-spacing:0.12em;color:#92400e;text-transform:uppercase;">Үр дүн</div>
+            <div style="margin-top:3px;font-size:12px;font-weight:800;color:#111827;">${escapeHtml(result)}</div>
+          </div>
+        </div>
+        <div style="margin-top:12px;border-top:1px solid rgba(127,29,29,0.12);padding-top:10px;font-size:12px;color:#374151;">${escapeHtml(summary)}</div>
+      </div>
+    </div>
+  `;
+}
+
+function renderBattleHoverPopup(name: string) {
+  return `
+    <div style="display:flex;align-items:center;gap:7px;padding:7px 11px;font-family:var(--font-inter),Arial,sans-serif;color:#fff7ed;">
+      <span style="font-size:15px;line-height:1;">⚔</span>
+      <span style="font-size:12px;font-weight:800;white-space:nowrap;">${escapeHtml(name)}</span>
     </div>
   `;
 }
@@ -626,12 +729,12 @@ function readTextProperty(
 }
 
 function readSidesProperty(value: unknown) {
-  if (Array.isArray(value)) return value.map(String).join(" vs ");
+  if (Array.isArray(value)) return value.map(String).join(" ба ");
   if (typeof value !== "string") return "";
 
   try {
     const parsed = JSON.parse(value) as unknown;
-    if (Array.isArray(parsed)) return parsed.map(String).join(" vs ");
+    if (Array.isArray(parsed)) return parsed.map(String).join(" ба ");
   } catch {
     // MapLibre may expose array properties as a plain string in some builds.
   }

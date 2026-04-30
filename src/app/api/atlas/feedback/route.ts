@@ -21,6 +21,7 @@ const feedbackSchema = z.object({
 const reviewSchema = z.object({
   id: z.string().trim().min(1),
   action: z.enum(["approve", "reject"]),
+  proposedCoordinates: coordinatesSchema.optional(),
 });
 
 export async function GET(request: Request) {
@@ -160,13 +161,18 @@ export async function PATCH(request: Request) {
         return Response.json({ ok: true, status: "visible" });
       }
 
-      const geometry = normalizePolygon(feedback.proposed_geometry);
+      const geometry = parsed.data.proposedCoordinates
+        ? toPolygonGeometry(parsed.data.proposedCoordinates)
+        : normalizePolygon(feedback.proposed_geometry);
       const feature = await updateStateGeometry(feedback.year, feedback.slug, geometry);
       if (!feature) return Response.json({ error: "Улсын бичлэг олдсонгүй." }, { status: 404 });
 
       await sql`
         UPDATE atlas_state_feedback
-        SET status = 'approved', reviewed_by = ${userId}, reviewed_at = NOW()
+        SET proposed_geometry = ${JSON.stringify(geometry)}::jsonb,
+            status = 'approved',
+            reviewed_by = ${userId},
+            reviewed_at = NOW()
         WHERE id = ${parsed.data.id}
       `;
 

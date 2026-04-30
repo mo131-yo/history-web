@@ -138,30 +138,30 @@ export function QuizLeaderboardPage({
   const activeCategory = CATEGORIES.find((item) => item.id === category) ?? CATEGORIES[0];
 
   return (
-    <div className="relative flex h-full min-h-screen flex-col overflow-y-auto px-4 py-5 sm:px-6 lg:min-h-0 lg:px-8">
-      <div className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-5">
+    <div className="relative flex h-full min-h-screen flex-col overflow-y-auto bg-slate-50 px-4 py-6 sm:px-6 lg:min-h-0 lg:px-8">
+      <div className="mx-auto flex w-full max-w-4xl flex-1 flex-col gap-5">
 
         <div
-          className="rounded-xl px-5 py-5"
+          className="rounded-[22px] px-6 py-6"
           style={{
-            background: T.bg,
-            border: `1px solid ${T.border}`,
-            boxShadow: "0 12px 34px rgba(12,96,169,0.08)",
+            background: "#ffffff",
+            border: "1px solid rgba(148,163,184,0.28)",
+            boxShadow: "0 28px 70px rgba(12,96,169,0.14)",
           }}
         >
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex items-center gap-3">
               <div
                 className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg"
-                style={{ background: "rgba(12,96,169,0.08)", border: "1px solid rgba(12,96,169,0.24)" }}
+                style={{ background: "rgba(12,96,169,0.08)", border: "1px solid rgba(12,96,169,0.22)" }}
               >
-                <Trophy className="size-5" style={{ color: T.amber }} />
+                <Trophy className="size-5" style={{ color: "#0c60a9" }} />
               </div>
               <div>
-                <h1 className="text-xl font-bold leading-tight sm:text-2xl" style={{ color: T.amber }}>
+                <h1 className="text-xl font-bold leading-tight sm:text-2xl" style={{ color: "#0c60a9" }}>
                   Quiz Leaderboard
                 </h1>
-                <p className="mt-1 text-xs" style={{ color: T.textMuted }}>
+                <p className="mt-1 text-xs" style={{ color: "#64748b" }}>
                   Бүх хэрэглэгчийн quiz онооны жагсаалт
                 </p>
               </div>
@@ -172,7 +172,7 @@ export function QuizLeaderboardPage({
                 type="button"
                 onClick={() => setReloadKey((v) => v + 1)}
                 className="flex h-10 items-center gap-2 rounded-lg px-3 text-xs font-semibold uppercase tracking-widest"
-                style={{ background: "rgba(12,96,169,0.05)", border: `1px solid ${T.border}`, color: T.textMuted }}
+                style={{ background: "#ffffff", border: "1px solid rgba(12,96,169,0.35)", color: "#0c60a9" }}
               >
                 <RefreshCw className="size-4" />
                 Refresh
@@ -181,7 +181,7 @@ export function QuizLeaderboardPage({
                 type="button"
                 onClick={onStartQuiz}
                 className="h-10 rounded-lg px-4 text-xs font-semibold uppercase tracking-widest"
-                style={{ background: T.amber, color: "#080502" }}
+                style={{ background: "#0c60a9", color: "#ffffff" }}
               >
                 Шалгалт өгөх
               </button>
@@ -198,18 +198,22 @@ export function QuizLeaderboardPage({
         </div>
 
         <div
-          className="overflow-hidden rounded-xl"
-          style={{ background: T.bg, border: `1px solid ${T.border}` }}
+          className="overflow-hidden rounded-[22px]"
+          style={{
+            background: "#ffffff",
+            border: "1px solid rgba(148,163,184,0.28)",
+            boxShadow: "0 24px 60px rgba(12,96,169,0.10)",
+          }}
         >
           <div
             className="px-5 py-4"
-            style={{ borderBottom: `1px solid ${T.border}` }}
+            style={{ borderBottom: "1px solid rgba(12,96,169,0.18)" }}
           >
             <div className="flex flex-col gap-1">
-              <p className="text-[10px] font-bold uppercase tracking-[0.22em]" style={{ color: T.amber }}>
+              <p className="text-[10px] font-bold uppercase tracking-[0.22em]" style={{ color: "#0c60a9" }}>
                 Онооны самбар
               </p>
-              <p className="text-xs" style={{ color: T.textMuted }}>
+              <p className="text-xs" style={{ color: "#64748b" }}>
                 {activeCategory.subtitle}
               </p>
             </div>
@@ -223,18 +227,25 @@ export function QuizLeaderboardPage({
                     key={item.id}
                     type="button"
                     onClick={() => setCategory(item.id)}
-                    className="rounded-lg px-3 py-3 text-left transition hover:opacity-85"
+                    className="rounded-xl px-4 py-4 text-left transition hover:-translate-y-0.5 hover:shadow-lg"
                     style={{
-                      background: active ? "rgba(12,96,169,0.10)" : "rgba(12,96,169,0.04)",
-                      border: `1px solid ${active ? "rgba(12,96,169,0.35)" : T.border}`,
-                      color: active ? T.amber : T.text,
+                      background: active
+                        ? item.id === "grade"
+                          ? "linear-gradient(135deg,#34d399,#059669)"
+                          : item.id === "knowledge"
+                            ? "linear-gradient(135deg,#93c5fd,#2563eb)"
+                            : "linear-gradient(135deg,#fca5a5,#ef4444)"
+                        : "#f8fafc",
+                      border: active ? "1px solid transparent" : "1px solid rgba(12,96,169,0.22)",
+                      color: active ? "#ffffff" : "#0f172a",
+                      boxShadow: active ? "0 14px 28px rgba(12,96,169,0.16)" : "none",
                     }}
                   >
                     <span className="flex items-center gap-2 text-xs font-bold">
                       <Icon className="size-3.5" />
                       {item.label}
                     </span>
-                    <span className="mt-1 block text-[10px]" style={{ color: T.textMuted }}>
+                    <span className="mt-1 block text-[10px]" style={{ color: active ? "rgba(255,255,255,0.86)" : "#64748b" }}>
                       {item.subtitle}
                     </span>
                   </button>
@@ -275,10 +286,10 @@ export function QuizLeaderboardPage({
           {status === "idle" && scores.length > 0 && (
             <div>
               <div className="px-5 pt-4">
-                <p className="text-[10px] font-bold uppercase tracking-[0.22em]" style={{ color: T.amber }}>
+                <p className="text-[10px] font-bold uppercase tracking-[0.22em]" style={{ color: "#0c60a9" }}>
                   {activeCategory.label}
                 </p>
-                <p className="mt-1 text-xs" style={{ color: T.textMuted }}>
+                <p className="mt-1 text-xs" style={{ color: "#64748b" }}>
                   {activeCategory.subtitle}
                 </p>
               </div>
@@ -348,8 +359,12 @@ export function QuizLeaderboardPage({
         </div>
 
         <div
-          className="overflow-hidden rounded-xl"
-          style={{ background: T.bg, border: `1px solid ${T.border}` }}
+          className="overflow-hidden rounded-[22px]"
+          style={{
+            background: "#ffffff",
+            border: "1px solid rgba(148,163,184,0.28)",
+            boxShadow: "0 18px 48px rgba(12,96,169,0.08)",
+          }}
         >
           <div
             className="flex items-center justify-between gap-3 px-5 py-4"
@@ -430,13 +445,16 @@ export function QuizLeaderboardPage({
 function Stat({ label, value }: { label: string; value: string }) {
   return (
     <div
-      className="rounded-lg px-4 py-3"
-      style={{ background: "rgba(12,96,169,0.04)", border: `1px solid ${T.border}` }}
+      className="rounded-xl px-4 py-3"
+      style={{
+        background: "#f8fafc",
+        border: "1px solid rgba(12,96,169,0.18)",
+      }}
     >
-      <p className="text-[10px] uppercase tracking-[0.18em]" style={{ color: T.textMuted }}>
+      <p className="text-[10px] uppercase tracking-[0.18em]" style={{ color: "#0c60a9" }}>
         {label}
       </p>
-      <p className="mt-1 truncate text-sm font-bold" style={{ color: T.text }}>
+      <p className="mt-1 truncate text-sm font-bold" style={{ color: "#0f172a" }}>
         {value}
       </p>
     </div>

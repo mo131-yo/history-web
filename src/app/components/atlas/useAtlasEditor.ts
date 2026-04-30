@@ -51,6 +51,21 @@ export function useAtlasEditor(year: number, adminMode: boolean) {
 
   const selectedFeature = useMemo(() => collection?.features.find((f) => f.properties.slug === selectedSlug) ?? null, [collection, selectedSlug]);
 
+  const applyFeatureUpdate = useCallback((feature: AtlasFeatureCollection["features"][number]) => {
+    setCollection((current) => {
+      if (!current) return current;
+      return {
+        ...current,
+        features: current.features.map((item) =>
+          item.properties.slug === feature.properties.slug &&
+          item.properties.year === feature.properties.year
+            ? feature
+            : item,
+        ),
+      };
+    });
+  }, []);
+
   const filteredFeatures = useMemo(() => {
     if (!collection) return [];
     const q = search.trim().toLowerCase();
@@ -168,5 +183,5 @@ export function useAtlasEditor(year: number, adminMode: boolean) {
     onDeleteVertex: handleDeleteVertex,
   });
 
-  return { years, collection, selectedFeature, filteredFeatures, search, setSearch, setSelectedSlug, loadError, sharedMapProps, coordEditorProps };
+  return { years, collection, selectedFeature, filteredFeatures, search, setSearch, setSelectedSlug, loadError, sharedMapProps, coordEditorProps, applyFeatureUpdate };
 }

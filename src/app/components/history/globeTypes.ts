@@ -34,10 +34,7 @@ export type GlobeLabel = {
   text: string;
   color: string;
   slug: string;
-  kind?: 'label' | 'flag' | 'event';
-  flagAsset?: string;
-  flagUrl?: string;
-  flagLabel?: string;
+  kind?: 'label' | 'event';
   eventType?: string;
   description?: string;
   startYear?: number;
