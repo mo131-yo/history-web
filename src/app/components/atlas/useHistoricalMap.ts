@@ -152,6 +152,7 @@ import { useEffect, useRef } from "react";
 import maplibregl, { type GeoJSONSource } from "maplibre-gl";
 
 type MapLibreMap = InstanceType<typeof maplibregl.Map>;
+type MapLibrePopup = InstanceType<typeof maplibregl.Popup>;
 
 import { applyGlobeScene, clearGlobeScene } from "./globeScene";
 import {
@@ -277,6 +278,8 @@ export function useHistoricalMap(
     );
 
     let stopDraggingFromWindow: (() => void) | null = null;
+    let selectedBattlePopup: MapLibrePopup | null = null;
+    let hoverBattlePopup: MapLibrePopup | null = null;
 
     map.on("load", () => {
       mapReadyRef.current = true;
@@ -381,6 +384,29 @@ export function useHistoricalMap(
         }
       });
 
+      map.on("click", "battle-markers", (event: any) => {
+        event.originalEvent?.stopPropagation?.();
+        if (isCreatingRef.current || isEditingRef.current) return;
+
+        const feature = event.features?.[0] as
+          | GeoJSON.Feature<GeoJSON.Point>
+          | undefined;
+        if (!feature?.properties) return;
+
+        selectedBattlePopup?.remove();
+        hoverBattlePopup?.remove();
+
+        selectedBattlePopup = new maplibregl.Popup({
+          closeButton: true,
+          closeOnClick: true,
+          maxWidth: "320px",
+          offset: 14,
+        })
+          .setLngLat(event.lngLat)
+          .setHTML(renderBattlePopup(feature.properties))
+          .addTo(map);
+      });
+
       map.on("mousemove", ["states-fill", "states-labels", "state-flags"], (event: any) => {
         if (isCreatingRef.current || isEditingRef.current) return;
 
@@ -409,6 +435,28 @@ export function useHistoricalMap(
         map.getCanvas().style.cursor = "pointer";
       });
 
+      map.on("mouseenter", "battle-markers", (event: any) => {
+        map.getCanvas().style.cursor = "pointer";
+        const feature = event.features?.[0] as
+          | GeoJSON.Feature<GeoJSON.Point>
+          | undefined;
+        const name = feature?.properties?.name;
+        if (typeof name !== "string") return;
+
+        hoverBattlePopup?.remove();
+        hoverBattlePopup = new maplibregl.Popup({
+          closeButton: false,
+          closeOnClick: false,
+          offset: 10,
+          maxWidth: "220px",
+        })
+          .setLngLat(event.lngLat)
+          .setHTML(
+            `<div style="font-size:12px;font-weight:700;color:#111827;">${escapeHtml(name)}</div>`,
+          )
+          .addTo(map);
+      });
+
       map.on("mouseleave", ["states-fill", "states-labels", "state-flags"], () => {
         hoveredSlugRef.current = null;
 
@@ -423,6 +471,12 @@ export function useHistoricalMap(
 
       map.on("mouseleave", "battle-events", () => {
         map.getCanvas().style.cursor = "";
+      });
+
+      map.on("mouseleave", "battle-markers", () => {
+        map.getCanvas().style.cursor = "";
+        hoverBattlePopup?.remove();
+        hoverBattlePopup = null;
       });
 
       bindHistoricalEditing(
@@ -472,6 +526,8 @@ export function useHistoricalMap(
         }
       }
 
+      selectedBattlePopup?.remove();
+      hoverBattlePopup?.remove();
       map.remove();
       mapRef.current = null;
     };
@@ -527,8 +583,67 @@ export function useHistoricalMap(
   }, [draftRing, isEditing]);
 
   useEffect(() => {
-    syncLayerVisibility(mapRef.current, mapReadyRef.current, layerVisibility);
-  }, [layerVisibility]);
+    syncLayerVisibility(
+      mapRef.current,
+      mapReadyRef.current,
+      layerVisibility,
+      view?.mode !== "globe",
+    );
+  }, [layerVisibility, view?.mode]);
 
   return containerRef;
+}
+
+function renderBattlePopup(properties: GeoJSON.GeoJsonProperties) {
+  const name = readTextProperty(properties, "name", "Battle");
+  const year = readTextProperty(properties, "year", "");
+  const locationName = readTextProperty(properties, "locationName", "Approximate location");
+  const result = readTextProperty(properties, "result", "Result unknown");
+  const summary = readTextProperty(properties, "summary", "");
+  const sides = readSidesProperty(properties?.sides);
+
+  return `
+    <div style="font-family:var(--font-inter),Arial,sans-serif;color:#111827;line-height:1.45;">
+      <div style="font-size:11px;font-weight:800;letter-spacing:0.14em;text-transform:uppercase;color:#f97316;">${escapeHtml(year)}</div>
+      <div style="margin-top:2px;font-size:15px;font-weight:800;color:#111827;">${escapeHtml(name)}</div>
+      <div style="margin-top:6px;font-size:12px;color:#4b5563;">${escapeHtml(locationName)}</div>
+      <div style="margin-top:8px;font-size:12px;"><strong>Sides:</strong> ${escapeHtml(sides)}</div>
+      <div style="margin-top:4px;font-size:12px;"><strong>Result:</strong> ${escapeHtml(result)}</div>
+      <div style="margin-top:8px;font-size:12px;color:#374151;">${escapeHtml(summary)}</div>
+    </div>
+  `;
+}
+
+function readTextProperty(
+  properties: GeoJSON.GeoJsonProperties,
+  key: string,
+  fallback: string,
+) {
+  const value = properties?.[key];
+  if (typeof value === "string") return value;
+  if (typeof value === "number") return String(value);
+  return fallback;
+}
+
+function readSidesProperty(value: unknown) {
+  if (Array.isArray(value)) return value.map(String).join(" vs ");
+  if (typeof value !== "string") return "";
+
+  try {
+    const parsed = JSON.parse(value) as unknown;
+    if (Array.isArray(parsed)) return parsed.map(String).join(" vs ");
+  } catch {
+    // MapLibre may expose array properties as a plain string in some builds.
+  }
+
+  return value;
+}
+
+function escapeHtml(value: string) {
+  return value
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
 }

@@ -29,8 +29,10 @@ import { useGlobePointerEditing } from "./history/useGlobePointerEditing";
 import { Globe } from "./history/GlobeLeader";
 import { AtlasMapSceneProps } from "./atlas/types";
 
-const MAPTILER_HYBRID_TILE = (x: number, y: number, level: number) =>
-  `https://api.maptiler.com/maps/hybrid-v4/256/${level}/${x}/${y}@2x.png?key=UDHwVf5wxc04GFo8f0PC`;
+const MAPTILER_OUTDOOR_TILE = (x: number, y: number, level: number) =>
+  `https://api.maptiler.com/maps/outdoor-v4/256/${level}/${x}/${y}@2x.png?key=UDHwVf5wxc04GFo8f0PC`;
+
+const CENTRAL_ASIA_VIEW = { lat: 36.36715, lng: 64.68807, altitude: 1.65 };
 
 export default function GlobeMap(props: AtlasMapSceneProps) {
   const globeEditor = useGlobeEditor(props);
@@ -66,7 +68,7 @@ export default function GlobeMap(props: AtlasMapSceneProps) {
       bumpImageUrl: null,
       enablePointerInteraction: true,
       globeImageUrl: null,
-      globeTileEngineUrl: MAPTILER_HYBRID_TILE,
+      globeTileEngineUrl: MAPTILER_OUTDOOR_TILE,
       height: globeEditor.dimensions.height,
       htmlAltitude: 0.02,
       htmlElement: (data: object) =>
@@ -94,7 +96,7 @@ export default function GlobeMap(props: AtlasMapSceneProps) {
         ),
       onGlobeReady: () => {
         globeEditor.globeRef.current?.pointOfView(
-          { lat: 22, lng: 0, altitude: 1.65 },
+          CENTRAL_ASIA_VIEW,
           0
         );
       },
@@ -155,7 +157,7 @@ export default function GlobeMap(props: AtlasMapSceneProps) {
           props.selectedSlug,
           globeEditor.hoveredSlugRef.current
         ),
-      pointOfView: { lat: 22, lng: 0, altitude: 1.65 },
+      pointOfView: CENTRAL_ASIA_VIEW,
       showAtmosphere: true,
       showGlobe: true,
       showGraticules: false,

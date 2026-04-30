@@ -97,6 +97,7 @@ async function loadModeLeaderboard(category: "grade" | "knowledge") {
         total_questions AS total,
         answers->>'mode' AS mode,
         NULLIF(answers->>'selectedGrade', '')::integer AS selected_grade,
+        NULLIF(answers->>'selectedLevel', '')::integer AS selected_level,
         created_at,
         COUNT(*) OVER (PARTITION BY clerk_user_id) AS attempts_count,
         FIRST_VALUE(score) OVER (
@@ -112,7 +113,7 @@ async function loadModeLeaderboard(category: "grade" | "knowledge") {
         CASE
           WHEN ${category} = 'knowledge'
             THEN quiz_id = 'history-knowledge' OR answers->>'mode' = 'knowledge'
-          ELSE quiz_id LIKE 'history-grade-%' OR answers->>'mode' = 'grade'
+          ELSE quiz_id LIKE 'history-level-%' OR quiz_id LIKE 'history-grade-%' OR answers->>'mode' = 'grade'
         END
     ),
     ranked AS (
@@ -134,6 +135,7 @@ async function loadModeLeaderboard(category: "grade" | "knowledge") {
       last_total,
       attempts_count,
       selected_grade,
+      selected_level,
       quiz_id,
       created_at::text
     FROM ranked
@@ -152,6 +154,7 @@ async function loadAllQuizLeaderboard() {
         score,
         total_questions,
         NULLIF(answers->>'selectedGrade', '')::integer AS selected_grade,
+        NULLIF(answers->>'selectedLevel', '')::integer AS selected_level,
         quiz_id,
         created_at,
         FIRST_VALUE(score) OVER (
@@ -169,7 +172,11 @@ async function loadAllQuizLeaderboard() {
         FIRST_VALUE(NULLIF(answers->>'selectedGrade', '')::integer) OVER (
           PARTITION BY clerk_user_id
           ORDER BY created_at DESC
-        ) AS last_selected_grade
+        ) AS last_selected_grade,
+        FIRST_VALUE(NULLIF(answers->>'selectedLevel', '')::integer) OVER (
+          PARTITION BY clerk_user_id
+          ORDER BY created_at DESC
+        ) AS last_selected_level
       FROM quiz_attempts
     )
     SELECT
@@ -182,6 +189,7 @@ async function loadAllQuizLeaderboard() {
       MAX(last_total)::integer AS last_total,
       COUNT(*)::integer AS attempts_count,
       MAX(last_selected_grade)::integer AS selected_grade,
+      MAX(last_selected_level)::integer AS selected_level,
       (ARRAY_AGG(last_quiz_id ORDER BY created_at DESC))[1] AS quiz_id,
       MAX(created_at)::text AS created_at
     FROM user_attempts
@@ -201,6 +209,7 @@ type QuizScoreRow = {
   last_total?: number | null;
   attempts_count?: number | null;
   selected_grade?: number | null;
+  selected_level?: number | null;
   quiz_id?: string | null;
   created_at: string;
 };
@@ -216,6 +225,7 @@ function toLeaderboardScore(row: QuizScoreRow) {
     lastTotal: row.last_total ?? row.total,
     attemptsCount: row.attempts_count ?? 1,
     selectedGrade: row.selected_grade ?? null,
+    selectedLevel: row.selected_level ?? null,
     quizId: row.quiz_id ?? null,
     createdAt: row.created_at,
   };

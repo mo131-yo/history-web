@@ -183,8 +183,10 @@ import {
   createVertexCollection,
   loadFlagImages,
 } from "./historicalMapGeo";
+import { createBattleCollection } from "./historicalBattleMockData";
 
 type MapLibreMap = InstanceType<typeof maplibregl.Map>;
+const BATTLE_MARKER_ICON_ID = "battle-marker-swords-transparent";
 
 export function addHistoricalMapSources(
   map: MapLibreMap,
@@ -199,6 +201,7 @@ export function addHistoricalMapSources(
 
   const flagCollection = createFlagCollection(collection);
   void loadFlagImages(map, flagCollection);
+  addGeneratedBattleMarkerIcon(map);
 
   if (!map.getSource("state-flags")) {
     map.addSource("state-flags", {
@@ -225,6 +228,16 @@ export function addHistoricalMapSources(
     map.addSource("battle-events", {
       type: "geojson",
       data: createEmptyEventCollection(),
+    });
+  }
+
+  if (!map.getSource("battle-markers")) {
+    const selectedYear =
+      Number((collection as GeoJSON.FeatureCollection & { year?: number }).year) || 0;
+
+    map.addSource("battle-markers", {
+      type: "geojson",
+      data: createBattleCollection(selectedYear),
     });
   }
 }
@@ -307,29 +320,35 @@ export function addHistoricalMapLayers(
       type: "symbol",
       source: "state-flags",
       layout: {
-        "icon-image": ["concat", "flag-", ["get", "flagAsset"]],
-        "icon-size": [
+        "text-field": ["format", "⚑", { "font-scale": 1.1 }, "\n", {}, ["get", "flagLabel"], { "font-scale": 0.58 }],
+        "text-font": ["Open Sans Bold"],
+        "text-size": [
           "interpolate",
           ["linear"],
           ["zoom"],
           2,
-          0.2,
+          15,
           4,
-          0.28,
+          18,
           6,
-          0.38,
+          22,
         ],
-        "icon-anchor": "bottom",
-        "icon-allow-overlap": true,
-        "icon-ignore-placement": true,
+        "text-line-height": 0.95,
+        "text-anchor": "bottom",
+        "text-offset": [0, -0.25],
+        "text-allow-overlap": true,
+        "text-ignore-placement": true,
       },
       paint: {
-        "icon-opacity": [
+        "text-color": [
           "case",
           ["==", ["get", "slug"], selectedSlug ?? ""],
-          1,
-          0.9,
+          "#fff4db",
+          "#facc15",
         ],
+        "text-halo-color": "rgba(5,6,8,0.96)",
+        "text-halo-width": 2,
+        "text-halo-blur": 0.6,
       },
     });
   }
@@ -364,6 +383,33 @@ export function addHistoricalMapLayers(
         "text-halo-color": "rgba(5,6,8,0.94)",
         "text-halo-width": 1.8,
         "text-halo-blur": 0.8,
+      },
+    });
+  }
+
+  if (!map.getLayer("battle-markers")) {
+    map.addLayer({
+      id: "battle-markers",
+      type: "symbol",
+      source: "battle-markers",
+      minzoom: 1.5,
+      layout: {
+        "icon-image": BATTLE_MARKER_ICON_ID,
+        "icon-size": [
+          "interpolate",
+          ["linear"],
+          ["zoom"],
+          1.5,
+          0.48,
+          3,
+          0.68,
+          5,
+          0.92,
+        ],
+        "icon-anchor": "center",
+        "icon-allow-overlap": true,
+        "icon-ignore-placement": true,
+        "symbol-sort-key": ["get", "year"],
       },
     });
   }
@@ -437,6 +483,35 @@ export function addHistoricalMapLayers(
 
   if (map.getLayer("draft-vertices")) {
     if (map.getLayer("state-flags")) map.moveLayer("state-flags");
+    if (map.getLayer("battle-markers")) map.moveLayer("battle-markers");
     map.moveLayer("draft-vertices");
   }
+}
+
+function addGeneratedBattleMarkerIcon(map: MapLibreMap) {
+  if (map.hasImage(BATTLE_MARKER_ICON_ID) || typeof document === "undefined") {
+    return;
+  }
+
+  const size = 96;
+  const canvas = document.createElement("canvas");
+  canvas.width = size;
+  canvas.height = size;
+
+  const context = canvas.getContext("2d");
+  if (!context) return;
+
+  context.clearRect(0, 0, size, size);
+  context.font = "700 58px 'Apple Color Emoji', 'Segoe UI Emoji', 'Noto Color Emoji', Arial, sans-serif";
+  context.textAlign = "center";
+  context.textBaseline = "middle";
+  context.lineWidth = 7;
+  context.strokeStyle = "rgba(5,6,8,0.96)";
+  context.strokeText("⚔️", size / 2, size / 2 + 2);
+  context.fillStyle = "#f8c15c";
+  context.fillText("⚔️", size / 2, size / 2 + 2);
+
+  map.addImage(BATTLE_MARKER_ICON_ID, context.getImageData(0, 0, size, size), {
+    pixelRatio: 2,
+  });
 }

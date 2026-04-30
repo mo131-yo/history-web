@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { sidebarTheme } from "./atlas/sidebarTheme";
 
 const T = {
@@ -23,6 +23,7 @@ interface Question {
 
 type GradeGroup = "6-9" | "10-12";
 type QuestionGroup = "1-5" | GradeGroup;
+type QuizLevel = 1 | 2 | 3;
 type QuizMode = "knowledge" | "grade";
 type Screen = "grade" | "quiz" | "result";
 type QuizAnswer = {
@@ -35,6 +36,7 @@ type SavedQuizState = {
   screen: Screen;
   gradeGroup: GradeGroup;
   selectedGrade: number | null;
+  selectedLevel: QuizLevel | null;
   quizQuestions: Question[];
   level: number;
   correct: number;
@@ -93,19 +95,42 @@ const QUESTIONS: Record<QuestionGroup, Question[]> = {
     { level: 2, q: "Монголын өртөөний тогтолцоо эзэнт гүрний засаглалд ямар үүрэгтэй байсан бэ?", opts: ["а) Мэдээлэл, зарлиг, элчийг хурдан дамжуулсан", "б) Зөвхөн тариалан усалсан", "в) Хотын хэрэм барьсан", "г) Зоос устгасан"], ans: 0, exp: "Өртөө нь асар уудам орон зайд захиргаа, цэрэг, худалдаа, дипломат харилцааг холбосон." },
     { level: 2, q: "Монголын байлдан дагууллын амжилтыг дан ганц хүчээр тайлбарлахад юу дутагддаг вэ?", opts: ["а) Дипломат, тагнуул, логистик, нутгийн элиттэй харилцах бодлого", "б) Зөвхөн цаг агаар", "в) Зөвхөн аз", "г) Зөвхөн нэг зэвсэг"], ans: 0, exp: "Монголын амжилт нь хүчнээс гадна мэдээлэл, дипломат бодлого, логистик, нутгийн хүчнүүдийг ашиглах чадвартай холбоотой." },
     { level: 2, q: "1162-1300 оны Монголын түүхийг дэлхийн түүхэнд чухал болгодог гол шалтгаан аль вэ?", opts: ["а) Евроазийн улс төр, худалдаа, соёлын холбоог өөрчилсөн", "б) Зөвхөн нэг хот байгуулсан", "в) Дэлхийн бүх улсыг нэгтгэсэн", "г) Түүхэн эх сурвалж үлдээгээгүй"], ans: 0, exp: "Монголын эзэнт гүрэн Евроазийн хүчний тэнцвэр, худалдаа, мэдлэгийн солилцоонд гүн нөлөө үзүүлсэн." },
+    { level: 2, q: "Монголын эзэнт гүрний захиргаанд нутгийн бичээч, худалдаачдыг ашигласан нь ямар ач холбогдолтой вэ?", opts: ["а) Орон нутгийн мэдлэгийг төрийн удирдлагатай холбосон", "б) Бүх хотыг нүүлгэсэн", "в) Морин цэргийг халсан", "г) Худалдааг бүрэн хориглосон"], ans: 0, exp: "Монголчууд эзэлсэн нутгийн захиргааны туршлага, бичиг хэрэг, худалдааны сүлжээг ашиглан уудам орон зайг удирдах чадвараа нэмэгдүүлсэн." },
+    { level: 2, q: "Юань, Ил хаант улс, Алтан Орд өөр өөр шашин соёлтой орчинд дасан зохицсон нь юуг харуулдаг вэ?", opts: ["а) Монгол засаглал бүс нутгийн нөхцөлд өөрчлөгдөн хөгжсөн", "б) Бүх ханлиг ижил хуультай үлдсэн", "в) Монголчууд суурин газрыг бүгдийг орхисон", "г) Худалдааны замууд тасарсан"], ans: 0, exp: "Ханлигуудын ялгаа нь Монголын ноёрхол нэг загвараар бус, бүс нутгийн соёл, шашин, захиргааны нөхцөлтэй зохицон хувирсныг харуулдаг." },
   ],
 };
 
 const LEVELS = ["Энгийн", "Дунд", "Хэцүү"] as const;
 const TOTAL = 10;
 const GRADE_GROUPS: GradeGroup[] = ["6-9", "10-12"];
-const GRADE_LABELS: Record<GradeGroup, string> = {
-  "6-9": "Дунд анги",
-  "10-12": "Ахлах анги",
-};
-const GRADE_OPTIONS: Array<{ group: GradeGroup; label: string; grades: number[] }> = [
-  { group: "6-9", label: "Дунд анги", grades: [6, 7, 8, 9] },
-  { group: "10-12", label: "Ахлах анги", grades: [10, 11, 12] },
+const LEVEL_OPTIONS: Array<{
+  value: QuizLevel;
+  title: string;
+  subtitle: string;
+  detail: string;
+  questionLevel: number;
+}> = [
+  {
+    value: 1,
+    title: "Level 1",
+    subtitle: "Хамгийн амар",
+    detail: "Суурь он, нэр, үйл явдлын асуулт",
+    questionLevel: 0,
+  },
+  {
+    value: 2,
+    title: "Level 2",
+    subtitle: "Дунд түвшин",
+    detail: "Улс, ханлиг, газарзүйн холбоо хамаарал",
+    questionLevel: 1,
+  },
+  {
+    value: 3,
+    title: "Level 3",
+    subtitle: "Хамгийн хэцүү",
+    detail: "Задлан ойлгох, шалтгаан-үр дагаврын асуулт",
+    questionLevel: 2,
+  },
 ];
 const quizPanel = "#fcfcfc";
 const quizPanelSoft = "rgba(12,96,169,0.06)";
@@ -130,6 +155,7 @@ export default function HistoryQuiz({
   const [screen, setScreen] = useState<Screen>("grade");
   const [gradeGroup, setGradeGroup] = useState<GradeGroup>("6-9");
   const [selectedGrade, setSelectedGrade] = useState<number | null>(null);
+  const [selectedLevel, setSelectedLevel] = useState<QuizLevel | null>(null);
   const [quizQuestions, setQuizQuestions] = useState<Question[]>([]);
   const [level, setLevel] = useState(1);
   const [correct, setCorrect] = useState(0);
@@ -153,6 +179,7 @@ export default function HistoryQuiz({
       setScreen(saved.screen);
       setGradeGroup(saved.gradeGroup);
       setSelectedGrade(saved.selectedGrade);
+      setSelectedLevel(saved.selectedLevel ?? null);
       setQuizQuestions(saved.quizQuestions);
       setLevel(saved.level);
       setCorrect(saved.correct);
@@ -169,6 +196,7 @@ export default function HistoryQuiz({
       setScreen("grade");
       setGradeGroup("6-9");
       setSelectedGrade(null);
+      setSelectedLevel(null);
       setQuizQuestions([]);
       setLevel(1);
       setCorrect(0);
@@ -191,6 +219,7 @@ export default function HistoryQuiz({
       screen,
       gradeGroup,
       selectedGrade,
+      selectedLevel,
       quizQuestions,
       level,
       correct,
@@ -218,38 +247,11 @@ export default function HistoryQuiz({
     scoreSaveStatus,
     screen,
     selectedGrade,
+    selectedLevel,
     storageKey,
     streak,
     usedIds,
   ]);
-
-  const pickQuestion = useCallback(
-    (lvl: number, currentUsed: Set<string>, group: GradeGroup): { q: Question; newUsed: Set<string> } => {
-      const newUsed = new Set(currentUsed);
-      const preferredLevels = getPreferredLevels(lvl);
-      const preferredPool = QUESTIONS[group].filter((q) => preferredLevels.includes(q.level));
-      const preferredUnused = preferredPool.filter((q) => !newUsed.has(`${group}:${q.q}`));
-
-      if (preferredUnused.length > 0) {
-        const q = preferredUnused[Math.floor(Math.random() * preferredUnused.length)];
-        newUsed.add(`${group}:${q.q}`);
-        return { q, newUsed };
-      }
-
-      const groupUnused = QUESTIONS[group].filter((q) => !newUsed.has(`${group}:${q.q}`));
-      if (groupUnused.length > 0) {
-        const q = groupUnused[Math.floor(Math.random() * groupUnused.length)];
-        newUsed.add(`${group}:${q.q}`);
-        return { q, newUsed };
-      }
-
-      newUsed.clear();
-      const q = preferredPool[Math.floor(Math.random() * preferredPool.length)] ?? QUESTIONS[group][0];
-      newUsed.add(`${group}:${q.q}`);
-      return { q, newUsed };
-    },
-    []
-  );
 
   const startKnowledgeQuiz = () => {
     const questions = shuffleQuestions(Object.values(QUESTIONS).flat()).slice(0, TOTAL);
@@ -262,6 +264,7 @@ export default function HistoryQuiz({
     setLevel(1);
     setGradeGroup("6-9");
     setSelectedGrade(null);
+    setSelectedLevel(null);
     setQuizQuestions(questions);
     setAnswered(false);
     setChosen(null);
@@ -275,22 +278,25 @@ export default function HistoryQuiz({
     setScreen("quiz");
   };
 
-  const startGradeQuiz = (grade: number) => {
-    const emptyUsed = new Set<string>();
-    const startingGroup = getGradeGroup(grade);
-    const startingLevel = getGradeLevel(grade);
-    const { q, newUsed } = pickQuestion(startingLevel, emptyUsed, startingGroup);
+  const startLevelQuiz = (quizLevel: QuizLevel) => {
+    const selectedOption = LEVEL_OPTIONS.find((option) => option.value === quizLevel);
+    const startingLevel = selectedOption?.questionLevel ?? quizLevel - 1;
+    const questions = buildLevelQuestions(startingLevel);
+    const first = questions[0];
+    if (!first) return;
+
     setCorrect(0);
     setStreak(0);
     setQIndex(0);
     setLevel(startingLevel);
-    setGradeGroup(startingGroup);
-    setSelectedGrade(grade);
-    setQuizQuestions([]);
+    setGradeGroup(quizLevel === 3 ? "10-12" : "6-9");
+    setSelectedGrade(null);
+    setSelectedLevel(quizLevel);
+    setQuizQuestions(questions);
     setAnswered(false);
     setChosen(null);
-    setUsedIds(newUsed);
-    setCurrentQ(q);
+    setUsedIds(new Set());
+    setCurrentQ(first);
     setAnswers([]);
     setGroupStats({
       ...createEmptyGroupStats(),
@@ -315,9 +321,9 @@ export default function HistoryQuiz({
     let newLevel = level;
     let nextGroup = gradeGroup;
 
-    if (mode === "grade" && selectedGrade) {
-      newLevel = getGradeLevel(selectedGrade);
-      nextGroup = getGradeGroup(selectedGrade);
+    if (mode === "grade" && selectedLevel) {
+      newLevel = selectedLevel - 1;
+      nextGroup = selectedLevel === 3 ? "10-12" : "6-9";
     } else if (mode === "knowledge") {
       if (isOk) {
         if (newStreak >= 2 && level < 2) newLevel = level + 1;
@@ -365,13 +371,10 @@ export default function HistoryQuiz({
       return;
     }
 
-    const lockedGrade = selectedGrade ?? 6;
-    const { q, newUsed } = pickQuestion(getGradeLevel(lockedGrade), usedIds, getGradeGroup(lockedGrade));
     setQIndex(nextIdx);
     setAnswered(false);
     setChosen(null);
-    setCurrentQ(q);
-    setUsedIds(newUsed);
+    setCurrentQ(quizQuestions[nextIdx] ?? null);
   };
 
   const saveAttempt = async () => {
@@ -381,12 +384,13 @@ export default function HistoryQuiz({
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          quizId: mode === "knowledge" ? "history-knowledge" : `history-grade-${selectedGrade ?? getAssessedGroup()}`,
+          quizId: mode === "knowledge" ? "history-knowledge" : `history-level-${selectedLevel ?? 1}`,
           userName,
           year: QUIZ_PERIOD,
           period: QUIZ_PERIOD,
           mode,
           selectedGrade,
+          selectedLevel,
           score: correct,
           totalQuestions: TOTAL,
           passed: correct >= Math.ceil(TOTAL * 0.6),
@@ -415,6 +419,7 @@ export default function HistoryQuiz({
     setScreen("grade");
     setGradeGroup("6-9");
     setSelectedGrade(null);
+    setSelectedLevel(null);
     setQuizQuestions([]);
     setAnswers([]);
     setCorrect(0);
@@ -432,7 +437,6 @@ export default function HistoryQuiz({
   const progress = (qIndex / TOTAL) * 100;
 
   const resultPct = correct / TOTAL;
-  const assessedGroup = getAssessedGroup();
   const resultSub =
     resultPct >= 0.9
       ? "Гайхалтай! Та маш сайн мэдлэгтэй!"
@@ -504,7 +508,7 @@ export default function HistoryQuiz({
                   Q
                 </div>
                 <h1 style={{ color: T.amber, fontSize: 26, fontWeight: 700, marginBottom: 8, letterSpacing: 0 }}>
-                  {mode === "knowledge" ? "Мэдлэгээ сорих" : "Анги сонгох"}
+                  {mode === "knowledge" ? "Мэдлэгээ сорих" : "Level сонгох"}
                 </h1>
                 <p style={{ color: T.textSub, fontSize: 14, lineHeight: 1.7 }}>
                   {mode === "knowledge" ? (
@@ -514,8 +518,8 @@ export default function HistoryQuiz({
                     </>
                   ) : (
                     <>
-                      6-12 ангиас сонгоно.<br />
-                      Асуултууд зөвхөн 1162-1300 оны Монголын түүхээс орно.
+                      Level 1-3-аас сонгоно.<br />
+                      Level 1 хамгийн амар, Level 3 хамгийн хэцүү.
                     </>
                   )}
                 </p>
@@ -563,9 +567,9 @@ export default function HistoryQuiz({
                 </>
               ) : (
                 <div style={{ display: "grid", gap: 14 }}>
-                  {GRADE_OPTIONS.map((option) => (
+                  {LEVEL_OPTIONS.map((option) => (
                     <section
-                      key={option.group}
+                      key={option.value}
                       style={{
                         border: quizBorder,
                         borderRadius: 14,
@@ -575,33 +579,31 @@ export default function HistoryQuiz({
                     >
                       <div style={{ marginBottom: 10 }}>
                         <p style={{ color: T.amber, fontSize: 13, fontWeight: 700, margin: 0 }}>
-                          {option.label}
+                          {option.title} · {option.subtitle}
                         </p>
                         <p style={{ color: T.textMuted, fontSize: 10, margin: "3px 0 0" }}>
-                          {option.group}-р ангийн түвшин
+                          {option.detail}
                         </p>
                       </div>
-                      <div style={{ display: "grid", gridTemplateColumns: `repeat(${option.grades.length}, minmax(0, 1fr))`, gap: 10 }}>
-                        {option.grades.map((grade) => (
-                          <button
-                            key={grade}
-                            type="button"
-                            onClick={() => startGradeQuiz(grade)}
-                            style={{
-                              minHeight: 58,
-                              border: quizBorder,
-                              borderRadius: 12,
-                              background: quizPanelSoft,
-                              color: T.text,
-                              cursor: "pointer",
-                              fontFamily: "inherit",
-                            }}
-                          >
-                            <span style={{ display: "block", color: T.amber, fontSize: 18, fontWeight: 700 }}>{grade}</span>
-                            <span style={{ display: "block", color: T.textMuted, fontSize: 10, marginTop: 2 }}>анги</span>
-                          </button>
-                        ))}
-                      </div>
+                      <button
+                        type="button"
+                        onClick={() => startLevelQuiz(option.value)}
+                        style={{
+                          width: "100%",
+                          minHeight: 58,
+                          border: quizBorder,
+                          borderRadius: 12,
+                          background: quizPanelSoft,
+                          color: T.text,
+                          cursor: "pointer",
+                          fontFamily: "inherit",
+                          textAlign: "left",
+                          padding: "12px 14px",
+                        }}
+                      >
+                        <span style={{ display: "block", color: T.amber, fontSize: 18, fontWeight: 700 }}>{option.title}</span>
+                        <span style={{ display: "block", color: T.textMuted, fontSize: 10, marginTop: 2 }}>{option.subtitle}</span>
+                      </button>
                     </section>
                   ))}
                 </div>
@@ -653,7 +655,7 @@ export default function HistoryQuiz({
               </div>
             </div>
             <p style={{ color: T.textSub, fontSize: 12, marginBottom: 10, textAlign: "right" }}>
-              {mode === "knowledge" ? "1162-1300 · Танин мэдэхүй" : `${selectedGrade ?? ""}-р анги · 1162-1300`}
+              {mode === "knowledge" ? "1162-1300 · Танин мэдэхүй" : `Level ${selectedLevel ?? 1} · 1162-1300`}
             </p>
 
             {/* Progress */}
@@ -799,7 +801,7 @@ export default function HistoryQuiz({
                   {mode === "knowledge" ? "Сорилын төрөл" : "Сонгосон түвшин"}
                 </p>
                 <p style={{ color: T.amber, fontSize: 22, fontWeight: 700 }}>
-                  {mode === "knowledge" ? "Мэдлэгээ сорих" : `${selectedGrade ?? ""}-р анги · ${GRADE_LABELS[assessedGroup]}`}
+                  {mode === "knowledge" ? "Мэдлэгээ сорих" : `Level ${selectedLevel ?? 1} · ${LEVELS[level]}`}
                 </p>
               </div>
               <p style={{ color: T.textMuted, fontSize: 11, marginBottom: 18, textTransform: "uppercase", letterSpacing: 1.4 }}>
@@ -814,7 +816,7 @@ export default function HistoryQuiz({
                 {[
                   { num: correct, lbl: "Зөв хариулт" },
                   { num: TOTAL - correct, lbl: "Буруу хариулт" },
-                  { num: mode === "knowledge" ? LEVELS[level] : `${selectedGrade ?? "-"} анги`, lbl: mode === "knowledge" ? "Хүрсэн түвшин" : "Сонгосон анги" },
+                  { num: mode === "knowledge" ? LEVELS[level] : `Level ${selectedLevel ?? "-"}`, lbl: mode === "knowledge" ? "Хүрсэн түвшин" : "Сонгосон level" },
                 ].map((s, i) => (
                   <div key={i} style={{
                     background: quizPanelSoft,
@@ -843,7 +845,7 @@ export default function HistoryQuiz({
                   fontFamily: "inherit",
                 }}
               >
-                {mode === "knowledge" ? "Дахин сорих" : "Дахин анги сонгох"}
+                {mode === "knowledge" ? "Дахин сорих" : "Дахин level сонгох"}
               </button>
               {onClose && (
                 <button
@@ -878,21 +880,6 @@ export default function HistoryQuiz({
       </div>
     </div>
   );
-
-  function getAssessedGroup(): GradeGroup {
-    if (mode === "grade" && selectedGrade) return getGradeGroup(selectedGrade);
-
-    const weightedScore = GRADE_GROUPS.reduce((sum, group, index) => {
-      const stats = groupStats[group];
-      if (!stats.asked) return sum;
-      return sum + stats.correct * (index + 1);
-    }, 0);
-    const correctAnswers = Math.max(correct, 1);
-    const avgLevel = weightedScore / correctAnswers;
-
-    if (correct / TOTAL >= 0.75 && avgLevel >= 1.6) return "10-12";
-    return "6-9";
-  }
 }
 
 function shiftGradeGroup(group: GradeGroup, delta: -1 | 1): GradeGroup {
@@ -901,23 +888,17 @@ function shiftGradeGroup(group: GradeGroup, delta: -1 | 1): GradeGroup {
   return GRADE_GROUPS[nextIndex];
 }
 
-function getGradeGroup(grade: number): GradeGroup {
-  if (grade <= 9) return "6-9";
-  return "10-12";
+function buildLevelQuestions(level: number) {
+  const allQuestions = (Object.entries(QUESTIONS) as Array<[QuestionGroup, Question[]]>).flatMap(([group, questions]) =>
+    questions.map((question) => ({ ...question, group })),
+  );
+  const primary = shuffleQuestions(allQuestions.filter((question) => question.level === level));
+  const fallback = shuffleQuestions(allQuestions.filter((question) => question.level !== level));
+
+  return [...primary, ...fallback].slice(0, TOTAL).map(({ group: _group, ...question }) => question);
 }
 
-function getGradeLevel(grade: number) {
-  if (grade <= 9) return 1;
-  return 2;
-}
-
-function getPreferredLevels(level: number) {
-  if (level <= 0) return [0, 1];
-  if (level === 1) return [1, 0, 2];
-  return [2, 1, 0];
-}
-
-function shuffleQuestions(questions: Question[]) {
+function shuffleQuestions<T>(questions: T[]) {
   return [...questions].sort(() => Math.random() - 0.5);
 }
 

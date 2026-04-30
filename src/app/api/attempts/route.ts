@@ -66,6 +66,7 @@ export async function POST(req: Request) {
       period,
       mode,
       selectedGrade,
+      selectedLevel,
       score,
       totalQuestions,
       passed,
@@ -76,6 +77,7 @@ export async function POST(req: Request) {
       period?: string;
       mode?: string;
       selectedGrade?: number | null;
+      selectedLevel?: number | null;
       score: number;
       totalQuestions: number;
       passed: boolean;
@@ -100,6 +102,7 @@ export async function POST(req: Request) {
       period: typeof period === 'string' ? period : '1162-1300',
       mode: typeof mode === 'string' ? mode : null,
       selectedGrade: typeof selectedGrade === 'number' ? selectedGrade : null,
+      selectedLevel: typeof selectedLevel === 'number' ? selectedLevel : null,
       answers,
     };
 
@@ -222,6 +225,7 @@ type QuizAttemptRow = {
     period?: string | null;
     mode?: string | null;
     selectedGrade?: number | null;
+    selectedLevel?: number | null;
     answers?: QuizAnswer[];
   } | null;
   created_at: string;
@@ -231,12 +235,15 @@ function toQuizAttemptHistory(row: QuizAttemptRow) {
   const mode = row.answers?.mode === 'knowledge' ? 'knowledge' : 'grade';
   const selectedGrade =
     typeof row.answers?.selectedGrade === 'number' ? row.answers.selectedGrade : null;
+  const selectedLevel =
+    typeof row.answers?.selectedLevel === 'number' ? row.answers.selectedLevel : null;
 
   return {
     id: String(row.id),
     quizId: row.quiz_id,
     mode,
     selectedGrade,
+    selectedLevel,
     period: row.answers?.period ?? '1162-1300',
     score: row.score,
     total: row.total_questions,

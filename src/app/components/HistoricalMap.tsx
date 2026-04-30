@@ -6,8 +6,8 @@ import { useHistoricalMap } from "./atlas/useHistoricalMap";
 
 export default function HistoricalMap(props: HistoricalMapProps) {
   const containerRef = useHistoricalMap(props, {
-    center: [72, 36],
-    zoom: 1.75,
+    center: [64.68807, 36.36715],
+    zoom: 3.7,
     pitch: 0,
   });
 

@@ -1,5 +1,6 @@
 "use client";
 
+import { sidebarTheme as T } from "./sidebarTheme";
 import type { AtlasLayerVisibility } from "./types";
 
 const LAYERS: Array<{
@@ -23,10 +24,11 @@ export function AtlasLayerToggle({
     <div
       className="pointer-events-auto absolute left-4 top-16 z-20 flex flex-wrap gap-2 rounded-xl px-3 py-2"
       style={{
-        background: "rgba(8,5,2,0.9)",
-        border: "1px solid rgba(201,164,93,0.18)",
+        background: T.bg,
+        border: `1px solid ${T.border}`,
         backdropFilter: "blur(14px)",
-        boxShadow: "0 12px 32px rgba(0,0,0,0.38)",
+        boxShadow: "0 12px 32px rgba(12,96,169,0.12), inset 0 1px 0 rgba(255,255,255,0.85)",
+        fontFamily: "var(--font-inter), Arial, sans-serif",
       }}
     >
       {LAYERS.map(({ key, label }) => {
@@ -39,18 +41,29 @@ export function AtlasLayerToggle({
             className="rounded-full px-3 py-1.5 text-[10px] uppercase tracking-[0.18em] transition"
             style={{
               background: active
-                ? "rgba(201,164,93,0.16)"
-                : "rgba(255,255,255,0.03)",
+                ? "rgba(12,96,169,0.10)"
+                : "rgba(12,96,169,0.03)",
               border: `1px solid ${
-                active ? "rgba(201,164,93,0.42)" : "rgba(255,255,255,0.08)"
+                active ? "rgba(12,96,169,0.34)" : T.border
               }`,
-              color: active ? "#f3d9a4" : "#8f7b59",
+              color: active ? T.amber : T.textMuted,
             }}
           >
             {label}
           </button>
         );
       })}
+      <div
+        className="flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.16em]"
+        style={{
+          background: "rgba(12,96,169,0.06)",
+          border: "1px solid rgba(12,96,169,0.22)",
+          color: T.amber,
+        }}
+      >
+        <span aria-hidden="true">⚔</span>
+        <span>Battle / conflict</span>
+      </div>
     </div>
   );
 }

@@ -14,7 +14,6 @@ import {
   MapPinned,
   Medal,
   Search,
-  Sparkles,
   Trophy,
   XCircle,
 } from 'lucide-react';
@@ -229,6 +228,7 @@ export function Sidebar({
       <SidebarHeader
         collapsed={collapsed}
         onToggleCollapsed={onToggleCollapsed}
+        onOpenMap={onOpenMap}
         year={year}
       />
 
@@ -443,7 +443,7 @@ export function Sidebar({
                       icon={
                         <Trophy className="size-4" style={{ color: T.amber }} />
                       }
-                      label="Анги сонгох"
+                      label="Level сонгох"
                       onClick={() => onOpenQuiz('grade')}
                     />
                     <QuizMenuButton

@@ -66,7 +66,15 @@ export default function SelectedStateDrawer({
 
   if (!feature) {
     return (
-      <div className="hidden h-full items-center justify-center rounded-2xl md:flex" style={{ background: T.bg, border: `1px solid ${T.border}`, backdropFilter: "blur(16px)" }}>
+      <div
+        className="hidden h-full items-center justify-center rounded-[35px] md:flex"
+        style={{
+          background: T.bg,
+          border: `1px solid ${T.border}`,
+          boxShadow: "0 0 40px rgba(0,0,0,0.18), inset 0 0 40px rgba(12,96,169,0.02)",
+          backdropFilter: "blur(16px)",
+        }}
+      >
         <div className="px-8 text-center">
           <Scroll className="mx-auto mb-3 opacity-15" size={28} style={{ color: T.amber }} />
           <p className="text-xs uppercase tracking-widest" style={{ color: T.textMuted, fontFamily: "var(--font-inter), Arial, sans-serif" }}>
@@ -81,13 +89,22 @@ export default function SelectedStateDrawer({
 
   return (
     <div className="h-full">
-      <div className="flex h-full flex-col overflow-hidden rounded-2xl" style={{ background: T.bg, border: `1px solid ${T.border}`, boxShadow: "0 0 40px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.03)", backdropFilter: "blur(16px)", fontFamily: "var(--font-inter), Arial, sans-serif" }}>
+      <div
+        className="flex h-full flex-col overflow-hidden rounded-[35px]"
+        style={{
+          background: T.bg,
+          border: `1px solid ${T.border}`,
+          boxShadow: "0 0 40px rgba(0,0,0,0.18), inset 0 0 40px rgba(12,96,169,0.02)",
+          backdropFilter: "blur(16px)",
+          fontFamily: "var(--font-inter), Arial, sans-serif",
+        }}
+      >
         <div className="h-0.5 shrink-0" style={{ background: `linear-gradient(90deg, transparent 0%, ${color} 35%, ${T.amber} 50%, ${color} 65%, transparent 100%)` }} />
         <div className="flex-1 overflow-y-auto px-5 py-4">
           <div className="mb-1 flex items-start justify-between gap-3">
             <div>
               <p className="mb-2 text-[8px] uppercase tracking-[0.5em]" style={{ color: T.textMuted }}>Сонгосон нутаг</p>
-              <h3 className="text-lg font-bold leading-tight" style={{ color: T.amber, textShadow: `0 0 12px ${color}33` }}>{feature.properties.name}</h3>
+              <h3 className="text-lg font-bold leading-tight" style={{ color: T.amber }}>{feature.properties.name}</h3>
               {feature.properties.metadata?.periodName && (
                 <p className="mt-0.5 text-xs italic" style={{ color: T.textSub }}>«{String(feature.properties.metadata.periodName)}»</p>
               )}
@@ -105,7 +122,7 @@ export default function SelectedStateDrawer({
               { Icon: MapPin, label: "Нийслэл", value: feature.properties.capital },
               { Icon: Swords, label: "Он", value: `${year} он` },
             ].map(({ Icon, label, value }) => (
-              <div key={label} className="flex items-center gap-3 rounded-lg px-3 py-2" style={{ background: "rgba(15,23,42,0.5)", border: `1px solid ${T.border}` }}>
+              <div key={label} className="flex items-center gap-3 rounded-lg px-3 py-2" style={{ background: "rgba(12,96,169,0.04)", border: `1px solid ${T.border}` }}>
                 <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md" style={{ background: T.amberGlow, border: `1px solid ${T.amber}22` }}>
                   <Icon className="size-3" style={{ color: T.amberDim }} />
                 </div>
@@ -117,12 +134,12 @@ export default function SelectedStateDrawer({
 
           <Divider />
 
-          <div className="mb-3 rounded-lg px-4 py-3" style={{ background: "rgba(15,23,42,0.4)", border: `1px solid ${T.border}`, borderLeft: `3px solid ${color}66` }}>
+          <div className="mb-3 rounded-lg px-4 py-3" style={{ background: "rgba(12,96,169,0.04)", border: `1px solid ${T.border}`, borderLeft: `3px solid ${color}66` }}>
             <p className="mb-2 text-[9px] uppercase tracking-[0.3em]" style={{ color: T.textMuted }}>Товч түүх</p>
             <p className="text-xs leading-relaxed" style={{ color: T.text }}>{feature.properties.summary}</p>
           </div>
 
-          <div className="rounded-lg px-4 py-3" style={{ background: "rgba(15,23,42,0.3)", border: `1px solid ${T.border}` }}>
+          <div className="rounded-lg px-4 py-3" style={{ background: "rgba(12,96,169,0.035)", border: `1px solid ${T.border}` }}>
             <div className="mb-2.5 flex items-center gap-2">
               <Sparkles className="size-3" style={{ color: T.amberDim }} />
               <p className="text-[9px] uppercase tracking-[0.3em]" style={{ color: T.textMuted }}>Түүхч тайлбар</p>
@@ -136,10 +153,10 @@ export default function SelectedStateDrawer({
             {insightLoading ? (
               <div className="flex items-center gap-2 py-3" style={{ color: T.textSub }}>
                 <Loader2 className="size-3 animate-spin" />
-                <span className="text-xs">Тайлбар бичигдэж байна…</span>
+                <span className="text-xs">Уншиж байна…</span>
               </div>
             ) : insightError ? (
-              <p className="py-2 text-xs" style={{ color: "#f87171" }}>{insightError}</p>
+              <p className="py-2 text-xs" style={{ color: "#dc2626" }}>{insightError}</p>
             ) : (
               <>
                 <div className="relative">
@@ -149,7 +166,7 @@ export default function SelectedStateDrawer({
                   {!insightExpanded && (
                     <div
                       className="pointer-events-none absolute inset-x-0 bottom-0 h-10"
-                      style={{ background: "linear-gradient(180deg, rgba(15,23,42,0), rgba(15,23,42,0.96))" }}
+                      style={{ background: "linear-gradient(180deg, rgba(252,252,252,0), rgba(252,252,252,0.96))" }}
                     />
                   )}
                 </div>
@@ -158,7 +175,7 @@ export default function SelectedStateDrawer({
                     type="button"
                     onClick={() => setInsightExpanded((value) => !value)}
                     className="mt-2 flex h-8 w-full items-center justify-center gap-1 rounded-md text-[10px] font-semibold transition hover:opacity-80"
-                    style={{ border: `1px solid ${T.border}`, color: T.amber, background: "rgba(245,158,11,0.08)" }}
+                    style={{ border: `1px solid ${T.border}`, color: T.amber, background: "rgba(12,96,169,0.08)" }}
                   >
                     {insightExpanded ? <ChevronUp className="size-3" /> : <ChevronDown className="size-3" />}
                     {insightExpanded ? "Хураах" : "Дэлгэрэнгүй унших"}
@@ -325,7 +342,7 @@ function StateFeedbackPanel({
   }
 
   return (
-    <div className="mt-3 rounded-lg px-4 py-3" style={{ background: "rgba(15,23,42,0.34)", border: `1px solid ${T.border}` }}>
+    <div className="mt-3 rounded-lg px-4 py-3" style={{ background: "rgba(12,96,169,0.035)", border: `1px solid ${T.border}` }}>
       <div className="mb-3 flex items-center justify-between gap-3">
         <div>
           <p className="text-[9px] uppercase tracking-[0.3em]" style={{ color: T.textMuted }}>User feedback</p>
@@ -358,13 +375,13 @@ function StateFeedbackPanel({
           placeholder={`${stateName} дээр feedback бичих`}
           className="w-full resize-none rounded-lg px-3 py-2 text-xs outline-none transition focus:border-amber-500/50"
           style={{
-            background: "rgba(8,13,24,0.72)",
+            background: "#ffffff",
             border: `1px solid ${T.border}`,
             color: T.text,
             fontFamily: "var(--font-inter), Arial, sans-serif",
           }}
         />
-        <label className="flex items-center gap-2 rounded-lg px-3 py-2 text-xs" style={{ background: "rgba(8,13,24,0.45)", border: `1px solid ${T.border}`, color: T.textSub }}>
+        <label className="flex items-center gap-2 rounded-lg px-3 py-2 text-xs" style={{ background: "rgba(12,96,169,0.04)", border: `1px solid ${T.border}`, color: T.textSub }}>
           <input
             type="checkbox"
             checked={includeCoordinates}
@@ -374,7 +391,7 @@ function StateFeedbackPanel({
           Энэ улсын хилийн цэгүүдийг зураг дээр засаж санал болгох
         </label>
         {includeCoordinates && (
-          <div className="grid gap-2 rounded-lg px-3 py-2" style={{ background: "rgba(3,7,18,0.6)", border: `1px solid ${T.border}` }}>
+          <div className="grid gap-2 rounded-lg px-3 py-2" style={{ background: "#ffffff", border: `1px solid ${T.border}` }}>
             <div className="flex items-center justify-between gap-2">
               <span className="text-[10px]" style={{ color: T.textSub }}>
                 {feedbackEditor?.draftRing.length ?? 0} цэг · цэгийг чирж засна, double click хийж устгана
@@ -394,7 +411,7 @@ function StateFeedbackPanel({
                 type="button"
                 onClick={feedbackEditor?.onStart}
                 className="flex h-8 items-center justify-center gap-1 rounded-md text-[10px] font-semibold"
-                style={{ background: "rgba(245,158,11,0.13)", border: `1px solid ${T.amber}44`, color: T.amber }}
+                style={{ background: "rgba(12,96,169,0.10)", border: `1px solid ${T.amber}44`, color: T.amber }}
               >
                 <MapPin className="size-3" />
                 Засах горим
@@ -404,9 +421,9 @@ function StateFeedbackPanel({
                 onClick={feedbackEditor?.onToggleAddPoint}
                 className="flex h-8 items-center justify-center gap-1 rounded-md text-[10px] font-semibold"
                 style={{
-                  background: feedbackEditor?.addPointMode ? "rgba(34,197,94,0.16)" : "rgba(8,13,24,0.55)",
+                  background: feedbackEditor?.addPointMode ? "rgba(34,197,94,0.12)" : "rgba(12,96,169,0.04)",
                   border: feedbackEditor?.addPointMode ? "1px solid rgba(34,197,94,0.45)" : `1px solid ${T.border}`,
-                  color: feedbackEditor?.addPointMode ? "#86efac" : T.textSub,
+                  color: feedbackEditor?.addPointMode ? "#15803d" : T.textSub,
                 }}
               >
                 <Plus className="size-3" />
@@ -416,7 +433,7 @@ function StateFeedbackPanel({
           </div>
         )}
         <div className="flex items-center justify-between gap-3">
-          <span className="text-[10px]" style={{ color: error ? "#f87171" : T.textMuted }}>
+          <span className="text-[10px]" style={{ color: error ? "#dc2626" : T.textMuted }}>
             {error ?? (status === "saved" ? "Feedback хадгаллаа." : `${comment.length}/700`)}
           </span>
           <button
@@ -424,7 +441,7 @@ function StateFeedbackPanel({
             disabled={status === "saving"}
             className="flex h-8 items-center gap-2 rounded-lg px-3 text-xs font-semibold transition disabled:opacity-55"
             style={{
-              background: "rgba(245,158,11,0.15)",
+              background: "rgba(12,96,169,0.10)",
               border: `1px solid ${T.amber}44`,
               color: T.amber,
             }}
@@ -443,7 +460,7 @@ function StateFeedbackPanel({
       ) : feedback.length > 0 ? (
         <div className="mt-3 grid gap-2">
           {feedback.slice(0, 3).map((item) => (
-            <div key={item.id} className="rounded-lg px-3 py-2" style={{ background: "rgba(8,13,24,0.55)", border: `1px solid ${T.border}` }}>
+            <div key={item.id} className="rounded-lg px-3 py-2" style={{ background: "#ffffff", border: `1px solid ${T.border}` }}>
               <div className="mb-1 flex items-center justify-between gap-2">
                 <span className="truncate text-xs font-semibold" style={{ color: T.text }}>{item.userName}</span>
                 <span className="flex items-center gap-1 text-[10px]" style={{ color: T.amber }}>
@@ -453,7 +470,7 @@ function StateFeedbackPanel({
               </div>
               <p className="line-clamp-3 text-xs leading-5" style={{ color: T.textSub }}>{item.comment}</p>
               {adminMode && item.proposedGeometry && (
-                <div className="mt-2 rounded-md p-2" style={{ background: "rgba(3,7,18,0.55)", border: `1px solid ${T.border}` }}>
+                <div className="mt-2 rounded-md p-2" style={{ background: "rgba(12,96,169,0.04)", border: `1px solid ${T.border}` }}>
                   <div className="mb-2 flex items-center justify-between gap-2">
                     <span className="text-[10px] font-semibold" style={{ color: T.amber }}>
                       Coordinate санал · {item.status ?? "pending"}
@@ -471,7 +488,7 @@ function StateFeedbackPanel({
                         type="button"
                         onClick={() => reviewFeedback(item.id, "approve")}
                         className="flex h-8 items-center justify-center gap-1 rounded-md text-[10px] font-semibold"
-                        style={{ background: "rgba(34,197,94,0.13)", border: "1px solid rgba(34,197,94,0.35)", color: "#86efac" }}
+                        style={{ background: "rgba(34,197,94,0.12)", border: "1px solid rgba(34,197,94,0.35)", color: "#15803d" }}
                       >
                         <Check className="size-3" />
                         DB рүү зөвшөөрөх
@@ -480,7 +497,7 @@ function StateFeedbackPanel({
                         type="button"
                         onClick={() => reviewFeedback(item.id, "reject")}
                         className="flex h-8 items-center justify-center rounded-md text-[10px] font-semibold"
-                        style={{ background: "rgba(239,68,68,0.12)", border: "1px solid rgba(239,68,68,0.35)", color: "#fca5a5" }}
+                        style={{ background: "rgba(239,68,68,0.10)", border: "1px solid rgba(239,68,68,0.35)", color: "#dc2626" }}
                       >
                         Буруу
                       </button>
