@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { sidebarTheme } from './atlas/sidebarTheme';
 
 const T = {
@@ -616,13 +616,14 @@ export default function HistoryQuiz({
 
   const progress = (qIndex / TOTAL) * 100;
 
-  const resultPct = correct / TOTAL;
   const resultSub =
     correct <= 4
       ? 'Дахиад оролдоод үзээрэй 💪'
       : correct <= 7
         ? 'Сайн байна 👍'
         : 'Гайхалтай! 🔥';
+  const resultColor = correct >= 8 ? T.amber : correct >= 5 ? T.text : T.red;
+  const resultGlow = correct >= 8 ? '0 0 18px rgba(12,96,169,0.28)' : 'none';
 
   return (
     <div
@@ -759,7 +760,7 @@ export default function HistoryQuiz({
                 </>
               ) : (
                 <div style={{ display: "grid", gap: 14 }}>
-                  {LEVEL_OPTIONS.map((option) => (
+                  {LEVEL_OPTIONS.map((option, idx) => (
                     <section
                       key={option.value}
                       style={{
