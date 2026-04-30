@@ -21,11 +21,11 @@ interface Question {
   exp: string;
 }
 
-type GradeGroup = "6-9" | "10-12";
-type QuestionGroup = "1-5" | GradeGroup;
+type GradeGroup = '1-5' | '6-9' | '10-12';
+type QuestionGroup = '1-5' | GradeGroup;
 type QuizLevel = 1 | 2 | 3;
-type QuizMode = "knowledge" | "grade";
-type Screen = "grade" | "quiz" | "result";
+type QuizMode = 'knowledge' | 'grade';
+type Screen = 'grade' | 'quiz' | 'result';
 type QuizAnswer = {
   question: string;
   selectedAnswer: string;
@@ -255,36 +255,207 @@ const QUESTIONS: Record<QuestionGroup, Question[]> = {
       exp: 'Мамлюкууд Айн Жалутын тулалдаанд Монголын баруун тийш давших хүчийг сааруулсан.',
     },
   ],
-  "10-12": [
-    { level: 0, q: "Их Монгол Улсын тэлэлтэд худалдаачин, элчийн халдашгүй байдал яагаад чухал байсан бэ?", opts: ["а) Дипломат холбоо, худалдааг хамгаалсан", "б) Зөвхөн шашны ёс байсан", "в) Хот барих арга байсан", "г) Татвар устгасан"], ans: 0, exp: "Элч, худалдаачны аюулгүй байдал нь Монголын дипломат бодлого, мэдээллийн сүлжээний гол зарчим байв." },
-    { level: 0, q: "Яса хэмээх ойлголтыг юу гэж тайлбарлаж болох вэ?", opts: ["а) Хааны зарлиг, хэв ёсны цогц", "б) Зөвхөн шашны ном", "в) Хотын нэр", "г) Далайн хууль"], ans: 0, exp: "Яса нь Чингис хааны зарлиг, цэргийн болон төрийн сахилга, хэв ёсны цогц ойлголт гэж тайлбарлагддаг." },
-    { level: 0, q: "Монголын эзэнт гүрэн 13-р зуунд ямар давуу талтай байсан бэ?", opts: ["а) Морьт цэрэг, мэдээлэл, сахилга", "б) Далай тэнгисийн флот", "в) Нүүрсний үйлдвэр", "г) Галт зэвсгийн үйлдвэр"], ans: 0, exp: "Хөдөлгөөнт морьт цэрэг, өртөө, тагнуул, сахилга бат нь эзэнт гүрний гол давуу тал байв." },
-    { level: 0, q: "1300 он гэхэд Монголын ертөнц ямар байдалтай болсон бэ?", opts: ["а) Хэд хэдэн ханлигт хуваагдсан", "б) Нэг жижиг аймаг болсон", "в) Европт бүрэн төвлөрсөн", "г) Далайд шилжсэн"], ans: 0, exp: "1300 он гэхэд Юань, Алтан Орд, Ил хаант улс, Цагаадайн улс зэрэг тусдаа төвүүд хүчтэй болсон." },
-    { level: 1, q: "Пакс Монголика гэж юу гэсэн ойлголт вэ?", opts: ["а) Монголын ноёрхлын үеийн Евроазийн харилцааны идэвхжил", "б) Зөвхөн нэг тулалдаан", "в) Хятадын нэг хот", "г) Шашны урсгал"], ans: 0, exp: "Пакс Монголика нь Монголын ноёрхлын үед Евроазийн худалдаа, элч, мэдлэгийн урсгал идэвхжсэнийг нэрлэдэг." },
-    { level: 1, q: "Хубилай, Аригбөхийн тэмцэл ямар үр дагавартай байсан бэ?", opts: ["а) Төв эрх мэдлийн задралыг түргэсгэсэн", "б) Бүх ханлигийг нэгтгэсэн", "в) Алтан улсыг сэргээсэн", "г) Японыг эзэлсэн"], ans: 0, exp: "1260-аад оны тэмцэл их хааны эрх мэдлийг сулруулж, бүс нутгийн ханлигуудын бие даах хандлагыг нэмэгдүүлсэн." },
-    { level: 1, q: "Юань улсын засаглал Монголын ямар сорилттой тулгарсан бэ?", opts: ["а) Нүүдэлчин ба суурин засаглалын тэнцвэр", "б) Далайгүй байх", "в) Бичиг үсэггүй байх", "г) Мал аж ахуйгүй байх"], ans: 0, exp: "Юань улс нүүдэлчин Монгол эрх мэдэл, Хятадын суурин захиргааны уламжлалыг зэрэг удирдах шаардлагатай болсон." },
-    { level: 1, q: "Ил хаант улсын баруун Азид тогтох нь ямар ач холбогдолтой вэ?", opts: ["а) Монголын нөлөө Исламын ертөнцөд хүрсэн", "б) Монголчууд далайг эзэлсэн", "в) Юань мөхсөн", "г) Сүн улс сэргэсэн"], ans: 0, exp: "Ил хаант улс Иран, Ирак, Кавказ дахь улс төр, худалдаа, соёлын харилцаанд Монголын нөлөөг оруулсан." },
-    { level: 2, q: "Ханлигуудын хуваагдал яагаад зөвхөн сулрал биш гэж үзэж болох вэ?", opts: ["а) Бүс нутгийн дасан зохицол, шинэ төрийн хэлбэрүүд бий болсон", "б) Бүгд нэг өдөр мөхсөн", "в) Цэрэг бүрэн татан буугдсан", "г) Худалдаа хаагдсан"], ans: 0, exp: "Хуваагдал нь төвлөрөл сулрахын зэрэгцээ бүс нутгийн хэл, шашин, захиргаатай зохицсон шинэ ханлигуудыг бий болгосон." },
-    { level: 2, q: "Монголын өртөөний тогтолцоо эзэнт гүрний засаглалд ямар үүрэгтэй байсан бэ?", opts: ["а) Мэдээлэл, зарлиг, элчийг хурдан дамжуулсан", "б) Зөвхөн тариалан усалсан", "в) Хотын хэрэм барьсан", "г) Зоос устгасан"], ans: 0, exp: "Өртөө нь асар уудам орон зайд захиргаа, цэрэг, худалдаа, дипломат харилцааг холбосон." },
-    { level: 2, q: "Монголын байлдан дагууллын амжилтыг дан ганц хүчээр тайлбарлахад юу дутагддаг вэ?", opts: ["а) Дипломат, тагнуул, логистик, нутгийн элиттэй харилцах бодлого", "б) Зөвхөн цаг агаар", "в) Зөвхөн аз", "г) Зөвхөн нэг зэвсэг"], ans: 0, exp: "Монголын амжилт нь хүчнээс гадна мэдээлэл, дипломат бодлого, логистик, нутгийн хүчнүүдийг ашиглах чадвартай холбоотой." },
-    { level: 2, q: "1162-1300 оны Монголын түүхийг дэлхийн түүхэнд чухал болгодог гол шалтгаан аль вэ?", opts: ["а) Евроазийн улс төр, худалдаа, соёлын холбоог өөрчилсөн", "б) Зөвхөн нэг хот байгуулсан", "в) Дэлхийн бүх улсыг нэгтгэсэн", "г) Түүхэн эх сурвалж үлдээгээгүй"], ans: 0, exp: "Монголын эзэнт гүрэн Евроазийн хүчний тэнцвэр, худалдаа, мэдлэгийн солилцоонд гүн нөлөө үзүүлсэн." },
-    { level: 2, q: "Монголын эзэнт гүрний захиргаанд нутгийн бичээч, худалдаачдыг ашигласан нь ямар ач холбогдолтой вэ?", opts: ["а) Орон нутгийн мэдлэгийг төрийн удирдлагатай холбосон", "б) Бүх хотыг нүүлгэсэн", "в) Морин цэргийг халсан", "г) Худалдааг бүрэн хориглосон"], ans: 0, exp: "Монголчууд эзэлсэн нутгийн захиргааны туршлага, бичиг хэрэг, худалдааны сүлжээг ашиглан уудам орон зайг удирдах чадвараа нэмэгдүүлсэн." },
-    { level: 2, q: "Юань, Ил хаант улс, Алтан Орд өөр өөр шашин соёлтой орчинд дасан зохицсон нь юуг харуулдаг вэ?", opts: ["а) Монгол засаглал бүс нутгийн нөхцөлд өөрчлөгдөн хөгжсөн", "б) Бүх ханлиг ижил хуультай үлдсэн", "в) Монголчууд суурин газрыг бүгдийг орхисон", "г) Худалдааны замууд тасарсан"], ans: 0, exp: "Ханлигуудын ялгаа нь Монголын ноёрхол нэг загвараар бус, бүс нутгийн соёл, шашин, захиргааны нөхцөлтэй зохицон хувирсныг харуулдаг." },
+  '10-12': [
+    {
+      level: 0,
+      q: 'Их Монгол Улсын тэлэлтэд худалдаачин, элчийн халдашгүй байдал яагаад чухал байсан бэ?',
+      opts: [
+        'а) Дипломат холбоо, худалдааг хамгаалсан',
+        'б) Зөвхөн шашны ёс байсан',
+        'в) Хот барих арга байсан',
+        'г) Татвар устгасан',
+      ],
+      ans: 0,
+      exp: 'Элч, худалдаачны аюулгүй байдал нь Монголын дипломат бодлого, мэдээллийн сүлжээний гол зарчим байв.',
+    },
+    {
+      level: 0,
+      q: 'Яса хэмээх ойлголтыг юу гэж тайлбарлаж болох вэ?',
+      opts: [
+        'а) Хааны зарлиг, хэв ёсны цогц',
+        'б) Зөвхөн шашны ном',
+        'в) Хотын нэр',
+        'г) Далайн хууль',
+      ],
+      ans: 0,
+      exp: 'Яса нь Чингис хааны зарлиг, цэргийн болон төрийн сахилга, хэв ёсны цогц ойлголт гэж тайлбарлагддаг.',
+    },
+    {
+      level: 0,
+      q: 'Монголын эзэнт гүрэн 13-р зуунд ямар давуу талтай байсан бэ?',
+      opts: [
+        'а) Морьт цэрэг, мэдээлэл, сахилга',
+        'б) Далай тэнгисийн флот',
+        'в) Нүүрсний үйлдвэр',
+        'г) Галт зэвсгийн үйлдвэр',
+      ],
+      ans: 0,
+      exp: 'Хөдөлгөөнт морьт цэрэг, өртөө, тагнуул, сахилга бат нь эзэнт гүрний гол давуу тал байв.',
+    },
+    {
+      level: 0,
+      q: '1300 он гэхэд Монголын ертөнц ямар байдалтай болсон бэ?',
+      opts: [
+        'а) Хэд хэдэн ханлигт хуваагдсан',
+        'б) Нэг жижиг аймаг болсон',
+        'в) Европт бүрэн төвлөрсөн',
+        'г) Далайд шилжсэн',
+      ],
+      ans: 0,
+      exp: '1300 он гэхэд Юань, Алтан Орд, Ил хаант улс, Цагаадайн улс зэрэг тусдаа төвүүд хүчтэй болсон.',
+    },
+    {
+      level: 1,
+      q: 'Пакс Монголика гэж юу гэсэн ойлголт вэ?',
+      opts: [
+        'а) Монголын ноёрхлын үеийн Евроазийн харилцааны идэвхжил',
+        'б) Зөвхөн нэг тулалдаан',
+        'в) Хятадын нэг хот',
+        'г) Шашны урсгал',
+      ],
+      ans: 0,
+      exp: 'Пакс Монголика нь Монголын ноёрхлын үед Евроазийн худалдаа, элч, мэдлэгийн урсгал идэвхжсэнийг нэрлэдэг.',
+    },
+    {
+      level: 1,
+      q: 'Хубилай, Аригбөхийн тэмцэл ямар үр дагавартай байсан бэ?',
+      opts: [
+        'а) Төв эрх мэдлийн задралыг түргэсгэсэн',
+        'б) Бүх ханлигийг нэгтгэсэн',
+        'в) Алтан улсыг сэргээсэн',
+        'г) Японыг эзэлсэн',
+      ],
+      ans: 0,
+      exp: '1260-аад оны тэмцэл их хааны эрх мэдлийг сулруулж, бүс нутгийн ханлигуудын бие даах хандлагыг нэмэгдүүлсэн.',
+    },
+    {
+      level: 1,
+      q: 'Юань улсын засаглал Монголын ямар сорилттой тулгарсан бэ?',
+      opts: [
+        'а) Нүүдэлчин ба суурин засаглалын тэнцвэр',
+        'б) Далайгүй байх',
+        'в) Бичиг үсэггүй байх',
+        'г) Мал аж ахуйгүй байх',
+      ],
+      ans: 0,
+      exp: 'Юань улс нүүдэлчин Монгол эрх мэдэл, Хятадын суурин захиргааны уламжлалыг зэрэг удирдах шаардлагатай болсон.',
+    },
+    {
+      level: 1,
+      q: 'Ил хаант улсын баруун Азид тогтох нь ямар ач холбогдолтой вэ?',
+      opts: [
+        'а) Монголын нөлөө Исламын ертөнцөд хүрсэн',
+        'б) Монголчууд далайг эзэлсэн',
+        'в) Юань мөхсөн',
+        'г) Сүн улс сэргэсэн',
+      ],
+      ans: 0,
+      exp: 'Ил хаант улс Иран, Ирак, Кавказ дахь улс төр, худалдаа, соёлын харилцаанд Монголын нөлөөг оруулсан.',
+    },
+    {
+      level: 2,
+      q: 'Ханлигуудын хуваагдал яагаад зөвхөн сулрал биш гэж үзэж болох вэ?',
+      opts: [
+        'а) Бүс нутгийн дасан зохицол, шинэ төрийн хэлбэрүүд бий болсон',
+        'б) Бүгд нэг өдөр мөхсөн',
+        'в) Цэрэг бүрэн татан буугдсан',
+        'г) Худалдаа хаагдсан',
+      ],
+      ans: 0,
+      exp: 'Хуваагдал нь төвлөрөл сулрахын зэрэгцээ бүс нутгийн хэл, шашин, захиргаатай зохицсон шинэ ханлигуудыг бий болгосон.',
+    },
+    {
+      level: 2,
+      q: 'Монголын өртөөний тогтолцоо эзэнт гүрний засаглалд ямар үүрэгтэй байсан бэ?',
+      opts: [
+        'а) Мэдээлэл, зарлиг, элчийг хурдан дамжуулсан',
+        'б) Зөвхөн тариалан усалсан',
+        'в) Хотын хэрэм барьсан',
+        'г) Зоос устгасан',
+      ],
+      ans: 0,
+      exp: 'Өртөө нь асар уудам орон зайд захиргаа, цэрэг, худалдаа, дипломат харилцааг холбосон.',
+    },
+    {
+      level: 2,
+      q: 'Монголын байлдан дагууллын амжилтыг дан ганц хүчээр тайлбарлахад юу дутагддаг вэ?',
+      opts: [
+        'а) Дипломат, тагнуул, логистик, нутгийн элиттэй харилцах бодлого',
+        'б) Зөвхөн цаг агаар',
+        'в) Зөвхөн аз',
+        'г) Зөвхөн нэг зэвсэг',
+      ],
+      ans: 0,
+      exp: 'Монголын амжилт нь хүчнээс гадна мэдээлэл, дипломат бодлого, логистик, нутгийн хүчнүүдийг ашиглах чадвартай холбоотой.',
+    },
+    {
+      level: 2,
+      q: '1162-1300 оны Монголын түүхийг дэлхийн түүхэнд чухал болгодог гол шалтгаан аль вэ?',
+      opts: [
+        'а) Евроазийн улс төр, худалдаа, соёлын холбоог өөрчилсөн',
+        'б) Зөвхөн нэг хот байгуулсан',
+        'в) Дэлхийн бүх улсыг нэгтгэсэн',
+        'г) Түүхэн эх сурвалж үлдээгээгүй',
+      ],
+      ans: 0,
+      exp: 'Монголын эзэнт гүрэн Евроазийн хүчний тэнцвэр, худалдаа, мэдлэгийн солилцоонд гүн нөлөө үзүүлсэн.',
+    },
+    {
+      level: 2,
+      q: 'Монголын эзэнт гүрний захиргаанд нутгийн бичээч, худалдаачдыг ашигласан нь ямар ач холбогдолтой вэ?',
+      opts: [
+        'а) Орон нутгийн мэдлэгийг төрийн удирдлагатай холбосон',
+        'б) Бүх хотыг нүүлгэсэн',
+        'в) Морин цэргийг халсан',
+        'г) Худалдааг бүрэн хориглосон',
+      ],
+      ans: 0,
+      exp: 'Монголчууд эзэлсэн нутгийн захиргааны туршлага, бичиг хэрэг, худалдааны сүлжээг ашиглан уудам орон зайг удирдах чадвараа нэмэгдүүлсэн.',
+    },
+    {
+      level: 2,
+      q: 'Юань, Ил хаант улс, Алтан Орд өөр өөр шашин соёлтой орчинд дасан зохицсон нь юуг харуулдаг вэ?',
+      opts: [
+        'а) Монгол засаглал бүс нутгийн нөхцөлд өөрчлөгдөн хөгжсөн',
+        'б) Бүх ханлиг ижил хуультай үлдсэн',
+        'в) Монголчууд суурин газрыг бүгдийг орхисон',
+        'г) Худалдааны замууд тасарсан',
+      ],
+      ans: 0,
+      exp: 'Ханлигуудын ялгаа нь Монголын ноёрхол нэг загвараар бус, бүс нутгийн соёл, шашин, захиргааны нөхцөлтэй зохицон хувирсныг харуулдаг.',
+    },
   ],
 };
 
-const LEVELS = ['Энгийн', 'Дунд', 'Хэцүү'] as const;
+const LEVELS = ['Амархан', 'Дунд', 'Хэцүү'] as const;
 const TOTAL = 10;
-const GRADE_GROUPS: GradeGroup[] = ["6-9", "10-12"];
-const LEVEL_OPTIONS: Array<{
-  value: QuizLevel;
-  title: string;
-  subtitle: string;
-  detail: string;
-  questionLevel: number;
-}> = [
-  { group: '6-9', label: 'СУУРЬ МЭДЛЭГ', grades: [6, 7, 8, 9] },
-  { group: '10-12', label: 'ГҮНЗГИЙ ТҮВШИН', grades: [10, 11, 12] },
+const GRADE_GROUPS: GradeGroup[] = ['1-5', '6-9', '10-12'];
+
+type LevelOption = {
+  value?: QuizLevel;
+  title?: string;
+  subtitle?: string;
+  detail?: string;
+  questionLevel?: number;
+
+  group: string;
+  label: string;
+  grades: number[];
+};
+const LEVEL_OPTIONS: LevelOption[] = [
+  { value: 1, group: '1-5', label: 'Түвшин 1', grades: [6, 7, 8, 9] },
+  {
+    value: 2,
+    group: '6-9',
+    label: 'Түвшин 2',
+    grades: [10, 11, 12],
+  },
+  {
+    value: 3,
+    group: '10-12',
+    label: 'Түвшин 3',
+    grades: [10, 11, 12],
+  },
 ];
 const quizPanel = '#fcfcfc';
 const quizPanelSoft = 'rgba(12,96,169,0.06)';
@@ -341,12 +512,28 @@ export default function HistoryQuiz({
   const [usedIds, setUsedIds] = useState<Set<string>>(new Set());
   const [currentQ, setCurrentQ] = useState<Question | null>(null);
   const [answers, setAnswers] = useState<QuizAnswer[]>([]);
+  const [hoveredLevel, setHoveredLevel] = useState<number | null>(null);
+  const resetLevels = () => {
+    setUnlockedLevels([1]);
+    setSelectedLevel(null);
+    setScreen('grade');
+    localStorage.removeItem('quiz-unlocked-levels');
+  };
+  const [unlockedLevels, setUnlockedLevels] = useState<QuizLevel[]>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('quiz-unlocked-levels');
+      return saved ? JSON.parse(saved) : [1];
+    }
+    return [1];
+  });
+
   const [scoreSaveStatus, setScoreSaveStatus] = useState<
     'idle' | 'saving' | 'saved' | 'login' | 'error'
   >('idle');
   const [groupStats, setGroupStats] = useState<
     Record<GradeGroup, { asked: number; correct: number }>
   >({
+    '1-5': { asked: 0, correct: 0 },
     '6-9': { asked: 0, correct: 0 },
     '10-12': { asked: 0, correct: 0 },
   });
@@ -393,6 +580,12 @@ export default function HistoryQuiz({
     }
     hydratedRef.current = true;
   }, [storageKey]);
+  useEffect(() => {
+    localStorage.setItem(
+      'quiz-unlocked-levels',
+      JSON.stringify(unlockedLevels),
+    );
+  }, [unlockedLevels]);
 
   useEffect(() => {
     if (!hydratedRef.current) return;
@@ -462,7 +655,9 @@ export default function HistoryQuiz({
   };
 
   const startLevelQuiz = (quizLevel: QuizLevel) => {
-    const selectedOption = LEVEL_OPTIONS.find((option) => option.value === quizLevel);
+    const selectedOption = LEVEL_OPTIONS.find(
+      (option) => option.value === quizLevel,
+    );
     const startingLevel = selectedOption?.questionLevel ?? quizLevel - 1;
     const questions = buildLevelQuestions(startingLevel);
     const first = questions[0];
@@ -472,7 +667,7 @@ export default function HistoryQuiz({
     setStreak(0);
     setQIndex(0);
     setLevel(startingLevel);
-    setGradeGroup(quizLevel === 3 ? "10-12" : "6-9");
+    setGradeGroup(quizLevel === 3 ? '10-12' : '6-9');
     setSelectedGrade(null);
     setSelectedLevel(quizLevel);
     setQuizQuestions(questions);
@@ -504,10 +699,10 @@ export default function HistoryQuiz({
     let newLevel = level;
     let nextGroup = gradeGroup;
 
-    if (mode === "grade" && selectedLevel) {
+    if (mode === 'grade' && selectedLevel) {
       newLevel = selectedLevel - 1;
-      nextGroup = selectedLevel === 3 ? "10-12" : "6-9";
-    } else if (mode === "knowledge") {
+      nextGroup = selectedLevel === 3 ? '10-12' : '6-9';
+    } else if (mode === 'knowledge') {
       if (isOk) {
         if (newStreak >= 2 && level < 2) newLevel = level + 1;
         if (newStreak >= 2) nextGroup = shiftGradeGroup(gradeGroup, 1);
@@ -541,16 +736,18 @@ export default function HistoryQuiz({
 
   const nextQuestion = () => {
     const nextIdx = qIndex + 1;
+
     if (nextIdx >= TOTAL) {
+      if (selectedLevel === 1) {
+        setUnlockedLevels((prev) => (prev.includes(2) ? prev : [...prev, 2]));
+      }
+
+      if (selectedLevel === 2) {
+        setUnlockedLevels((prev) => (prev.includes(3) ? prev : [...prev, 3]));
+      }
+
       setScreen('result');
       saveAttempt();
-      return;
-    }
-    if (mode === 'knowledge') {
-      setQIndex(nextIdx);
-      setAnswered(false);
-      setChosen(null);
-      setCurrentQ(quizQuestions[nextIdx] ?? null);
       return;
     }
 
@@ -567,7 +764,10 @@ export default function HistoryQuiz({
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          quizId: mode === "knowledge" ? "history-knowledge" : `history-level-${selectedLevel ?? 1}`,
+          quizId:
+            mode === 'knowledge'
+              ? 'history-knowledge'
+              : `history-level-${selectedLevel ?? 1}`,
           userName,
           year: QUIZ_PERIOD,
           period: QUIZ_PERIOD,
@@ -621,10 +821,10 @@ export default function HistoryQuiz({
 
   const resultSub =
     correct <= 4
-      ? 'Дахиад оролдоод үзээрэй 💪'
+      ? 'Дахиад оролдоод үзээрэй '
       : correct <= 7
-        ? 'Сайн байна 👍'
-        : 'Гайхалтай! 🔥';
+        ? 'Сайн байна '
+        : 'Гайхалтай! ';
   const resultColor = correct >= 8 ? T.amber : correct >= 5 ? T.text : T.red;
   const resultGlow = correct >= 8 ? '0 0 18px rgba(12,96,169,0.28)' : 'none';
 
@@ -737,20 +937,48 @@ export default function HistoryQuiz({
                     }}
                   />
                 </div>
-                <h1 style={{ color: T.amber, fontSize: 26, fontWeight: 700, marginBottom: 8, letterSpacing: 0 }}>
-                  {mode === "knowledge" ? "Мэдлэгээ сорих" : "Level сонгох"}
+                <h1
+                  style={{
+                    color: T.amber,
+                    fontSize: 26,
+                    fontWeight: 700,
+                    marginBottom: 8,
+                    letterSpacing: 0,
+                  }}
+                >
+                  {mode === 'knowledge' ? 'Мэдлэгээ сорих' : 'Түвшин сонгох'}
                 </h1>
                 <p style={{ color: T.textSub, fontSize: 14, lineHeight: 1.7 }}>
                   {mode === 'knowledge' ? (
                     <>
-                      1162-1300 оны Монголын түүхийн 10 танин мэдэхүйн асуулт.
+                      Энэхүү мэдлэг шалгах тест таны түүхийн мэдлэгийг сорих
+                      зорилготой.
                       <br />
-                      Анги сонгохгүйгээр тэр үеийн мэдлэгээ шалгаарай.
                     </>
                   ) : (
                     <>
-                      Level 1-3-аас сонгоно.<br />
-                      Level 1 хамгийн амар, Level 3 хамгийн хэцүү.
+                      {!unlockedLevels.includes(2) && (
+                        <>
+                          Түвшин 1-ийг амжилттай дуусгаснаар Түвшин 2 нээгдэнэ.
+                          <br />
+                        </>
+                      )}
+
+                      {unlockedLevels.includes(2) &&
+                        !unlockedLevels.includes(3) && (
+                          <>
+                            Түвшин 2-ийг амжилттай дуусгаснаар Түвшин 3
+                            нээгдэнэ.
+                            <br />
+                          </>
+                        )}
+
+                      {unlockedLevels.includes(3) && (
+                        <>
+                          Та бүх түвшинг амжилттай давсан байна!
+                          <br />
+                        </>
+                      )}
                     </>
                   )}
                 </p>
@@ -804,65 +1032,159 @@ export default function HistoryQuiz({
                   </button>
                 </>
               ) : (
-                <div style={{ display: "grid", gap: 14 }}>
-                  {LEVEL_OPTIONS.map((option, idx) => (
-                    <section
-                      key={option.value}
-                      style={{
-                        animation: `fadeUp 0.5s ease ${idx * 0.1}s both`,
-                      }}
-                    >
-                      <div
-                        style={{
-                          marginBottom: 14,
-                          padding: '14px 16px',
-                          borderRadius: 14,
-                          background:
-                            option.group === '6-9'
-                              ? 'linear-gradient(135deg, #2563eb, #3b82f6)'
-                              : 'linear-gradient(135deg, #7c3aed, #9333ea)',
-                          color: '#ffffff',
-                          boxShadow: '0 10px 25px rgba(0,0,0,0.08)',
-                        }}
-                      >
-                        <div style={{ fontSize: 15, fontWeight: 700 }}>
-                          {option.label}
-                        </div>
+                <div style={{ display: 'grid', gap: 14 }}>
+                  <div style={{ display: 'grid', gap: 14 }}>
+                    {LEVEL_OPTIONS.filter(
+                      (option) => option && option.group,
+                    ).map((option, idx) => {
+                      const isLocked = !unlockedLevels.includes(option.value!);
 
-                        <div
+                      return (
+                        <section
+                          key={`${option.group}-${idx}`}
                           style={{
-                            fontSize: 12,
-                            opacity: 0.85,
-                            marginTop: 4,
-                            letterSpacing: 0.3,
+                            animation: `fadeUp 0.5s ease ${idx * 0.1}s both`,
                           }}
                         >
-                          {option.group === '6-9'
-                            ? 'Дунд анги • 6–9 '
-                            : 'Ахлах анги • 10–12'}
-                        </div>
-                      </div>
-                      <button
-                        type="button"
-                        onClick={() => startLevelQuiz(option.value)}
-                        style={{
-                          width: "100%",
-                          minHeight: 58,
-                          border: quizBorder,
-                          borderRadius: 12,
-                          background: quizPanelSoft,
-                          color: T.text,
-                          cursor: "pointer",
-                          fontFamily: "inherit",
-                          textAlign: "left",
-                          padding: "12px 14px",
-                        }}
-                      >
-                        <span style={{ display: "block", color: T.amber, fontSize: 18, fontWeight: 700 }}>{option.title}</span>
-                        <span style={{ display: "block", color: T.textMuted, fontSize: 10, marginTop: 2 }}>{option.subtitle}</span>
-                      </button>
-                    </section>
-                  ))}
+                          <div
+                            onClick={() => {
+                              setHoveredLevel(null);
+                              if (!isLocked && option.value) {
+                                startLevelQuiz(option.value);
+                              }
+                            }}
+                            onMouseEnter={() => setHoveredLevel(option.value!)}
+                            onMouseLeave={() => setHoveredLevel(null)}
+                            style={{
+                              position: 'relative',
+                              overflow: 'hidden',
+
+                              padding: '16px',
+                              borderRadius: 14,
+                              cursor: isLocked ? 'not-allowed' : 'pointer',
+
+                              background:
+                                option.value === 1
+                                  ? 'linear-gradient(135deg, #10b981, #059669)'
+                                  : option.value === 2
+                                    ? 'linear-gradient(135deg, #3b82f6, #2563eb)'
+                                    : 'linear-gradient(135deg, #ef4444, #dc2626)',
+
+                              color: '#fff',
+                              opacity: isLocked ? 0.5 : 1,
+
+                              boxShadow:
+                                hoveredLevel === option.value
+                                  ? '0 20px 40px rgba(0,0,0,0.2)'
+                                  : '0 10px 25px rgba(0,0,0,0.08)',
+
+                              transform:
+                                hoveredLevel === option.value
+                                  ? 'translateY(-4px) scale(1.02)'
+                                  : 'translateY(0) scale(1)',
+
+                              transition: 'all 0.3s ease',
+                            }}
+                          >
+                            {!isLocked && (
+                              <div
+                                className="shine-effect"
+                                style={{
+                                  position: 'absolute',
+                                  top: 0,
+                                  left: '-100%',
+                                  width: '100%',
+                                  height: '100%',
+                                  background:
+                                    'linear-gradient(120deg, transparent, rgba(255,255,255,0.35), transparent)',
+                                }}
+                              />
+                            )}
+
+                            <div
+                              style={{
+                                position: 'absolute',
+                                inset: 0,
+                                background: 'rgba(16,185,129,0.25)',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                fontSize: 16,
+                                fontWeight: 700,
+                                zIndex: 2,
+
+                                opacity:
+                                  hoveredLevel === option.value && !isLocked
+                                    ? 1
+                                    : 0,
+
+                                transform:
+                                  hoveredLevel === option.value
+                                    ? 'translateY(0)'
+                                    : 'translateY(10px)',
+
+                                transition: 'all 0.3s ease',
+                                pointerEvents: 'none',
+                              }}
+                            >
+                              Түвшин эхлүүлэх →
+                            </div>
+
+                            <div
+                              style={{
+                                display: 'flex',
+                                justifyContent: 'space-between',
+                                alignItems: 'center',
+
+                                opacity: hoveredLevel === option.value ? 0 : 1,
+
+                                transform:
+                                  hoveredLevel === option.value
+                                    ? 'translateY(-10px)'
+                                    : 'translateY(0)',
+
+                                transition: 'all 0.3s ease',
+                              }}
+                            >
+                              <span style={{ fontSize: 16, fontWeight: 700 }}>
+                                {option.label} {isLocked && '🔒'}
+                              </span>
+
+                              <span
+                                style={{
+                                  fontSize: 12,
+                                  padding: '4px 10px',
+                                  borderRadius: 8,
+                                  background: 'rgba(255,255,255,0.25)',
+                                }}
+                              >
+                                {option.value === 1 && 'Амархан'}
+                                {option.value === 2 && 'Дунд'}
+                                {option.value === 3 && 'Хэцүү'}
+                              </span>
+                            </div>
+                          </div>
+                        </section>
+                      );
+                    })}
+                    <button
+                      onClick={resetLevels}
+                      style={{
+                        width: '100%',
+                        marginTop: 16,
+                        padding: '12px',
+                        borderRadius: 12,
+                        border: 'none',
+                        background: 'rgba(239,68,68,0.1)',
+                        color: '#dc2626',
+                        fontWeight: 600,
+                        cursor: 'pointer',
+                        transition: 'all 0.25s ease',
+                      }}
+                    >
+                      Түвшин тогтоох тест дахин эхлүүлэх
+                    </button>
+                  </div>
                 </div>
               )}
             </div>
@@ -873,94 +1195,104 @@ export default function HistoryQuiz({
         {screen === 'quiz' && currentQ && (
           <div style={{ animation: 'fadeIn 0.3s ease' }}>
             <div
-  style={{
-    background: "#ffffff",
-    borderRadius: 16,
-    padding: "12px 16px",
-    marginBottom: 16,
-    border: "1px solid rgba(148,163,184,0.2)",
-    boxShadow: "0 8px 25px rgba(0,0,0,0.05)",
+              style={{
+                background: '#ffffff',
+                borderRadius: 16,
+                padding: '12px 16px',
+                marginBottom: 16,
+                border: '1px solid rgba(148,163,184,0.2)',
+                boxShadow: '0 8px 25px rgba(0,0,0,0.05)',
 
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
-  }}
->
-  {/* LEFT SIDE */}
-  <div style={{ display: "flex", flexDirection: "column" }}>
-    <span style={{ fontSize: 12, color: "#94a3b8" }}>
-      {qIndex + 1} / {TOTAL}
-    </span>
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+              }}
+            >
+              <div style={{ display: 'flex', flexDirection: 'column' }}>
+                <span style={{ fontSize: 12, color: '#94a3b8' }}>
+                  {qIndex + 1} / {TOTAL}
+                </span>
+              </div>
 
-    {/* <div
-      style={{
-        fontSize: 13,
-        fontWeight: 600,
-        color: "#334155",
-      }}
-    >
-      1162–1300 · Түүх
-    </div> */}
-  </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <div
+                  style={{
+                    padding: '6px 14px',
+                    borderRadius: 999,
+                    fontSize: 12,
+                    fontWeight: 700,
 
-  {/* RIGHT SIDE */}
-  <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    justifyItems: 'center',
+                    gap: 6,
 
-    {/* LEVEL BADGE */}
-    <div
-      style={{
-        padding: "6px 12px",
-        borderRadius: 999,
-        background:
-          level === 0
-            ? "#e0f2fe"
-            : level === 1
-            ? "#fef3c7"
-            : "#fee2e2",
-        color:
-          level === 0
-            ? "#0369a1"
-            : level === 1
-            ? "#92400e"
-            : "#991b1b",
-        fontSize: 12,
-        fontWeight: 700,
-        transition: "all 0.3s ease",
-      }}
-    >
-      {LEVELS[level]}
-    </div>
+                    background:
+                      level === 0
+                        ? 'linear-gradient(135deg, rgba(16,185,129,0.15), rgba(16,185,129,0.25))'
+                        : level === 1
+                          ? 'linear-gradient(135deg, rgba(59,130,246,0.15), rgba(59,130,246,0.25))'
+                          : 'linear-gradient(135deg, rgba(239,68,68,0.15), rgba(239,68,68,0.25))',
 
-    {/* EXIT BUTTON */}
-    {onClose && (
-      <button
-        onClick={onClose}
-        style={{
-          padding: "6px 12px",
-          borderRadius: 999,
-          border: "1px solid rgba(148,163,184,0.3)",
-          background: "transparent",
-          color: "#64748b",
-          fontSize: 12,
-          cursor: "pointer",
-          transition: "all 0.25s ease",
-        }}
-        onMouseEnter={(e) => {
-          e.currentTarget.style.background = "#fee2e2";
-          e.currentTarget.style.color = "#991b1b";
-          e.currentTarget.style.transform = "translateY(-2px)";
-        }}
-        onMouseLeave={(e) => {
-          e.currentTarget.style.background = "transparent";
-          e.currentTarget.style.color = "#64748b";
-          e.currentTarget.style.transform = "translateY(0)";
-        }}
-      >
-        ✕ Түр гарах
-      </button>
-    )}
-  </div>
-</div>
+                    color:
+                      level === 0
+                        ? '#059669'
+                        : level === 1
+                          ? '#2563eb'
+                          : '#dc2626',
+
+                    border:
+                      level === 0
+                        ? '1px solid rgba(16,185,129,0.3)'
+                        : level === 1
+                          ? '1px solid rgba(59,130,246,0.3)'
+                          : '1px solid rgba(239,68,68,0.3)',
+
+                    boxShadow: '0 4px 10px rgba(0,0,0,0.05)',
+
+                    transition: 'all 0.25s ease',
+                  }}
+                >
+                  <span style={{ fontSize: 14 }}>
+                    {level === 0}
+                    {level === 1}
+                    {level === 2}
+                  </span>
+
+                  {LEVELS[level]}
+                </div>
+
+                {onClose && (
+                  <button
+                    onClick={() => {
+                      setScreen('grade'); // 👈 level сонгох руу буцна
+                    }}
+                    style={{
+                      padding: '6px 12px',
+                      borderRadius: 999,
+                      border: '1px solid rgba(148,163,184,0.3)',
+                      background: 'transparent',
+                      color: '#64748b',
+                      fontSize: 12,
+                      cursor: 'pointer',
+                      transition: 'all 0.25s ease',
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.background = '#fee2e2';
+                      e.currentTarget.style.color = '#991b1b';
+                      e.currentTarget.style.transform = 'translateY(-2px)';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.background = 'transparent';
+                      e.currentTarget.style.color = '#64748b';
+                      e.currentTarget.style.transform = 'translateY(0)';
+                    }}
+                  >
+                    ✕ Түр гарах
+                  </button>
+                )}
+              </div>
+            </div>
             <p
               style={{
                 color: T.textSub,
@@ -971,7 +1303,7 @@ export default function HistoryQuiz({
             >
               {mode === 'knowledge'
                 ? '1162-1300 · Танин мэдэхүй'
-                : `${selectedGrade ?? ''}-р анги · 1162-1300`}
+                : `${selectedGrade ?? ''}Монголын түүх · 1162-1300 он`}
             </p>
 
             <div
@@ -1019,7 +1351,6 @@ export default function HistoryQuiz({
 
               <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                 {currentQ.opts.map((opt, i) => {
-                  
                   const isCorrect = i === currentQ.ans;
                   const isSelected = i === chosen;
 
@@ -1134,12 +1465,12 @@ export default function HistoryQuiz({
                       gap: 6,
                     }}
                   >
-                    {chosen === currentQ.ans ? '✅ Зөв!' : '❌ Буруу'}
+                    {chosen === currentQ.ans ? ' Зөв!' : ' Буруу'}
                   </div>
 
                   {chosen !== currentQ.ans && (
                     <div style={{ marginBottom: 4 }}>
-                      👉 Зөв хариулт:{' '}
+                      Зөв хариулт:{' '}
                       <span style={{ fontWeight: 600 }}>
                         {currentQ.opts[currentQ.ans]}
                       </span>
@@ -1238,7 +1569,9 @@ export default function HistoryQuiz({
                   {mode === 'knowledge' ? 'Сорилын төрөл' : 'Сонгосон түвшин'}
                 </p>
                 <p style={{ color: T.amber, fontSize: 22, fontWeight: 700 }}>
-                  {mode === "knowledge" ? "Мэдлэгээ сорих" : `Level ${selectedLevel ?? 1} · ${LEVELS[level]}`}
+                  {mode === 'knowledge'
+                    ? 'Мэдлэгээ сорих'
+                    : `Level ${selectedLevel ?? 1} · ${LEVELS[level]}`}
                 </p>
               </div>
               <p
@@ -1267,9 +1600,16 @@ export default function HistoryQuiz({
                 }}
               >
                 {[
-                  { num: correct, lbl: "Зөв хариулт" },
-                  { num: TOTAL - correct, lbl: "Буруу хариулт" },
-                  { num: mode === "knowledge" ? LEVELS[level] : `Level ${selectedLevel ?? "-"}`, lbl: mode === "knowledge" ? "Хүрсэн түвшин" : "Сонгосон level" },
+                  { num: correct, lbl: 'Зөв хариулт' },
+                  { num: TOTAL - correct, lbl: 'Буруу хариулт' },
+                  {
+                    num:
+                      mode === 'knowledge'
+                        ? LEVELS[level]
+                        : `Level ${selectedLevel ?? '-'}`,
+                    lbl:
+                      mode === 'knowledge' ? 'Хүрсэн түвшин' : 'Сонгосон level',
+                  },
                 ].map((s, i) => (
                   <div
                     key={i}
@@ -1327,7 +1667,7 @@ export default function HistoryQuiz({
                   e.currentTarget.style.transform = 'scale(1.02)';
                 }}
               >
-                {mode === "knowledge" ? "Дахин сорих" : "Дахин level сонгох"}
+                {mode === 'knowledge' ? 'Дахин сорих' : 'Дахин level сонгох'}
               </button>
               {onClose && (
                 <button
@@ -1376,6 +1716,20 @@ export default function HistoryQuiz({
     to { opacity: 1; transform: translateY(0); }
   }
 
+  @keyframes shineMove {
+  0% {
+    left: -100%;
+  }
+  100% {
+    left: 120%;
+  }
+}
+
+.shine-effect {
+  animation: shineMove 1.8s linear infinite;
+  opacity: 0.7;
+}
+
   @keyframes popIn {
     0% {
       opacity: 0;
@@ -1389,6 +1743,8 @@ export default function HistoryQuiz({
       transform: scale(1);
     }
   }
+
+  
 
  
   @keyframes pulse {
@@ -1412,13 +1768,21 @@ function shiftGradeGroup(group: GradeGroup, delta: -1 | 1): GradeGroup {
 }
 
 function buildLevelQuestions(level: number) {
-  const allQuestions = (Object.entries(QUESTIONS) as Array<[QuestionGroup, Question[]]>).flatMap(([group, questions]) =>
+  const allQuestions = (
+    Object.entries(QUESTIONS) as Array<[QuestionGroup, Question[]]>
+  ).flatMap(([group, questions]) =>
     questions.map((question) => ({ ...question, group })),
   );
-  const primary = shuffleQuestions(allQuestions.filter((question) => question.level === level));
-  const fallback = shuffleQuestions(allQuestions.filter((question) => question.level !== level));
+  const primary = shuffleQuestions(
+    allQuestions.filter((question) => question.level === level),
+  );
+  const fallback = shuffleQuestions(
+    allQuestions.filter((question) => question.level !== level),
+  );
 
-  return [...primary, ...fallback].slice(0, TOTAL).map(({ group: _group, ...question }) => question);
+  return [...primary, ...fallback]
+    .slice(0, TOTAL)
+    .map(({ group: _group, ...question }) => question);
 }
 
 function shuffleQuestions<T>(questions: T[]) {
@@ -1430,6 +1794,7 @@ function createEmptyGroupStats(): Record<
   { asked: number; correct: number }
 > {
   return {
+    '1-5': { asked: 0, correct: 0 },
     '6-9': { asked: 0, correct: 0 },
     '10-12': { asked: 0, correct: 0 },
   };
