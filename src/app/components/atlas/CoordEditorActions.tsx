@@ -5,7 +5,7 @@ import { BTN_BASE } from "./coordEditorConfig";
 import { editorTheme } from "./editorStyles";
 import { SaveState } from "./types";
 
-const { BORDER, GOLD, INPUT_BG, TEXT_MAIN, TEXT_MUTED } = editorTheme;
+const { BORDER, GOLD, INPUT_BG, TEXT_MAIN, TEXT_MUTED,BG } = editorTheme;
 
 export function CoordEditorActions({
   isCreating,
@@ -44,7 +44,7 @@ export function CoordEditorActions({
     <>
       <div className="grid gap-2">
         <div className="grid grid-cols-2 gap-2">
-          <button type="button" onClick={isCreating ? onCancelCreate : onStartCreate} style={{ ...BTN_BASE, background: isCreating ? `${INPUT_BG}` : "rgba(139,108,53,0.15)", borderColor: isCreating ? `${INPUT_BG}` : BORDER, color: isCreating ? GOLD : TEXT_MAIN }}>
+          <button type="button" onClick={isCreating ? onCancelCreate : onStartCreate} style={{ ...BTN_BASE, background: isCreating ? `${BG}` : "rgba(255, 255, 255, 0.15)", borderColor: isCreating ? `${BORDER}` : BORDER, color: isCreating ? GOLD : TEXT_MAIN }}>
             <WandSparkles className="size-3.5" />
             {isCreating ? "Цуцлах" : "Шинэ нутаг"}
           </button>
@@ -69,7 +69,7 @@ export function CoordEditorActions({
             <RotateCcw className="size-3.5" />
             Буцаах
           </button>
-          <button type="button" onClick={onSave} disabled={!canSave} style={{ ...BTN_BASE, background: canSave ? "linear-gradient(135deg, rgba(100,180,80,0.20), rgba(80,160,60,0.12))" : INPUT_BG, borderColor: canSave ? "#4a9040" : BORDER, color: canSave ? "#88c878" : TEXT_MUTED, opacity: !canSave ? 0.4 : 1, cursor: !canSave ? "not-allowed" : "pointer" }}>
+          <button type="button" onClick={onSave} disabled={!canSave} style={{ ...BTN_BASE, background: canSave ? "linear-gradient(135deg, rgba(100,180,80,0.20), rgba(80,160,60,0.12))" : INPUT_BG, borderColor: canSave ? "#3f9534" : BORDER, color: canSave ? "#2aa10d" : TEXT_MUTED, opacity: !canSave ? 0.4 : 1, cursor: !canSave ? "not-allowed" : "pointer" }}>
             <Save className="size-3.5" />
             {saveState === "saving" ? "Хадгалж…" : saveState === "saved" ? "✓ Хадгалагдлаа" : isCreating ? "Үүсгэх" : "Хадгалах"}
           </button>

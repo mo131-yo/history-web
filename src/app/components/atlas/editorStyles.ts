@@ -12,5 +12,5 @@ export const editorTheme = {
   SELECTED_BG: 'rgba(245,158,11,0.12)',
   SELECTED_BORDER: 'rgba(249, 12, 12, 0.45)',
   HOVER_BG: 'rgba(251, 0, 0, 0.08)',
-
+  
 };
