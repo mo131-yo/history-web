@@ -85,21 +85,12 @@ export default function SelectedStateDrawer({
     );
   }
 
-  const color = feature.properties.color ?? "#f59e0b";
+  const color = feature.properties.color ?? "#0c60a9";
 
   return (
     <div className="h-full">
-      <div
-        className="flex h-full flex-col overflow-hidden rounded-[35px]"
-        style={{
-          background: T.bg,
-          border: `1px solid ${T.border}`,
-          boxShadow: "0 0 40px rgba(0,0,0,0.18), inset 0 0 40px rgba(12,96,169,0.02)",
-          backdropFilter: "blur(16px)",
-          fontFamily: "var(--font-inter), Arial, sans-serif",
-        }}
-      >
-        <div className="h-0.5 shrink-0" style={{ background: `linear-gradient(90deg, transparent 0%, ${color} 35%, ${T.amber} 50%, ${color} 65%, transparent 100%)` }} />
+      <div className="flex h-full flex-col overflow-hidden rounded-2xl" style={{ background: T.bg, border: `1px solid ${T.border}`, boxShadow: "0 0 40px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.03)", backdropFilter: "blur(16px)", fontFamily: "var(--font-inter), Arial, sans-serif" }}>
+        <div className="h-0.5 shrink-0" style={{background: 'linear-gradient(90deg, transparent, rgb(12, 96, 169), transparent)'}}/>
         <div className="flex-1 overflow-y-auto px-5 py-4">
           <div className="mb-1 flex items-start justify-between gap-3">
             <div>
