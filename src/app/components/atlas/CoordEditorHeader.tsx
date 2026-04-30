@@ -48,20 +48,20 @@ export function CoordEditorHeader({
   return (
     <>
       <div>
-        <div className="flex items-center gap-3 mb-1 p-4 pl-8 ">
+        <div className="flex items-center gap-3 mb-1 p-4 ml-12 ">
           <Swords
-            className="size-4.5  "
+            className="size-4  "
             style={{ color: editorTheme.GOLD_DIM }}
           />
           <p
-            className="text-[18px] font-bold  uppercase tracking-[0.2em]"
+            className="text-[13px]   uppercase tracking-[0.3em]"
             style={{ color: TEXT_MUTED }}
           >
             Засах самбар
           </p>
         </div>
         <h3
-          className="text-base font-bold leading-tight"
+          className="text-base  font-bold leading-tight"
           style={{ color: GOLD }}
         >
           {title || `Шинэ нутаг · ${year}`}

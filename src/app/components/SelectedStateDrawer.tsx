@@ -109,7 +109,7 @@ export default function SelectedStateDrawer({
                 <p className="mt-0.5 text-xs italic" style={{ color: T.textSub }}>«{String(feature.properties.metadata.periodName)}»</p>
               )}
             </div>
-            <button type="button" onClick={onClose} className="shrink-0 rounded-md p-1.5 transition-opacity hover:opacity-60" style={{ border: `1px solid ${T.border}`, color: T.textMuted }}>
+            <button type="button" onClick={onClose} className="shrink-0 rounded-md p-1.5 transition-opacity hover:opacity-60" style={{ border: `2px solid ${T.border}`, color: T.textMuted }}>
               <X className="size-3.5" />
             </button>
           </div>
@@ -124,7 +124,7 @@ export default function SelectedStateDrawer({
             ].map(({ Icon, label, value }) => (
               <div key={label} className="flex items-center gap-3 rounded-lg px-3 py-2" style={{ background: "rgba(12,96,169,0.04)", border: `1px solid ${T.border}` }}>
                 <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md" style={{ background: T.amberGlow, border: `1px solid ${T.amber}22` }}>
-                  <Icon className="size-3" style={{ color: T.amberDim }} />
+                  <Icon className="size-4" style={{ color: T.amberDim }} />
                 </div>
                 <span className="w-14 shrink-0 text-[9px] uppercase tracking-[0.2em]" style={{ color: T.textMuted }}>{label}</span>
                 <span className="truncate text-xs font-medium" style={{ color: T.text }}>{value}</span>
@@ -141,10 +141,10 @@ export default function SelectedStateDrawer({
 
           <div className="rounded-lg px-4 py-3" style={{ background: "rgba(12,96,169,0.035)", border: `1px solid ${T.border}` }}>
             <div className="mb-2.5 flex items-center gap-2">
-              <Sparkles className="size-3" style={{ color: T.amberDim }} />
-              <p className="text-[9px] uppercase tracking-[0.3em]" style={{ color: T.textMuted }}>Түүхч тайлбар</p>
+              <Sparkles className="size-4" style={{ color: T.amberDim }} />
+              <p className="text-[12px] uppercase tracking-[0.2em]" style={{ color: T.textMuted }}>Түүхч тайлбар</p>
               {isCached && !insightLoading && (
-                <span className="ml-auto rounded px-1.5 py-0.5 text-[7px] uppercase tracking-widest" style={{ border: `1px solid ${T.border}`, color: T.textMuted }}>
+                <span className="ml-auto rounded px-1.5 py-0.5 text-[7px] uppercase tracking-widest" style={{ border: `2px solid ${T.border}`, color: T.textMuted }}>
                   cached
                 </span>
               )}
@@ -177,7 +177,7 @@ export default function SelectedStateDrawer({
                     className="mt-2 flex h-8 w-full items-center justify-center gap-1 rounded-md text-[10px] font-semibold transition hover:opacity-80"
                     style={{ border: `1px solid ${T.border}`, color: T.amber, background: "rgba(12,96,169,0.08)" }}
                   >
-                    {insightExpanded ? <ChevronUp className="size-3" /> : <ChevronDown className="size-3" />}
+                    {insightExpanded ? <ChevronUp className="size-3" /> : <ChevronDown className="size-5" />}
                     {insightExpanded ? "Хураах" : "Дэлгэрэнгүй унших"}
                   </button>
                 )}
@@ -345,7 +345,7 @@ function StateFeedbackPanel({
     <div className="mt-3 rounded-lg px-4 py-3" style={{ background: "rgba(12,96,169,0.035)", border: `1px solid ${T.border}` }}>
       <div className="mb-3 flex items-center justify-between gap-3">
         <div>
-          <p className="text-[9px] uppercase tracking-[0.3em]" style={{ color: T.textMuted }}>User feedback</p>
+          <p className="text-[10px] font-bold uppercase tracking-[0.2em]" style={{ color: T.textMuted }}>User feedback</p>
           <p className="mt-1 text-xs" style={{ color: T.textSub }}>
             {averageRating ? `${averageRating}/5 · ${feedback.length} санал` : "Анхны feedback-ээ үлдээгээрэй"}
           </p>
@@ -357,7 +357,7 @@ function StateFeedbackPanel({
               type="button"
               onClick={() => setRating(value)}
               className="rounded p-0.5 transition hover:scale-110"
-              style={{ color: value <= rating ? T.amber : "rgba(148,163,184,0.45)" }}
+              style={{ color: value <= rating ? T.star : "#fcfcfc" }}
               aria-label={`${value} од`}
             >
               <Star className="size-4" fill={value <= rating ? "currentColor" : "none"} />
@@ -386,7 +386,7 @@ function StateFeedbackPanel({
             type="checkbox"
             checked={includeCoordinates}
             onChange={(event) => handleCoordinateToggle(event.target.checked)}
-            className="size-3 accent-amber-500"
+            className="size-3 accent-green-600"
           />
           Энэ улсын хилийн цэгүүдийг зураг дээр засаж санал болгох
         </label>
@@ -463,7 +463,7 @@ function StateFeedbackPanel({
             <div key={item.id} className="rounded-lg px-3 py-2" style={{ background: "#ffffff", border: `1px solid ${T.border}` }}>
               <div className="mb-1 flex items-center justify-between gap-2">
                 <span className="truncate text-xs font-semibold" style={{ color: T.text }}>{item.userName}</span>
-                <span className="flex items-center gap-1 text-[10px]" style={{ color: T.amber }}>
+                <span className="flex items-center gap-1 text-[10px]" style={{ color: T.star }}>
                   <Star className="size-3" fill="currentColor" />
                   {item.rating}/5
                 </span>

@@ -44,7 +44,7 @@ export default function CoordEditor(props: CoordEditorProps) {
 
   return (
     <aside
-      className="flex h-auto min-h-105 flex-col overflow-hidden rounded-[35px] "
+      className="flex h-auto flex-col overflow-hidden rounded-[35px] "
       style={{
         background: editorTheme.BG,
         border: `1px solid ${editorTheme.BORDER}`,
