@@ -1,7 +1,8 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { sidebarTheme } from './atlas/sidebarTheme';
+import { GraduationCap, BarChart3, ScrollText, Lightbulb } from 'lucide-react';
 
 const T = {
   ...sidebarTheme,
@@ -20,10 +21,11 @@ interface Question {
   exp: string;
 }
 
-type GradeGroup = '6-9' | '10-12';
-type QuestionGroup = '1-5' | GradeGroup;
-type QuizMode = 'knowledge' | 'grade';
-type Screen = 'grade' | 'quiz' | 'result';
+type GradeGroup = "6-9" | "10-12";
+type QuestionGroup = "1-5" | GradeGroup;
+type QuizLevel = 1 | 2 | 3;
+type QuizMode = "knowledge" | "grade";
+type Screen = "grade" | "quiz" | "result";
 type QuizAnswer = {
   question: string;
   selectedAnswer: string;
@@ -34,6 +36,7 @@ type SavedQuizState = {
   screen: Screen;
   gradeGroup: GradeGroup;
   selectedGrade: number | null;
+  selectedLevel: QuizLevel | null;
   quizQuestions: Question[];
   level: number;
   correct: number;
@@ -252,175 +255,64 @@ const QUESTIONS: Record<QuestionGroup, Question[]> = {
       exp: 'Мамлюкууд Айн Жалутын тулалдаанд Монголын баруун тийш давших хүчийг сааруулсан.',
     },
   ],
-  '10-12': [
-    {
-      level: 0,
-      q: 'Их Монгол Улсын тэлэлтэд худалдаачин, элчийн халдашгүй байдал яагаад чухал байсан бэ?',
-      opts: [
-        'а) Дипломат холбоо, худалдааг хамгаалсан',
-        'б) Зөвхөн шашны ёс байсан',
-        'в) Хот барих арга байсан',
-        'г) Татвар устгасан',
-      ],
-      ans: 0,
-      exp: 'Элч, худалдаачны аюулгүй байдал нь Монголын дипломат бодлого, мэдээллийн сүлжээний гол зарчим байв.',
-    },
-    {
-      level: 0,
-      q: 'Яса хэмээх ойлголтыг юу гэж тайлбарлаж болох вэ?',
-      opts: [
-        'а) Хааны зарлиг, хэв ёсны цогц',
-        'б) Зөвхөн шашны ном',
-        'в) Хотын нэр',
-        'г) Далайн хууль',
-      ],
-      ans: 0,
-      exp: 'Яса нь Чингис хааны зарлиг, цэргийн болон төрийн сахилга, хэв ёсны цогц ойлголт гэж тайлбарлагддаг.',
-    },
-    {
-      level: 0,
-      q: 'Монголын эзэнт гүрэн 13-р зуунд ямар давуу талтай байсан бэ?',
-      opts: [
-        'а) Морьт цэрэг, мэдээлэл, сахилга',
-        'б) Далай тэнгисийн флот',
-        'в) Нүүрсний үйлдвэр',
-        'г) Галт зэвсгийн үйлдвэр',
-      ],
-      ans: 0,
-      exp: 'Хөдөлгөөнт морьт цэрэг, өртөө, тагнуул, сахилга бат нь эзэнт гүрний гол давуу тал байв.',
-    },
-    {
-      level: 0,
-      q: '1300 он гэхэд Монголын ертөнц ямар байдалтай болсон бэ?',
-      opts: [
-        'а) Хэд хэдэн ханлигт хуваагдсан',
-        'б) Нэг жижиг аймаг болсон',
-        'в) Европт бүрэн төвлөрсөн',
-        'г) Далайд шилжсэн',
-      ],
-      ans: 0,
-      exp: '1300 он гэхэд Юань, Алтан Орд, Ил хаант улс, Цагаадайн улс зэрэг тусдаа төвүүд хүчтэй болсон.',
-    },
-    {
-      level: 1,
-      q: 'Пакс Монголика гэж юу гэсэн ойлголт вэ?',
-      opts: [
-        'а) Монголын ноёрхлын үеийн Евроазийн харилцааны идэвхжил',
-        'б) Зөвхөн нэг тулалдаан',
-        'в) Хятадын нэг хот',
-        'г) Шашны урсгал',
-      ],
-      ans: 0,
-      exp: 'Пакс Монголика нь Монголын ноёрхлын үед Евроазийн худалдаа, элч, мэдлэгийн урсгал идэвхжсэнийг нэрлэдэг.',
-    },
-    {
-      level: 1,
-      q: 'Хубилай, Аригбөхийн тэмцэл ямар үр дагавартай байсан бэ?',
-      opts: [
-        'а) Төв эрх мэдлийн задралыг түргэсгэсэн',
-        'б) Бүх ханлигийг нэгтгэсэн',
-        'в) Алтан улсыг сэргээсэн',
-        'г) Японыг эзэлсэн',
-      ],
-      ans: 0,
-      exp: '1260-аад оны тэмцэл их хааны эрх мэдлийг сулруулж, бүс нутгийн ханлигуудын бие даах хандлагыг нэмэгдүүлсэн.',
-    },
-    {
-      level: 1,
-      q: 'Юань улсын засаглал Монголын ямар сорилттой тулгарсан бэ?',
-      opts: [
-        'а) Нүүдэлчин ба суурин засаглалын тэнцвэр',
-        'б) Далайгүй байх',
-        'в) Бичиг үсэггүй байх',
-        'г) Мал аж ахуйгүй байх',
-      ],
-      ans: 0,
-      exp: 'Юань улс нүүдэлчин Монгол эрх мэдэл, Хятадын суурин захиргааны уламжлалыг зэрэг удирдах шаардлагатай болсон.',
-    },
-    {
-      level: 1,
-      q: 'Ил хаант улсын баруун Азид тогтох нь ямар ач холбогдолтой вэ?',
-      opts: [
-        'а) Монголын нөлөө Исламын ертөнцөд хүрсэн',
-        'б) Монголчууд далайг эзэлсэн',
-        'в) Юань мөхсөн',
-        'г) Сүн улс сэргэсэн',
-      ],
-      ans: 0,
-      exp: 'Ил хаант улс Иран, Ирак, Кавказ дахь улс төр, худалдаа, соёлын харилцаанд Монголын нөлөөг оруулсан.',
-    },
-    {
-      level: 2,
-      q: 'Ханлигуудын хуваагдал яагаад зөвхөн сулрал биш гэж үзэж болох вэ?',
-      opts: [
-        'а) Бүс нутгийн дасан зохицол, шинэ төрийн хэлбэрүүд бий болсон',
-        'б) Бүгд нэг өдөр мөхсөн',
-        'в) Цэрэг бүрэн татан буугдсан',
-        'г) Худалдаа хаагдсан',
-      ],
-      ans: 0,
-      exp: 'Хуваагдал нь төвлөрөл сулрахын зэрэгцээ бүс нутгийн хэл, шашин, захиргаатай зохицсон шинэ ханлигуудыг бий болгосон.',
-    },
-    {
-      level: 2,
-      q: 'Монголын өртөөний тогтолцоо эзэнт гүрний засаглалд ямар үүрэгтэй байсан бэ?',
-      opts: [
-        'а) Мэдээлэл, зарлиг, элчийг хурдан дамжуулсан',
-        'б) Зөвхөн тариалан усалсан',
-        'в) Хотын хэрэм барьсан',
-        'г) Зоос устгасан',
-      ],
-      ans: 0,
-      exp: 'Өртөө нь асар уудам орон зайд захиргаа, цэрэг, худалдаа, дипломат харилцааг холбосон.',
-    },
-    {
-      level: 2,
-      q: 'Монголын байлдан дагууллын амжилтыг дан ганц хүчээр тайлбарлахад юу дутагддаг вэ?',
-      opts: [
-        'а) Дипломат, тагнуул, логистик, нутгийн элиттэй харилцах бодлого',
-        'б) Зөвхөн цаг агаар',
-        'в) Зөвхөн аз',
-        'г) Зөвхөн нэг зэвсэг',
-      ],
-      ans: 0,
-      exp: 'Монголын амжилт нь хүчнээс гадна мэдээлэл, дипломат бодлого, логистик, нутгийн хүчнүүдийг ашиглах чадвартай холбоотой.',
-    },
-    {
-      level: 2,
-      q: '1162-1300 оны Монголын түүхийг дэлхийн түүхэнд чухал болгодог гол шалтгаан аль вэ?',
-      opts: [
-        'а) Евроазийн улс төр, худалдаа, соёлын холбоог өөрчилсөн',
-        'б) Зөвхөн нэг хот байгуулсан',
-        'в) Дэлхийн бүх улсыг нэгтгэсэн',
-        'г) Түүхэн эх сурвалж үлдээгээгүй',
-      ],
-      ans: 0,
-      exp: 'Монголын эзэнт гүрэн Евроазийн хүчний тэнцвэр, худалдаа, мэдлэгийн солилцоонд гүн нөлөө үзүүлсэн.',
-    },
+  "10-12": [
+    { level: 0, q: "Их Монгол Улсын тэлэлтэд худалдаачин, элчийн халдашгүй байдал яагаад чухал байсан бэ?", opts: ["а) Дипломат холбоо, худалдааг хамгаалсан", "б) Зөвхөн шашны ёс байсан", "в) Хот барих арга байсан", "г) Татвар устгасан"], ans: 0, exp: "Элч, худалдаачны аюулгүй байдал нь Монголын дипломат бодлого, мэдээллийн сүлжээний гол зарчим байв." },
+    { level: 0, q: "Яса хэмээх ойлголтыг юу гэж тайлбарлаж болох вэ?", opts: ["а) Хааны зарлиг, хэв ёсны цогц", "б) Зөвхөн шашны ном", "в) Хотын нэр", "г) Далайн хууль"], ans: 0, exp: "Яса нь Чингис хааны зарлиг, цэргийн болон төрийн сахилга, хэв ёсны цогц ойлголт гэж тайлбарлагддаг." },
+    { level: 0, q: "Монголын эзэнт гүрэн 13-р зуунд ямар давуу талтай байсан бэ?", opts: ["а) Морьт цэрэг, мэдээлэл, сахилга", "б) Далай тэнгисийн флот", "в) Нүүрсний үйлдвэр", "г) Галт зэвсгийн үйлдвэр"], ans: 0, exp: "Хөдөлгөөнт морьт цэрэг, өртөө, тагнуул, сахилга бат нь эзэнт гүрний гол давуу тал байв." },
+    { level: 0, q: "1300 он гэхэд Монголын ертөнц ямар байдалтай болсон бэ?", opts: ["а) Хэд хэдэн ханлигт хуваагдсан", "б) Нэг жижиг аймаг болсон", "в) Европт бүрэн төвлөрсөн", "г) Далайд шилжсэн"], ans: 0, exp: "1300 он гэхэд Юань, Алтан Орд, Ил хаант улс, Цагаадайн улс зэрэг тусдаа төвүүд хүчтэй болсон." },
+    { level: 1, q: "Пакс Монголика гэж юу гэсэн ойлголт вэ?", opts: ["а) Монголын ноёрхлын үеийн Евроазийн харилцааны идэвхжил", "б) Зөвхөн нэг тулалдаан", "в) Хятадын нэг хот", "г) Шашны урсгал"], ans: 0, exp: "Пакс Монголика нь Монголын ноёрхлын үед Евроазийн худалдаа, элч, мэдлэгийн урсгал идэвхжсэнийг нэрлэдэг." },
+    { level: 1, q: "Хубилай, Аригбөхийн тэмцэл ямар үр дагавартай байсан бэ?", opts: ["а) Төв эрх мэдлийн задралыг түргэсгэсэн", "б) Бүх ханлигийг нэгтгэсэн", "в) Алтан улсыг сэргээсэн", "г) Японыг эзэлсэн"], ans: 0, exp: "1260-аад оны тэмцэл их хааны эрх мэдлийг сулруулж, бүс нутгийн ханлигуудын бие даах хандлагыг нэмэгдүүлсэн." },
+    { level: 1, q: "Юань улсын засаглал Монголын ямар сорилттой тулгарсан бэ?", opts: ["а) Нүүдэлчин ба суурин засаглалын тэнцвэр", "б) Далайгүй байх", "в) Бичиг үсэггүй байх", "г) Мал аж ахуйгүй байх"], ans: 0, exp: "Юань улс нүүдэлчин Монгол эрх мэдэл, Хятадын суурин захиргааны уламжлалыг зэрэг удирдах шаардлагатай болсон." },
+    { level: 1, q: "Ил хаант улсын баруун Азид тогтох нь ямар ач холбогдолтой вэ?", opts: ["а) Монголын нөлөө Исламын ертөнцөд хүрсэн", "б) Монголчууд далайг эзэлсэн", "в) Юань мөхсөн", "г) Сүн улс сэргэсэн"], ans: 0, exp: "Ил хаант улс Иран, Ирак, Кавказ дахь улс төр, худалдаа, соёлын харилцаанд Монголын нөлөөг оруулсан." },
+    { level: 2, q: "Ханлигуудын хуваагдал яагаад зөвхөн сулрал биш гэж үзэж болох вэ?", opts: ["а) Бүс нутгийн дасан зохицол, шинэ төрийн хэлбэрүүд бий болсон", "б) Бүгд нэг өдөр мөхсөн", "в) Цэрэг бүрэн татан буугдсан", "г) Худалдаа хаагдсан"], ans: 0, exp: "Хуваагдал нь төвлөрөл сулрахын зэрэгцээ бүс нутгийн хэл, шашин, захиргаатай зохицсон шинэ ханлигуудыг бий болгосон." },
+    { level: 2, q: "Монголын өртөөний тогтолцоо эзэнт гүрний засаглалд ямар үүрэгтэй байсан бэ?", opts: ["а) Мэдээлэл, зарлиг, элчийг хурдан дамжуулсан", "б) Зөвхөн тариалан усалсан", "в) Хотын хэрэм барьсан", "г) Зоос устгасан"], ans: 0, exp: "Өртөө нь асар уудам орон зайд захиргаа, цэрэг, худалдаа, дипломат харилцааг холбосон." },
+    { level: 2, q: "Монголын байлдан дагууллын амжилтыг дан ганц хүчээр тайлбарлахад юу дутагддаг вэ?", opts: ["а) Дипломат, тагнуул, логистик, нутгийн элиттэй харилцах бодлого", "б) Зөвхөн цаг агаар", "в) Зөвхөн аз", "г) Зөвхөн нэг зэвсэг"], ans: 0, exp: "Монголын амжилт нь хүчнээс гадна мэдээлэл, дипломат бодлого, логистик, нутгийн хүчнүүдийг ашиглах чадвартай холбоотой." },
+    { level: 2, q: "1162-1300 оны Монголын түүхийг дэлхийн түүхэнд чухал болгодог гол шалтгаан аль вэ?", opts: ["а) Евроазийн улс төр, худалдаа, соёлын холбоог өөрчилсөн", "б) Зөвхөн нэг хот байгуулсан", "в) Дэлхийн бүх улсыг нэгтгэсэн", "г) Түүхэн эх сурвалж үлдээгээгүй"], ans: 0, exp: "Монголын эзэнт гүрэн Евроазийн хүчний тэнцвэр, худалдаа, мэдлэгийн солилцоонд гүн нөлөө үзүүлсэн." },
+    { level: 2, q: "Монголын эзэнт гүрний захиргаанд нутгийн бичээч, худалдаачдыг ашигласан нь ямар ач холбогдолтой вэ?", opts: ["а) Орон нутгийн мэдлэгийг төрийн удирдлагатай холбосон", "б) Бүх хотыг нүүлгэсэн", "в) Морин цэргийг халсан", "г) Худалдааг бүрэн хориглосон"], ans: 0, exp: "Монголчууд эзэлсэн нутгийн захиргааны туршлага, бичиг хэрэг, худалдааны сүлжээг ашиглан уудам орон зайг удирдах чадвараа нэмэгдүүлсэн." },
+    { level: 2, q: "Юань, Ил хаант улс, Алтан Орд өөр өөр шашин соёлтой орчинд дасан зохицсон нь юуг харуулдаг вэ?", opts: ["а) Монгол засаглал бүс нутгийн нөхцөлд өөрчлөгдөн хөгжсөн", "б) Бүх ханлиг ижил хуультай үлдсэн", "в) Монголчууд суурин газрыг бүгдийг орхисон", "г) Худалдааны замууд тасарсан"], ans: 0, exp: "Ханлигуудын ялгаа нь Монголын ноёрхол нэг загвараар бус, бүс нутгийн соёл, шашин, захиргааны нөхцөлтэй зохицон хувирсныг харуулдаг." },
   ],
 };
 
 const LEVELS = ['Энгийн', 'Дунд', 'Хэцүү'] as const;
 const TOTAL = 10;
-const GRADE_GROUPS: GradeGroup[] = ['6-9', '10-12'];
-const GRADE_LABELS: Record<GradeGroup, string> = {
-  '6-9': 'Дунд анги',
-  '10-12': 'Ахлах анги',
-};
-const GRADE_OPTIONS: Array<{
-  group: GradeGroup;
-  label: string;
-  grades: number[];
+const GRADE_GROUPS: GradeGroup[] = ["6-9", "10-12"];
+const LEVEL_OPTIONS: Array<{
+  value: QuizLevel;
+  title: string;
+  subtitle: string;
+  detail: string;
+  questionLevel: number;
 }> = [
-  { group: '6-9', label: 'Дунд анги', grades: [6, 7, 8, 9] },
-  { group: '10-12', label: 'Ахлах анги', grades: [10, 11, 12] },
+  { group: '6-9', label: 'СУУРЬ МЭДЛЭГ', grades: [6, 7, 8, 9] },
+  { group: '10-12', label: 'ГҮНЗГИЙ ТҮВШИН', grades: [10, 11, 12] },
 ];
 const quizPanel = '#fcfcfc';
 const quizPanelSoft = 'rgba(12,96,169,0.06)';
-const quizBorder = `1px solid ${T.border}`;
+const quizBorder = '1px solid rgba(148,163,184,0.18)';
 const quizGlow =
   '0 18px 48px rgba(12,96,169,0.10), inset 0 1px 0 rgba(255,255,255,0.8)';
 const QUIZ_STORAGE_PREFIX = 'mongol-atlas-history-quiz';
+const infoCardStyle: React.CSSProperties = {
+  display: 'flex',
+  alignItems: 'center',
+  gap: 6,
+  padding: '8px 12px',
+  borderRadius: 10,
+  background: 'rgba(37,99,235,0.06)',
+  border: '1px solid rgba(37,99,235,0.15)',
+  fontSize: 12,
+  color: '#334155',
+  fontWeight: 500,
+  transition: 'all 0.2s ease',
+};
+
+const infoIcon: React.CSSProperties = {
+  fontSize: 14,
+};
+const iconStyle: React.CSSProperties = {
+  color: '#64748b',
+  transition: 'all 0.25s ease',
+};
 
 export default function HistoryQuiz({
   mode,
@@ -438,6 +330,7 @@ export default function HistoryQuiz({
   const [screen, setScreen] = useState<Screen>('grade');
   const [gradeGroup, setGradeGroup] = useState<GradeGroup>('6-9');
   const [selectedGrade, setSelectedGrade] = useState<number | null>(null);
+  const [selectedLevel, setSelectedLevel] = useState<QuizLevel | null>(null);
   const [quizQuestions, setQuizQuestions] = useState<Question[]>([]);
   const [level, setLevel] = useState(1);
   const [correct, setCorrect] = useState(0);
@@ -465,6 +358,7 @@ export default function HistoryQuiz({
       setScreen(saved.screen);
       setGradeGroup(saved.gradeGroup);
       setSelectedGrade(saved.selectedGrade);
+      setSelectedLevel(saved.selectedLevel ?? null);
       setQuizQuestions(saved.quizQuestions);
       setLevel(saved.level);
       setCorrect(saved.correct);
@@ -483,6 +377,7 @@ export default function HistoryQuiz({
       setScreen('grade');
       setGradeGroup('6-9');
       setSelectedGrade(null);
+      setSelectedLevel(null);
       setQuizQuestions([]);
       setLevel(1);
       setCorrect(0);
@@ -505,6 +400,7 @@ export default function HistoryQuiz({
       screen,
       gradeGroup,
       selectedGrade,
+      selectedLevel,
       quizQuestions,
       level,
       correct,
@@ -532,51 +428,11 @@ export default function HistoryQuiz({
     scoreSaveStatus,
     screen,
     selectedGrade,
+    selectedLevel,
     storageKey,
     streak,
     usedIds,
   ]);
-
-  const pickQuestion = useCallback(
-    (
-      lvl: number,
-      currentUsed: Set<string>,
-      group: GradeGroup,
-    ): { q: Question; newUsed: Set<string> } => {
-      const newUsed = new Set(currentUsed);
-      const preferredLevels = getPreferredLevels(lvl);
-      const preferredPool = QUESTIONS[group].filter((q) =>
-        preferredLevels.includes(q.level),
-      );
-      const preferredUnused = preferredPool.filter(
-        (q) => !newUsed.has(`${group}:${q.q}`),
-      );
-
-      if (preferredUnused.length > 0) {
-        const q =
-          preferredUnused[Math.floor(Math.random() * preferredUnused.length)];
-        newUsed.add(`${group}:${q.q}`);
-        return { q: shuffleQuestion(q), newUsed };
-      }
-
-      const groupUnused = QUESTIONS[group].filter(
-        (q) => !newUsed.has(`${group}:${q.q}`),
-      );
-      if (groupUnused.length > 0) {
-        const q = groupUnused[Math.floor(Math.random() * groupUnused.length)];
-        newUsed.add(`${group}:${q.q}`);
-        return { q: shuffleQuestion(q), newUsed };
-      }
-
-      newUsed.clear();
-      const q =
-        preferredPool[Math.floor(Math.random() * preferredPool.length)] ??
-        QUESTIONS[group][0];
-      newUsed.add(`${group}:${q.q}`);
-      return { q: shuffleQuestion(q), newUsed };
-    },
-    [],
-  );
 
   const startKnowledgeQuiz = () => {
     const questions = shuffleQuestions(Object.values(QUESTIONS).flat())
@@ -591,6 +447,7 @@ export default function HistoryQuiz({
     setLevel(1);
     setGradeGroup('6-9');
     setSelectedGrade(null);
+    setSelectedLevel(null);
     setQuizQuestions(questions);
     setAnswered(false);
     setChosen(null);
@@ -604,26 +461,25 @@ export default function HistoryQuiz({
     setScreen('quiz');
   };
 
-  const startGradeQuiz = (grade: number) => {
-    const emptyUsed = new Set<string>();
-    const startingGroup = getGradeGroup(grade);
-    const startingLevel = getGradeLevel(grade);
-    const { q, newUsed } = pickQuestion(
-      startingLevel,
-      emptyUsed,
-      startingGroup,
-    );
+  const startLevelQuiz = (quizLevel: QuizLevel) => {
+    const selectedOption = LEVEL_OPTIONS.find((option) => option.value === quizLevel);
+    const startingLevel = selectedOption?.questionLevel ?? quizLevel - 1;
+    const questions = buildLevelQuestions(startingLevel);
+    const first = questions[0];
+    if (!first) return;
+
     setCorrect(0);
     setStreak(0);
     setQIndex(0);
     setLevel(startingLevel);
-    setGradeGroup(startingGroup);
-    setSelectedGrade(grade);
-    setQuizQuestions([]);
+    setGradeGroup(quizLevel === 3 ? "10-12" : "6-9");
+    setSelectedGrade(null);
+    setSelectedLevel(quizLevel);
+    setQuizQuestions(questions);
     setAnswered(false);
     setChosen(null);
-    setUsedIds(newUsed);
-    setCurrentQ(q);
+    setUsedIds(new Set());
+    setCurrentQ(first);
     setAnswers([]);
     setGroupStats({
       ...createEmptyGroupStats(),
@@ -648,10 +504,10 @@ export default function HistoryQuiz({
     let newLevel = level;
     let nextGroup = gradeGroup;
 
-    if (mode === 'grade' && selectedGrade) {
-      newLevel = getGradeLevel(selectedGrade);
-      nextGroup = getGradeGroup(selectedGrade);
-    } else if (mode === 'knowledge') {
+    if (mode === "grade" && selectedLevel) {
+      newLevel = selectedLevel - 1;
+      nextGroup = selectedLevel === 3 ? "10-12" : "6-9";
+    } else if (mode === "knowledge") {
       if (isOk) {
         if (newStreak >= 2 && level < 2) newLevel = level + 1;
         if (newStreak >= 2) nextGroup = shiftGradeGroup(gradeGroup, 1);
@@ -698,17 +554,10 @@ export default function HistoryQuiz({
       return;
     }
 
-    const lockedGrade = selectedGrade ?? 6;
-    const { q, newUsed } = pickQuestion(
-      getGradeLevel(lockedGrade),
-      usedIds,
-      getGradeGroup(lockedGrade),
-    );
     setQIndex(nextIdx);
     setAnswered(false);
     setChosen(null);
-    setCurrentQ(q);
-    setUsedIds(newUsed);
+    setCurrentQ(quizQuestions[nextIdx] ?? null);
   };
 
   const saveAttempt = async () => {
@@ -718,15 +567,13 @@ export default function HistoryQuiz({
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          quizId:
-            mode === 'knowledge'
-              ? 'history-knowledge'
-              : `history-grade-${selectedGrade ?? getAssessedGroup()}`,
+          quizId: mode === "knowledge" ? "history-knowledge" : `history-level-${selectedLevel ?? 1}`,
           userName,
           year: QUIZ_PERIOD,
           period: QUIZ_PERIOD,
           mode,
           selectedGrade,
+          selectedLevel,
           score: correct,
           totalQuestions: TOTAL,
           passed: correct >= Math.ceil(TOTAL * 0.6),
@@ -755,6 +602,7 @@ export default function HistoryQuiz({
     setScreen('grade');
     setGradeGroup('6-9');
     setSelectedGrade(null);
+    setSelectedLevel(null);
     setQuizQuestions([]);
     setAnswers([]);
     setCorrect(0);
@@ -771,23 +619,14 @@ export default function HistoryQuiz({
 
   const progress = (qIndex / TOTAL) * 100;
 
-  const resultPct = correct / TOTAL;
-  const resultColor =
-    correct <= 4 ? '#ef4444' : correct <= 7 ? '#f59e0b' : '#22c55e';
-
-  const resultGlow =
-    correct <= 4
-      ? '0 0 20px rgba(239,68,68,0.4)'
-      : correct <= 7
-        ? '0 0 20px rgba(245,158,11,0.4)'
-        : '0 0 20px rgba(34,197,94,0.4)';
-  const assessedGroup = getAssessedGroup();
   const resultSub =
     correct <= 4
       ? 'Дахиад оролдоод үзээрэй 💪'
       : correct <= 7
         ? 'Сайн байна 👍'
         : 'Гайхалтай! 🔥';
+  const resultColor = correct >= 8 ? T.amber : correct >= 5 ? T.text : T.red;
+  const resultGlow = correct >= 8 ? '0 0 18px rgba(12,96,169,0.28)' : 'none';
 
   return (
     <div
@@ -826,17 +665,42 @@ export default function HistoryQuiz({
                     type="button"
                     onClick={onClose}
                     style={{
-                      border: quizBorder,
-                      background: quizPanelSoft,
-                      color: T.textSub,
-                      borderRadius: 10,
-                      padding: '7px 11px',
+                      border: '1px solid rgba(148,163,184,0.25)',
+                      background: '#ffffff',
+                      color: '#475569',
+                      borderRadius: 12,
+                      padding: '8px 14px',
                       cursor: 'pointer',
                       fontFamily: 'inherit',
                       fontSize: 12,
+                      fontWeight: 600,
+
+                      transition: 'all 0.25s cubic-bezier(.4,0,.2,1)',
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.background = '#fee2e2';
+                      e.currentTarget.style.color = '#991b1b';
+                      e.currentTarget.style.border = '1px solid #fecaca';
+                      e.currentTarget.style.transform = 'translateY(-2px)';
+                      e.currentTarget.style.boxShadow =
+                        '0 8px 20px rgba(239,68,68,0.15)';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.background = '#ffffff';
+                      e.currentTarget.style.color = '#475569';
+                      e.currentTarget.style.border =
+                        '1px solid rgba(148,163,184,0.25)';
+                      e.currentTarget.style.transform = 'translateY(0)';
+                      e.currentTarget.style.boxShadow = 'none';
+                    }}
+                    onMouseDown={(e) => {
+                      e.currentTarget.style.transform = 'scale(0.95)';
+                    }}
+                    onMouseUp={(e) => {
+                      e.currentTarget.style.transform = 'scale(1)';
                     }}
                   >
-                    Хаах
+                    X
                   </button>
                 </div>
               )}
@@ -857,18 +721,24 @@ export default function HistoryQuiz({
                     fontWeight: 700,
                   }}
                 >
-                  Q
+                  <GraduationCap
+                    size={22}
+                    style={{
+                      color: '#64748b',
+                      transition: 'all 0.25s ease',
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.color = '#2563eb';
+                      e.currentTarget.style.transform = 'scale(1.2)';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.color = '#64748b';
+                      e.currentTarget.style.transform = 'scale(1)';
+                    }}
+                  />
                 </div>
-                <h1
-                  style={{
-                    color: T.amber,
-                    fontSize: 26,
-                    fontWeight: 700,
-                    marginBottom: 8,
-                    letterSpacing: 0,
-                  }}
-                >
-                  {mode === 'knowledge' ? 'Мэдлэгээ сорих' : 'Анги сонгох'}
+                <h1 style={{ color: T.amber, fontSize: 26, fontWeight: 700, marginBottom: 8, letterSpacing: 0 }}>
+                  {mode === "knowledge" ? "Мэдлэгээ сорих" : "Level сонгох"}
                 </h1>
                 <p style={{ color: T.textSub, fontSize: 14, lineHeight: 1.7 }}>
                   {mode === 'knowledge' ? (
@@ -879,9 +749,8 @@ export default function HistoryQuiz({
                     </>
                   ) : (
                     <>
-                      Өөрийн түвшинд тохирсон ангийг сонгоорой.
-                      <br />
-                      Асуултууд зөвхөн 1162-1300 оны Монголын түүхээс орно.
+                      Level 1-3-аас сонгоно.<br />
+                      Level 1 хамгийн амар, Level 3 хамгийн хэцүү.
                     </>
                   )}
                 </p>
@@ -889,27 +758,30 @@ export default function HistoryQuiz({
 
               {mode === 'knowledge' ? (
                 <>
-                  <div style={{ display: 'grid', gap: 10, marginBottom: 20 }}>
-                    {[
-                      '10 асуулт',
-                      '1162-1300 оны Монголын түүх',
-                      'Зөв хариултын тайлбартай',
-                    ].map((label) => (
-                      <div
-                        key={label}
-                        style={{
-                          padding: '12px 14px',
-                          border: quizBorder,
-                          borderRadius: 12,
-                          background: quizPanelSoft,
-                          color: T.textSub,
-                          fontSize: 13,
-                          lineHeight: 1.5,
-                        }}
-                      >
-                        {label}
-                      </div>
-                    ))}
+                  <div
+                    style={{
+                      display: 'flex',
+                      gap: 10,
+                      marginTop: 16,
+                      marginBottom: 18,
+                      flexWrap: 'wrap',
+                      justifyContent: 'center',
+                    }}
+                  >
+                    <div style={infoCardStyle}>
+                      <BarChart3 size={16} color="#3b82f6" />
+                      <span>10 асуулт</span>
+                    </div>
+
+                    <div style={infoCardStyle}>
+                      <ScrollText size={16} color="#8b5cf6" />
+                      <span>1162–1300 он</span>
+                    </div>
+
+                    <div style={infoCardStyle}>
+                      <Lightbulb size={16} color="#f59e0b" />
+                      <span>Тайлбартай</span>
+                    </div>
                   </div>
 
                   <button
@@ -932,12 +804,10 @@ export default function HistoryQuiz({
                   </button>
                 </>
               ) : (
-                <div
-                  style={{ display: 'flex', flexDirection: 'column', gap: 24 }}
-                >
-                  {GRADE_OPTIONS.map((option, idx) => (
-                    <div
-                      key={option.group}
+                <div style={{ display: "grid", gap: 14 }}>
+                  {LEVEL_OPTIONS.map((option, idx) => (
+                    <section
+                      key={option.value}
                       style={{
                         animation: `fadeUp 0.5s ease ${idx * 0.1}s both`,
                       }}
@@ -968,85 +838,30 @@ export default function HistoryQuiz({
                           }}
                         >
                           {option.group === '6-9'
-                            ? 'Суурь мэдлэг • 6–9-р анги'
-                            : 'Гүнзгий түвшин • 10–12-р анги'}
+                            ? 'Дунд анги • 6–9 '
+                            : 'Ахлах анги • 10–12'}
                         </div>
                       </div>
-
-                      <div
+                      <button
+                        type="button"
+                        onClick={() => startLevelQuiz(option.value)}
                         style={{
-                          display: 'grid',
-                          gridTemplateColumns: 'repeat(2, 1fr)',
-                          gap: 14,
+                          width: "100%",
+                          minHeight: 58,
+                          border: quizBorder,
+                          borderRadius: 12,
+                          background: quizPanelSoft,
+                          color: T.text,
+                          cursor: "pointer",
+                          fontFamily: "inherit",
+                          textAlign: "left",
+                          padding: "12px 14px",
                         }}
                       >
-                        {option.grades.map((grade) => (
-                          <div
-                            key={grade}
-                            onClick={() => startGradeQuiz(grade)}
-                            style={{
-                              borderRadius: 18,
-                              padding: '22px',
-                              cursor: 'pointer',
-                              background:
-                                'linear-gradient(145deg, #ffffff, #f1f5f9)',
-                              border: '1px solid #e2e8f0',
-                              boxShadow: '0 10px 30px rgba(0,0,0,0.06)',
-                              transition: 'all 0.3s cubic-bezier(.4,0,.2,1)',
-                              position: 'relative',
-                              overflow: 'hidden',
-                            }}
-                            onMouseEnter={(e) => {
-                              e.currentTarget.style.transform =
-                                'translateY(-6px) scale(1.03)';
-                              e.currentTarget.style.boxShadow =
-                                '0 20px 40px rgba(37,99,235,0.15)';
-                            }}
-                            onMouseLeave={(e) => {
-                              e.currentTarget.style.transform =
-                                'translateY(0) scale(1)';
-                              e.currentTarget.style.boxShadow =
-                                '0 10px 30px rgba(0,0,0,0.06)';
-                            }}
-                          >
-                            <div
-                              style={{
-                                position: 'absolute',
-                                top: -20,
-                                right: -20,
-                                width: 80,
-                                height: 80,
-                                background: 'rgba(37,99,235,0.1)',
-                                borderRadius: '50%',
-                                filter: 'blur(20px)',
-                              }}
-                            />
-
-                            <div style={{ position: 'relative' }}>
-                              <div
-                                style={{
-                                  fontSize: 28,
-                                  fontWeight: 800,
-                                  color: '#2563eb',
-                                  marginBottom: 6,
-                                }}
-                              >
-                                {grade}
-                              </div>
-
-                              <div
-                                style={{
-                                  fontSize: 12,
-                                  color: '#64748b',
-                                }}
-                              >
-                                анги
-                              </div>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
+                        <span style={{ display: "block", color: T.amber, fontSize: 18, fontWeight: 700 }}>{option.title}</span>
+                        <span style={{ display: "block", color: T.textMuted, fontSize: 10, marginTop: 2 }}>{option.subtitle}</span>
+                      </button>
+                    </section>
                   ))}
                 </div>
               )}
@@ -1058,58 +873,94 @@ export default function HistoryQuiz({
         {screen === 'quiz' && currentQ && (
           <div style={{ animation: 'fadeIn 0.3s ease' }}>
             <div
-              style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                marginBottom: 10,
-              }}
-            >
-              <span style={{ color: T.textMuted, fontSize: 13 }}>
-                {qIndex + 1} / {TOTAL}
-              </span>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <span
-                  style={{
-                    padding: '4px 14px',
-                    borderRadius: 99,
-                    background:
-                      level === 0
-                        ? 'rgba(12,96,169,0.06)'
-                        : level === 1
-                          ? 'rgba(12,96,169,0.10)'
-                          : 'rgba(220,38,38,0.08)',
-                    color:
-                      level === 0 ? T.textSub : level === 1 ? T.amber : T.red,
-                    fontWeight: 700,
-                    letterSpacing: 1,
-                    fontSize: 11,
-                    textTransform: 'uppercase' as const,
-                    border: `1px solid ${level === 0 ? T.borderMid : level === 1 ? 'rgba(12,96,169,0.25)' : 'rgba(220,38,38,0.25)'}`,
-                  }}
-                >
-                  {LEVELS[level]}
-                </span>
-                {onClose && (
-                  <button
-                    type="button"
-                    onClick={onClose}
-                    style={{
-                      border: quizBorder,
-                      background: quizPanelSoft,
-                      color: T.textSub,
-                      borderRadius: 10,
-                      padding: '6px 10px',
-                      cursor: 'pointer',
-                      fontFamily: 'inherit',
-                      fontSize: 12,
-                    }}
-                  >
-                    Түр гарах
-                  </button>
-                )}
-              </div>
-            </div>
+  style={{
+    background: "#ffffff",
+    borderRadius: 16,
+    padding: "12px 16px",
+    marginBottom: 16,
+    border: "1px solid rgba(148,163,184,0.2)",
+    boxShadow: "0 8px 25px rgba(0,0,0,0.05)",
+
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+  }}
+>
+  {/* LEFT SIDE */}
+  <div style={{ display: "flex", flexDirection: "column" }}>
+    <span style={{ fontSize: 12, color: "#94a3b8" }}>
+      {qIndex + 1} / {TOTAL}
+    </span>
+
+    {/* <div
+      style={{
+        fontSize: 13,
+        fontWeight: 600,
+        color: "#334155",
+      }}
+    >
+      1162–1300 · Түүх
+    </div> */}
+  </div>
+
+  {/* RIGHT SIDE */}
+  <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+
+    {/* LEVEL BADGE */}
+    <div
+      style={{
+        padding: "6px 12px",
+        borderRadius: 999,
+        background:
+          level === 0
+            ? "#e0f2fe"
+            : level === 1
+            ? "#fef3c7"
+            : "#fee2e2",
+        color:
+          level === 0
+            ? "#0369a1"
+            : level === 1
+            ? "#92400e"
+            : "#991b1b",
+        fontSize: 12,
+        fontWeight: 700,
+        transition: "all 0.3s ease",
+      }}
+    >
+      {LEVELS[level]}
+    </div>
+
+    {/* EXIT BUTTON */}
+    {onClose && (
+      <button
+        onClick={onClose}
+        style={{
+          padding: "6px 12px",
+          borderRadius: 999,
+          border: "1px solid rgba(148,163,184,0.3)",
+          background: "transparent",
+          color: "#64748b",
+          fontSize: 12,
+          cursor: "pointer",
+          transition: "all 0.25s ease",
+        }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.background = "#fee2e2";
+          e.currentTarget.style.color = "#991b1b";
+          e.currentTarget.style.transform = "translateY(-2px)";
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.background = "transparent";
+          e.currentTarget.style.color = "#64748b";
+          e.currentTarget.style.transform = "translateY(0)";
+        }}
+      >
+        ✕ Түр гарах
+      </button>
+    )}
+  </div>
+</div>
             <p
               style={{
                 color: T.textSub,
@@ -1168,6 +1019,7 @@ export default function HistoryQuiz({
 
               <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                 {currentQ.opts.map((opt, i) => {
+                  
                   const isCorrect = i === currentQ.ans;
                   const isSelected = i === chosen;
 
@@ -1240,7 +1092,7 @@ export default function HistoryQuiz({
                       <span style={{ fontWeight: 600, marginRight: 6 }}>
                         {String.fromCharCode(97 + i)})
                       </span>
-                      {opt}
+                      {opt.slice(3)}
                     </button>
                   );
                 })}
@@ -1285,7 +1137,6 @@ export default function HistoryQuiz({
                     {chosen === currentQ.ans ? '✅ Зөв!' : '❌ Буруу'}
                   </div>
 
-                  {/* zuv hariult */}
                   {chosen !== currentQ.ans && (
                     <div style={{ marginBottom: 4 }}>
                       👉 Зөв хариулт:{' '}
@@ -1295,7 +1146,6 @@ export default function HistoryQuiz({
                     </div>
                   )}
 
-                  {/* tailbar heseg shuu */}
                   <div style={{ opacity: 0.9 }}>{currentQ.exp}</div>
                 </div>
               )}
@@ -1388,11 +1238,7 @@ export default function HistoryQuiz({
                   {mode === 'knowledge' ? 'Сорилын төрөл' : 'Сонгосон түвшин'}
                 </p>
                 <p style={{ color: T.amber, fontSize: 22, fontWeight: 700 }}>
-                  {mode === 'knowledge'
-                    ? 'Мэдлэгээ сорих'
-                    : assessedGroup === '6-9'
-                      ? 'Суурь мэдлэг'
-                      : 'Гүнзгий мэдлэг'}
+                  {mode === "knowledge" ? "Мэдлэгээ сорих" : `Level ${selectedLevel ?? 1} · ${LEVELS[level]}`}
                 </p>
               </div>
               <p
@@ -1421,16 +1267,9 @@ export default function HistoryQuiz({
                 }}
               >
                 {[
-                  { num: correct, lbl: 'Зөв хариулт' },
-                  { num: TOTAL - correct, lbl: 'Буруу хариулт' },
-                  {
-                    num:
-                      mode === 'knowledge'
-                        ? LEVELS[level]
-                        : `${selectedGrade ?? '-'} анги`,
-                    lbl:
-                      mode === 'knowledge' ? 'Хүрсэн түвшин' : 'Сонгосон анги',
-                  },
+                  { num: correct, lbl: "Зөв хариулт" },
+                  { num: TOTAL - correct, lbl: "Буруу хариулт" },
+                  { num: mode === "knowledge" ? LEVELS[level] : `Level ${selectedLevel ?? "-"}`, lbl: mode === "knowledge" ? "Хүрсэн түвшин" : "Сонгосон level" },
                 ].map((s, i) => (
                   <div
                     key={i}
@@ -1488,7 +1327,7 @@ export default function HistoryQuiz({
                   e.currentTarget.style.transform = 'scale(1.02)';
                 }}
               >
-                {mode === 'knowledge' ? 'Дахин сорих' : 'Дахин анги сонгох'}
+                {mode === "knowledge" ? "Дахин сорих" : "Дахин level сонгох"}
               </button>
               {onClose && (
                 <button
@@ -1561,21 +1400,6 @@ export default function HistoryQuiz({
       </div>
     </div>
   );
-
-  function getAssessedGroup(): GradeGroup {
-    if (mode === 'grade' && selectedGrade) return getGradeGroup(selectedGrade);
-
-    const weightedScore = GRADE_GROUPS.reduce((sum, group, index) => {
-      const stats = groupStats[group];
-      if (!stats.asked) return sum;
-      return sum + stats.correct * (index + 1);
-    }, 0);
-    const correctAnswers = Math.max(correct, 1);
-    const avgLevel = weightedScore / correctAnswers;
-
-    if (correct / TOTAL >= 0.75 && avgLevel >= 1.6) return '10-12';
-    return '6-9';
-  }
 }
 
 function shiftGradeGroup(group: GradeGroup, delta: -1 | 1): GradeGroup {
@@ -1587,23 +1411,17 @@ function shiftGradeGroup(group: GradeGroup, delta: -1 | 1): GradeGroup {
   return GRADE_GROUPS[nextIndex];
 }
 
-function getGradeGroup(grade: number): GradeGroup {
-  if (grade <= 9) return '6-9';
-  return '10-12';
+function buildLevelQuestions(level: number) {
+  const allQuestions = (Object.entries(QUESTIONS) as Array<[QuestionGroup, Question[]]>).flatMap(([group, questions]) =>
+    questions.map((question) => ({ ...question, group })),
+  );
+  const primary = shuffleQuestions(allQuestions.filter((question) => question.level === level));
+  const fallback = shuffleQuestions(allQuestions.filter((question) => question.level !== level));
+
+  return [...primary, ...fallback].slice(0, TOTAL).map(({ group: _group, ...question }) => question);
 }
 
-function getGradeLevel(grade: number) {
-  if (grade <= 9) return 1;
-  return 2;
-}
-
-function getPreferredLevels(level: number) {
-  if (level <= 0) return [0, 1];
-  if (level === 1) return [1, 0, 2];
-  return [2, 1, 0];
-}
-
-function shuffleQuestions(questions: Question[]) {
+function shuffleQuestions<T>(questions: T[]) {
   return [...questions].sort(() => Math.random() - 0.5);
 }
 

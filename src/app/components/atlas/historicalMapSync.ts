@@ -70,6 +70,7 @@ import {
   normalizeLngLatLike,
   safeSetData,
 } from "./historicalMapGeo";
+import { createBattleCollection } from "./historicalBattleMockData";
 
 type MapLibreMap = InstanceType<typeof maplibregl.Map>;
 
@@ -87,6 +88,8 @@ export function syncCollection(
     };
     const nextCollection = collection ?? emptyCollection;
     const flagCollection = createFlagCollection(nextCollection);
+    const selectedYear =
+      Number((nextCollection as typeof nextCollection & { year?: number }).year) || 0;
 
     safeSetData(
       map,
@@ -94,6 +97,7 @@ export function syncCollection(
       nextCollection
     );
     safeSetData(map, "state-flags", flagCollection);
+    safeSetData(map, "battle-markers", createBattleCollection(selectedYear));
     void loadFlagImages(map, flagCollection);
   };
 
@@ -214,7 +218,8 @@ export function syncDraft(
 export function syncLayerVisibility(
   map: MapLibreMap | null,
   ready: boolean,
-  layerVisibility: HistoricalMapProps["layerVisibility"]
+  layerVisibility: HistoricalMapProps["layerVisibility"],
+  showBattleMarkers = true
 ) {
   if (!map) return;
 
@@ -232,6 +237,7 @@ export function syncLayerVisibility(
     applyVisibility("states-labels", layerVisibility.labels);
     applyVisibility("state-flags", layerVisibility.capitals);
     applyVisibility("battle-events", layerVisibility.battles);
+    applyVisibility("battle-markers", layerVisibility.battles && showBattleMarkers);
   };
 
   if (ready && map.isStyleLoaded()) apply();

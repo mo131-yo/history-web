@@ -219,7 +219,7 @@ export function OlympicPodium({
 
 function formatPodiumMeta(entry: LeaderboardScore, category: LeaderboardCategory) {
   if (category === "grade") {
-    return entry.selectedGrade ? `${entry.selectedGrade}-р анги` : "Ангийн quiz";
+    return entry.selectedLevel ? `Level ${entry.selectedLevel}` : "Level quiz";
   }
 
   if (category === "knowledge") {
