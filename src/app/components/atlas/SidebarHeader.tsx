@@ -36,10 +36,12 @@ export function SidebarHeader({
   year,
   collapsed,
   onToggleCollapsed,
+  onOpenMap,
 }: {
   year: number;
   collapsed: boolean;
   onToggleCollapsed: () => void;
+  onOpenMap: () => void;
 }) {
   return (
     <div
@@ -82,7 +84,12 @@ export function SidebarHeader({
       >
       
         {!collapsed && (
-          <div>
+          <button
+            type="button"
+            onClick={onOpenMap}
+            className="min-w-0 text-left rounded-xl transition-opacity hover:opacity-80 focus:outline-none focus:ring-2 focus:ring-blue-400/40"
+            title="Map руу буцах"
+          >
             <p
               className="mb-1 text-[7px] uppercase tracking-[0.45em] sm:text-[8px] sm:tracking-[0.6em]"
               style={{ color: T.text }}
@@ -107,12 +114,17 @@ export function SidebarHeader({
             >
               он · Дундад Зуун
             </p>
-          </div>
+          </button>
         )}
 
         
         {collapsed && (
-          <div className="text-center lg:block">
+          <button
+            type="button"
+            onClick={onOpenMap}
+            className="text-center rounded-xl transition-opacity hover:opacity-80 focus:outline-none focus:ring-2 focus:ring-blue-400/40 lg:block"
+            title="Map руу буцах"
+          >
             <p
               className="text-[7px] uppercase tracking-[0.35em]"
               style={{ color: T.textMuted }}
@@ -129,7 +141,7 @@ export function SidebarHeader({
             >
               <AnimatedYear year={year} />
             </h2>
-          </div>
+          </button>
         )}
 
    
