@@ -137,7 +137,7 @@ export function SidebarUserPanel({
             className="flex w-full items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-xs transition-all hover:opacity-80"
             style={{
               border: `1px solid ${T.border}`,
-              background: 'rgba(15,23,42,0.72)',
+              background: 'rgba(254, 254, 254, 0.72)',
               color: T.text,
               fontFamily: 'var(--font-inter), Arial, sans-serif',
             }}
@@ -152,8 +152,8 @@ export function SidebarUserPanel({
             style={{
               border: `1px solid ${T.amber}44`,
               background:
-                'linear-gradient(135deg, rgba(245,158,11,0.14), rgba(245,158,11,0.04))',
-              color: T.amber,
+                '#0c60a9',
+              color: T.textpin,
               fontFamily: 'var(--font-inter), Arial, sans-serif',
             }}
           >

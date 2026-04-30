@@ -20,4 +20,5 @@ export const sidebarTheme = {
   text: '#000000', 
   textMuted: '#3679c4', 
   textSub: '#a8a29e',
+  textpin:'#fcfcfc'
 };
