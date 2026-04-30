@@ -403,10 +403,10 @@ const QUESTIONS: Record<QuestionGroup, Question[]> = {
 const LEVELS = ['Энгийн', 'Дунд', 'Хэцүү'] as const;
 const TOTAL = 10;
 const GRADE_GROUPS: GradeGroup[] = ['6-9', '10-12'];
-const GRADE_LABELS: Record<GradeGroup, string> = {
-  '6-9': 'Дунд анги',
-  '10-12': 'Ахлах анги',
-};
+// const GRADE_LABELS: Record<GradeGroup, string> = {
+//   '6-9': 'Дунд анги',
+//   '10-12': 'Ахлах анги',
+// };
 const GRADE_OPTIONS: Array<{
   group: GradeGroup;
   label: string;
@@ -771,7 +771,7 @@ export default function HistoryQuiz({
 
   const progress = (qIndex / TOTAL) * 100;
 
-  const resultPct = correct / TOTAL;
+  // const resultPct = correct / TOTAL;
   const resultColor =
     correct <= 4 ? '#ef4444' : correct <= 7 ? '#f59e0b' : '#22c55e';
 

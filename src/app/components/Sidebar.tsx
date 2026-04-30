@@ -1,6 +1,6 @@
 'use client';
 
-import { useClerk } from '@clerk/nextjs';
+import { useClerk, useUser } from '@clerk/nextjs';
 import type { AtlasStateFeature } from '@/lib/types';
 import { useEffect, useState, type ReactNode } from 'react';
 import {
@@ -14,7 +14,6 @@ import {
   MapPinned,
   Medal,
   Search,
-  Sparkles,
   Trophy,
   XCircle,
 } from 'lucide-react';
@@ -38,26 +37,7 @@ type SidebarNavItem = {
   disabled?: boolean;
 };
 
-export function Sidebar({
-  year,
-  search,
-  onSearchChange,
-  mapMode,
-  onMapModeChange,
-  onOpenCharacter,
-  onOpenQuiz,
-  onOpenMap,
-  onOpenLeaderboard,
-  onSelectSearchResult,
-  currentView,
-  characterResult,
-  pendingFeedbackCount,
-  quizEnabled,
-  adminMode,
-  user,
-  collapsed,
-  onToggleCollapsed,
-}: {
+type SidebarProps = {
   year: number;
   search: string;
   onSearchChange: (value: string) => void;
@@ -75,20 +55,30 @@ export function Sidebar({
   adminMode: boolean;
   collapsed: boolean;
   onToggleCollapsed: () => void;
-  user:
-    | {
-        id?: string;
-        fullName?: string | null;
-        firstName?: string | null;
-        lastName?: string | null;
-        username?: string | null;
-        imageUrl?: string;
-        primaryEmailAddress?: { emailAddress?: string } | null;
-      }
-    | null
-    | undefined;
-}) {
+};
+
+export function Sidebar({
+  year,
+  search,
+  onSearchChange,
+  mapMode,
+  onMapModeChange,
+  onOpenCharacter,
+  onOpenQuiz,
+  onOpenMap,
+  onOpenLeaderboard,
+  onSelectSearchResult,
+  currentView,
+  characterResult,
+  pendingFeedbackCount,
+  quizEnabled,
+  adminMode,
+  collapsed,
+  onToggleCollapsed,
+}: SidebarProps) {
   const { openSignIn, openSignUp, signOut } = useClerk();
+  const { user, isLoaded } = useUser();
+
   const [searchResults, setSearchResults] = useState<AtlasStateFeature[]>([]);
   const [searchStatus, setSearchStatus] = useState<
     'idle' | 'loading' | 'error'
@@ -96,6 +86,7 @@ export function Sidebar({
   const [userSyncStatus, setUserSyncStatus] = useState<UserSyncStatus>('idle');
   const [quizExpanded, setQuizExpanded] = useState(false);
   const [mapExpanded, setMapExpanded] = useState(false);
+
   const trimmedSearch = search.trim();
 
   const navItems: SidebarNavItem[] = [
@@ -137,6 +128,8 @@ export function Sidebar({
   }, [currentView]);
 
   useEffect(() => {
+    if (!isLoaded) return;
+
     if (!user?.id) {
       setUserSyncStatus('idle');
       return;
@@ -157,18 +150,28 @@ export function Sidebar({
       }),
       signal: controller.signal,
     })
-      .then((response) => {
-        if (!response.ok) throw new Error('User sync failed');
+      .then(async (response) => {
+        if (!response.ok) {
+          const message = await response.text().catch(() => '');
+          console.error('User sync failed:', response.status, message);
+          setUserSyncStatus('error');
+          return;
+        }
+
         setUserSyncStatus('synced');
       })
       .catch((error) => {
-        if (error instanceof DOMException && error.name === 'AbortError')
+        if (error instanceof DOMException && error.name === 'AbortError') {
           return;
+        }
+
+        console.error('User sync request failed:', error);
         setUserSyncStatus('error');
       });
 
     return () => controller.abort();
   }, [
+    isLoaded,
     user?.id,
     user?.primaryEmailAddress?.emailAddress,
     user?.firstName,
@@ -185,8 +188,10 @@ export function Sidebar({
     }
 
     const controller = new AbortController();
+
     const timeout = window.setTimeout(() => {
       setSearchStatus('loading');
+
       fetch(`/api/atlas/search?q=${encodeURIComponent(trimmedSearch)}`, {
         signal: controller.signal,
       })
@@ -199,8 +204,11 @@ export function Sidebar({
           setSearchStatus('idle');
         })
         .catch((error) => {
-          if (error instanceof DOMException && error.name === 'AbortError')
+          if (error instanceof DOMException && error.name === 'AbortError') {
             return;
+          }
+
+          console.error(error);
           setSearchResults([]);
           setSearchStatus('error');
         });
@@ -233,7 +241,9 @@ export function Sidebar({
       />
 
       <div
-        className={`flex flex-1 flex-col gap-3 px-3 py-3 ${collapsed ? 'items-center' : ''}`}
+        className={`flex flex-1 flex-col gap-3 px-3 py-3 ${
+          collapsed ? 'items-center' : ''
+        }`}
       >
         {!collapsed && (
           <label
@@ -246,9 +256,7 @@ export function Sidebar({
             />
             <input
               value={search}
-              onChange={(event: { target: { value: string } }) =>
-                onSearchChange(event.target.value)
-              }
+              onChange={(event) => onSearchChange(event.target.value)}
               placeholder="Улс хайх"
               className="flex-1 min-w-0 text-xs bg-transparent outline-none placeholder:opacity-45"
               style={{
@@ -304,12 +312,14 @@ export function Sidebar({
                     {feature.properties.year}
                   </span>
                 </span>
+
                 <span
                   className="mt-0.5 block truncate text-[10px]"
                   style={{ color: T.textSub }}
                 >
                   {feature.properties.leader} · {feature.properties.capital}
                 </span>
+
                 <span
                   className="mt-1 line-clamp-2 block text-[10px] leading-4"
                   style={{ color: T.textMuted }}
@@ -322,7 +332,9 @@ export function Sidebar({
         )}
 
         <nav
-          className={`flex flex-1 flex-col gap-2 ${collapsed ? 'items-center' : ''}`}
+          className={`flex flex-1 flex-col gap-2 ${
+            collapsed ? 'items-center' : ''
+          }`}
         >
           {navItems.map((item) => {
             const Icon = item.icon;
@@ -346,6 +358,7 @@ export function Sidebar({
                     </span>
                   </div>
                 )}
+
                 {isQuiz && !collapsed && (
                   <div className="flex items-center gap-2 px-2 mb-1">
                     <Trophy className="size-3" style={{ color: T.textMuted }} />
@@ -357,6 +370,7 @@ export function Sidebar({
                     </span>
                   </div>
                 )}
+
                 {isMap && !collapsed && (
                   <div className="flex items-center gap-2 px-2 mb-1">
                     <Map className="size-3" style={{ color: T.textMuted }} />
@@ -368,6 +382,7 @@ export function Sidebar({
                     </span>
                   </div>
                 )}
+
                 <button
                   type="button"
                   onClick={item.onClick}
@@ -390,7 +405,9 @@ export function Sidebar({
                   title={collapsed ? item.title : undefined}
                 >
                   <span
-                    className={`flex min-w-0 items-center ${collapsed ? 'justify-center' : 'gap-3'}`}
+                    className={`flex min-w-0 items-center ${
+                      collapsed ? 'justify-center' : 'gap-3'
+                    }`}
                   >
                     {hasCharacterIcon ? (
                       <span
@@ -407,6 +424,7 @@ export function Sidebar({
                     ) : (
                       <Icon className="size-5 shrink-0" />
                     )}
+
                     {!collapsed && (
                       <span className="min-w-0 text-left">
                         <span
@@ -424,6 +442,7 @@ export function Sidebar({
                       </span>
                     )}
                   </span>
+
                   {!collapsed && (isQuiz || isMap) && (
                     <ChevronDown
                       className="transition-transform duration-150 size-4 shrink-0"
@@ -486,14 +505,14 @@ export function Sidebar({
           <AdminFeedbackNotice pendingFeedbackCount={pendingFeedbackCount} />
         )}
 
-        {!collapsed && (
+        {isLoaded && !collapsed && (
           <SidebarUserPanel
             adminMode={adminMode}
             user={user}
             syncStatus={userSyncStatus}
             onSignIn={() => openSignIn()}
             onSignUp={() => openSignUp()}
-            onSignOut={() => signOut()}
+            onSignOut={() => signOut({ redirectUrl: '/' })}
           />
         )}
       </div>
@@ -529,6 +548,7 @@ function AdminFeedbackNotice({
 
     const controller = new AbortController();
     setStatus('loading');
+
     fetch('/api/atlas/feedback?status=pending', { signal: controller.signal })
       .then((response) => {
         if (!response.ok) throw new Error('Pending feedback failed');
@@ -539,8 +559,11 @@ function AdminFeedbackNotice({
         setStatus('idle');
       })
       .catch((error) => {
-        if (error instanceof DOMException && error.name === 'AbortError')
+        if (error instanceof DOMException && error.name === 'AbortError') {
           return;
+        }
+
+        console.error(error);
         setItems([]);
         setStatus('error');
       });
@@ -554,28 +577,16 @@ function AdminFeedbackNotice({
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ id, action }),
     });
+
     if (!response.ok) {
       setStatus('error');
       return;
     }
+
     setItems((current) => current.filter((item) => item.id !== id));
   }
 
   return (
-    // <div
-    //   className="p-2 rounded-lg"
-    //   style={{
-    //     background:
-    //       pendingFeedbackCount > 0
-    //         ? 'rgba(245,158,11,0.12)'
-    //         : 'rgba(8,13,24,0.55)',
-    //     border:
-    //       pendingFeedbackCount > 0
-    //         ? `1px solid ${T.amber}44`
-    //         : `1px solid ${T.border}`,
-    //   }}
-    // >
-
     <div
       className="p-2 rounded-lg"
       style={{
@@ -612,24 +623,23 @@ function AdminFeedbackNotice({
               Feedback уншиж байна...
             </p>
           )}
+
           {status === 'error' && (
             <p className="px-2 py-2 text-xs" style={{ color: '#f87171' }}>
               Feedback шалгахад алдаа гарлаа.
             </p>
           )}
+
           {items.length === 0 && status !== 'loading' && (
             <p className="px-2 py-2 text-xs" style={{ color: T.textMuted }}>
               Хүлээгдэж буй координат санал алга.
             </p>
           )}
+
           {items.map((item) => (
             <div
               key={item.id}
               className="rounded-lg px-2.5 py-2"
-              // style={{
-              //   background: 'rgba(8,13,24,0.72)',
-              //   border: `1px solid ${T.border}`,
-              // }}
               style={{
                 background: 'rgba(255,255,255,0.9)',
                 backdropFilter: 'blur(12px)',
@@ -652,17 +662,20 @@ function AdminFeedbackNotice({
                   {item.year}
                 </span>
               </div>
+
               <p
                 className="mt-1 line-clamp-2 text-[10px] leading-4"
                 style={{ color: T.textMuted }}
               >
                 {item.userName}: {item.comment}
               </p>
+
               <p className="mt-1 text-[10px]" style={{ color: T.textSub }}>
                 {item.proposedGeometry
                   ? `${item.proposedGeometry.coordinates?.[0]?.length ?? 0} coordinate point`
                   : 'Guest feedback'}
               </p>
+
               <div className="grid grid-cols-2 gap-2 mt-2">
                 <button
                   type="button"
@@ -677,6 +690,7 @@ function AdminFeedbackNotice({
                   <Check className="size-3" />
                   {item.proposedGeometry ? 'Зөвшөөрөх' : 'Нийтлэх'}
                 </button>
+
                 <button
                   type="button"
                   onClick={() => reviewFeedback(item.id, 'reject')}
