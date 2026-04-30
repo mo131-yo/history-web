@@ -334,8 +334,14 @@ export function Sidebar({
               <div key={item.id} className={collapsed ? 'w-11' : 'w-full'}>
                 {hasCharacterIcon && !collapsed && (
                   <div className="flex items-center gap-2 px-2 mb-1">
-                    <CircleHelp className="size-3" style={{ color: T.textMuted }} />
-                    <span className="text-[10px] font-semibold uppercase tracking-wider" style={{color: T.textMuted}}>
+                    <CircleHelp
+                      className="size-3"
+                      style={{ color: T.textMuted }}
+                    />
+                    <span
+                      className="text-[10px] font-semibold uppercase tracking-wider"
+                      style={{ color: T.textMuted }}
+                    >
                       Навигаци
                     </span>
                   </div>
@@ -556,17 +562,29 @@ function AdminFeedbackNotice({
   }
 
   return (
+    // <div
+    //   className="p-2 rounded-lg"
+    //   style={{
+    //     background:
+    //       pendingFeedbackCount > 0
+    //         ? 'rgba(245,158,11,0.12)'
+    //         : 'rgba(8,13,24,0.55)',
+    //     border:
+    //       pendingFeedbackCount > 0
+    //         ? `1px solid ${T.amber}44`
+    //         : `1px solid ${T.border}`,
+    //   }}
+    // >
+
     <div
       className="p-2 rounded-lg"
       style={{
         background:
           pendingFeedbackCount > 0
-            ? 'rgba(245,158,11,0.12)'
-            : 'rgba(8,13,24,0.55)',
-        border:
-          pendingFeedbackCount > 0
-            ? `1px solid ${T.amber}44`
-            : `1px solid ${T.border}`,
+            ? 'rgba(245,158,11,0.14)'
+            : 'rgba(248,250,252,0.86)',
+        backdropFilter: 'blur(14px)',
+        border: '1px solid rgba(59,130,246,0.18)',
       }}
     >
       <button
@@ -608,9 +626,16 @@ function AdminFeedbackNotice({
             <div
               key={item.id}
               className="rounded-lg px-2.5 py-2"
+              // style={{
+              //   background: 'rgba(8,13,24,0.72)',
+              //   border: `1px solid ${T.border}`,
+              // }}
               style={{
-                background: 'rgba(8,13,24,0.72)',
-                border: `1px solid ${T.border}`,
+                background: 'rgba(255,255,255,0.9)',
+                backdropFilter: 'blur(12px)',
+                border: '1px solid rgba(59,130,246,0.15)',
+                boxShadow: '0 8px 24px rgba(0,0,0,0.08)',
+                borderRadius: '16px',
               }}
             >
               <div className="flex items-center justify-between gap-2">
@@ -636,7 +661,7 @@ function AdminFeedbackNotice({
               <p className="mt-1 text-[10px]" style={{ color: T.textSub }}>
                 {item.proposedGeometry
                   ? `${item.proposedGeometry.coordinates?.[0]?.length ?? 0} coordinate point`
-                  : "Guest feedback"}
+                  : 'Guest feedback'}
               </p>
               <div className="grid grid-cols-2 gap-2 mt-2">
                 <button
@@ -650,7 +675,7 @@ function AdminFeedbackNotice({
                   }}
                 >
                   <Check className="size-3" />
-                  {item.proposedGeometry ? "Зөвшөөрөх" : "Нийтлэх"}
+                  {item.proposedGeometry ? 'Зөвшөөрөх' : 'Нийтлэх'}
                 </button>
                 <button
                   type="button"
