@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { sidebarTheme } from './atlas/sidebarTheme';
+import { GraduationCap, BarChart3, ScrollText, Lightbulb } from 'lucide-react';
 
 const T = {
   ...sidebarTheme,
@@ -412,15 +413,36 @@ const GRADE_OPTIONS: Array<{
   label: string;
   grades: number[];
 }> = [
-  { group: '6-9', label: 'Дунд анги', grades: [6, 7, 8, 9] },
-  { group: '10-12', label: 'Ахлах анги', grades: [10, 11, 12] },
+  { group: '6-9', label: 'СУУРЬ МЭДЛЭГ', grades: [6, 7, 8, 9] },
+  { group: '10-12', label: 'ГҮНЗГИЙ ТҮВШИН', grades: [10, 11, 12] },
 ];
 const quizPanel = '#fcfcfc';
 const quizPanelSoft = 'rgba(12,96,169,0.06)';
-const quizBorder = `1px solid ${T.border}`;
+const quizBorder = '1px solid rgba(148,163,184,0.18)';
 const quizGlow =
   '0 18px 48px rgba(12,96,169,0.10), inset 0 1px 0 rgba(255,255,255,0.8)';
 const QUIZ_STORAGE_PREFIX = 'mongol-atlas-history-quiz';
+const infoCardStyle: React.CSSProperties = {
+  display: 'flex',
+  alignItems: 'center',
+  gap: 6,
+  padding: '8px 12px',
+  borderRadius: 10,
+  background: 'rgba(37,99,235,0.06)',
+  border: '1px solid rgba(37,99,235,0.15)',
+  fontSize: 12,
+  color: '#334155',
+  fontWeight: 500,
+  transition: 'all 0.2s ease',
+};
+
+const infoIcon: React.CSSProperties = {
+  fontSize: 14,
+};
+const iconStyle: React.CSSProperties = {
+  color: '#64748b',
+  transition: 'all 0.25s ease',
+};
 
 export default function HistoryQuiz({
   mode,
@@ -826,17 +848,42 @@ export default function HistoryQuiz({
                     type="button"
                     onClick={onClose}
                     style={{
-                      border: quizBorder,
-                      background: quizPanelSoft,
-                      color: T.textSub,
-                      borderRadius: 10,
-                      padding: '7px 11px',
+                      border: '1px solid rgba(148,163,184,0.25)',
+                      background: '#ffffff',
+                      color: '#475569',
+                      borderRadius: 12,
+                      padding: '8px 14px',
                       cursor: 'pointer',
                       fontFamily: 'inherit',
                       fontSize: 12,
+                      fontWeight: 600,
+
+                      transition: 'all 0.25s cubic-bezier(.4,0,.2,1)',
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.background = '#fee2e2';
+                      e.currentTarget.style.color = '#991b1b';
+                      e.currentTarget.style.border = '1px solid #fecaca';
+                      e.currentTarget.style.transform = 'translateY(-2px)';
+                      e.currentTarget.style.boxShadow =
+                        '0 8px 20px rgba(239,68,68,0.15)';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.background = '#ffffff';
+                      e.currentTarget.style.color = '#475569';
+                      e.currentTarget.style.border =
+                        '1px solid rgba(148,163,184,0.25)';
+                      e.currentTarget.style.transform = 'translateY(0)';
+                      e.currentTarget.style.boxShadow = 'none';
+                    }}
+                    onMouseDown={(e) => {
+                      e.currentTarget.style.transform = 'scale(0.95)';
+                    }}
+                    onMouseUp={(e) => {
+                      e.currentTarget.style.transform = 'scale(1)';
                     }}
                   >
-                    Хаах
+                    X
                   </button>
                 </div>
               )}
@@ -857,7 +904,21 @@ export default function HistoryQuiz({
                     fontWeight: 700,
                   }}
                 >
-                  Q
+                  <GraduationCap
+                    size={22}
+                    style={{
+                      color: '#64748b',
+                      transition: 'all 0.25s ease',
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.color = '#2563eb';
+                      e.currentTarget.style.transform = 'scale(1.2)';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.color = '#64748b';
+                      e.currentTarget.style.transform = 'scale(1)';
+                    }}
+                  />
                 </div>
                 <h1
                   style={{
@@ -889,27 +950,30 @@ export default function HistoryQuiz({
 
               {mode === 'knowledge' ? (
                 <>
-                  <div style={{ display: 'grid', gap: 10, marginBottom: 20 }}>
-                    {[
-                      '10 асуулт',
-                      '1162-1300 оны Монголын түүх',
-                      'Зөв хариултын тайлбартай',
-                    ].map((label) => (
-                      <div
-                        key={label}
-                        style={{
-                          padding: '12px 14px',
-                          border: quizBorder,
-                          borderRadius: 12,
-                          background: quizPanelSoft,
-                          color: T.textSub,
-                          fontSize: 13,
-                          lineHeight: 1.5,
-                        }}
-                      >
-                        {label}
-                      </div>
-                    ))}
+                  <div
+                    style={{
+                      display: 'flex',
+                      gap: 10,
+                      marginTop: 16,
+                      marginBottom: 18,
+                      flexWrap: 'wrap',
+                      justifyContent: 'center',
+                    }}
+                  >
+                    <div style={infoCardStyle}>
+                      <BarChart3 size={16} color="#3b82f6" />
+                      <span>10 асуулт</span>
+                    </div>
+
+                    <div style={infoCardStyle}>
+                      <ScrollText size={16} color="#8b5cf6" />
+                      <span>1162–1300 он</span>
+                    </div>
+
+                    <div style={infoCardStyle}>
+                      <Lightbulb size={16} color="#f59e0b" />
+                      <span>Тайлбартай</span>
+                    </div>
                   </div>
 
                   <button
@@ -968,8 +1032,8 @@ export default function HistoryQuiz({
                           }}
                         >
                           {option.group === '6-9'
-                            ? 'Суурь мэдлэг • 6–9-р анги'
-                            : 'Гүнзгий түвшин • 10–12-р анги'}
+                            ? 'Дунд анги • 6–9 '
+                            : 'Ахлах анги • 10–12'}
                         </div>
                       </div>
 
@@ -1058,58 +1122,94 @@ export default function HistoryQuiz({
         {screen === 'quiz' && currentQ && (
           <div style={{ animation: 'fadeIn 0.3s ease' }}>
             <div
-              style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                marginBottom: 10,
-              }}
-            >
-              <span style={{ color: T.textMuted, fontSize: 13 }}>
-                {qIndex + 1} / {TOTAL}
-              </span>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <span
-                  style={{
-                    padding: '4px 14px',
-                    borderRadius: 99,
-                    background:
-                      level === 0
-                        ? 'rgba(12,96,169,0.06)'
-                        : level === 1
-                          ? 'rgba(12,96,169,0.10)'
-                          : 'rgba(220,38,38,0.08)',
-                    color:
-                      level === 0 ? T.textSub : level === 1 ? T.amber : T.red,
-                    fontWeight: 700,
-                    letterSpacing: 1,
-                    fontSize: 11,
-                    textTransform: 'uppercase' as const,
-                    border: `1px solid ${level === 0 ? T.borderMid : level === 1 ? 'rgba(12,96,169,0.25)' : 'rgba(220,38,38,0.25)'}`,
-                  }}
-                >
-                  {LEVELS[level]}
-                </span>
-                {onClose && (
-                  <button
-                    type="button"
-                    onClick={onClose}
-                    style={{
-                      border: quizBorder,
-                      background: quizPanelSoft,
-                      color: T.textSub,
-                      borderRadius: 10,
-                      padding: '6px 10px',
-                      cursor: 'pointer',
-                      fontFamily: 'inherit',
-                      fontSize: 12,
-                    }}
-                  >
-                    Түр гарах
-                  </button>
-                )}
-              </div>
-            </div>
+  style={{
+    background: "#ffffff",
+    borderRadius: 16,
+    padding: "12px 16px",
+    marginBottom: 16,
+    border: "1px solid rgba(148,163,184,0.2)",
+    boxShadow: "0 8px 25px rgba(0,0,0,0.05)",
+
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+  }}
+>
+  {/* LEFT SIDE */}
+  <div style={{ display: "flex", flexDirection: "column" }}>
+    <span style={{ fontSize: 12, color: "#94a3b8" }}>
+      {qIndex + 1} / {TOTAL}
+    </span>
+
+    {/* <div
+      style={{
+        fontSize: 13,
+        fontWeight: 600,
+        color: "#334155",
+      }}
+    >
+      1162–1300 · Түүх
+    </div> */}
+  </div>
+
+  {/* RIGHT SIDE */}
+  <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+
+    {/* LEVEL BADGE */}
+    <div
+      style={{
+        padding: "6px 12px",
+        borderRadius: 999,
+        background:
+          level === 0
+            ? "#e0f2fe"
+            : level === 1
+            ? "#fef3c7"
+            : "#fee2e2",
+        color:
+          level === 0
+            ? "#0369a1"
+            : level === 1
+            ? "#92400e"
+            : "#991b1b",
+        fontSize: 12,
+        fontWeight: 700,
+        transition: "all 0.3s ease",
+      }}
+    >
+      {LEVELS[level]}
+    </div>
+
+    {/* EXIT BUTTON */}
+    {onClose && (
+      <button
+        onClick={onClose}
+        style={{
+          padding: "6px 12px",
+          borderRadius: 999,
+          border: "1px solid rgba(148,163,184,0.3)",
+          background: "transparent",
+          color: "#64748b",
+          fontSize: 12,
+          cursor: "pointer",
+          transition: "all 0.25s ease",
+        }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.background = "#fee2e2";
+          e.currentTarget.style.color = "#991b1b";
+          e.currentTarget.style.transform = "translateY(-2px)";
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.background = "transparent";
+          e.currentTarget.style.color = "#64748b";
+          e.currentTarget.style.transform = "translateY(0)";
+        }}
+      >
+        ✕ Түр гарах
+      </button>
+    )}
+  </div>
+</div>
             <p
               style={{
                 color: T.textSub,
@@ -1168,6 +1268,7 @@ export default function HistoryQuiz({
 
               <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                 {currentQ.opts.map((opt, i) => {
+                  
                   const isCorrect = i === currentQ.ans;
                   const isSelected = i === chosen;
 
@@ -1240,7 +1341,7 @@ export default function HistoryQuiz({
                       <span style={{ fontWeight: 600, marginRight: 6 }}>
                         {String.fromCharCode(97 + i)})
                       </span>
-                      {opt}
+                      {opt.slice(3)}
                     </button>
                   );
                 })}
@@ -1285,7 +1386,6 @@ export default function HistoryQuiz({
                     {chosen === currentQ.ans ? '✅ Зөв!' : '❌ Буруу'}
                   </div>
 
-                  {/* zuv hariult */}
                   {chosen !== currentQ.ans && (
                     <div style={{ marginBottom: 4 }}>
                       👉 Зөв хариулт:{' '}
@@ -1295,7 +1395,6 @@ export default function HistoryQuiz({
                     </div>
                   )}
 
-                  {/* tailbar heseg shuu */}
                   <div style={{ opacity: 0.9 }}>{currentQ.exp}</div>
                 </div>
               )}
