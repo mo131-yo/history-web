@@ -17,6 +17,7 @@ export type LeaderboardScore = {
   lastTotal: number;
   attemptsCount: number;
   selectedGrade: number | null;
+  selectedLevel: number | null;
   quizId: string | null;
   createdAt: string;
 };
@@ -26,6 +27,7 @@ type QuizAttemptHistory = {
   quizId: string;
   mode: "grade" | "knowledge";
   selectedGrade: number | null;
+  selectedLevel: number | null;
   period: string;
   score: number;
   total: number;
@@ -43,10 +45,10 @@ const CATEGORIES: Array<{
 }> = [
   {
     id: "grade",
-    label: "Ангийн quiz",
-    subtitle: "1-12-р ангиас сонгож өгсөн quiz-ийн хамгийн сайн оноо",
-    statLabel: "Шилдэг ангийн оноо",
-    tableMeta: "Анги",
+    label: "Level quiz",
+    subtitle: "Level 1-3-аас сонгож өгсөн quiz-ийн хамгийн сайн оноо",
+    statLabel: "Шилдэг level оноо",
+    tableMeta: "Level",
     Icon: School,
   },
   {
@@ -403,7 +405,7 @@ export function QuizLeaderboardPage({
                     <span className="block truncate text-xs font-semibold" style={{ color: T.text }}>
                       {attempt.mode === "knowledge"
                         ? "Танин мэдэхүйн quiz"
-                        : `${attempt.selectedGrade ?? "-"}-р ангийн quiz`}
+                        : `Level ${attempt.selectedLevel ?? attempt.selectedGrade ?? "-"}`}
                     </span>
                     <span className="mt-0.5 block truncate text-[10px]" style={{ color: T.textMuted }}>
                       {new Date(attempt.createdAt).toLocaleString()}
@@ -443,7 +445,7 @@ function Stat({ label, value }: { label: string; value: string }) {
 
 function formatLeaderboardMeta(entry: LeaderboardScore, category: LeaderboardCategory) {
   if (category === "grade") {
-    return entry.selectedGrade ? `${entry.selectedGrade}-р анги` : "Анги -";
+    return entry.selectedLevel ? `Level ${entry.selectedLevel}` : "Level -";
   }
 
   if (category === "knowledge") {

@@ -196,9 +196,7 @@ export default function AtlasApp() {
   }, [adminMode, selectedFeature?.properties.slug, year]);
 
   const drawer = adminMode ? (
-    <div className="flex-1 overflow-hidden ">
       <CoordEditor {...coordEditorProps} />
-    </div>
   ) : (
     <SelectedStateDrawer
       year={year}
