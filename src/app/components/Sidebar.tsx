@@ -390,7 +390,7 @@ export function Sidebar({
                       <span
                         className="flex items-center justify-center text-base leading-none rounded-full size-6 shrink-0"
                         style={{
-                          background: T.bg,
+                          background: T.amber,
                           border: `1px solid ${T.amber}35`,
                           boxShadow: '0 0 14px rgba(245,158,11,0.12)',
                         }}
