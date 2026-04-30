@@ -1,12 +1,13 @@
 "use client";
 
 export const selectedStateTheme = {
-  bg: "rgba(2,6,23,0.96)",
-  border: "#1e293b",
-  amber: "#f59e0b",
-  amberDim: "#d97706",
-  amberGlow: "#f59e0b15",
-  text: "#e7e5e0",
-  textSub: "#a8a29e",
-  textMuted: "#57534e",
+  bg: "#fcfcfc",
+  border: "#d3dae6",
+  amber: "#000000",
+  amberDim: "#0c60a9",
+  amberGlow: "#",
+  text: "#000000",
+  textSub: "#073a66",
+  textMuted: "#000000",
+  star:"#f5bd04"
 };
