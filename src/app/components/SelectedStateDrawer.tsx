@@ -357,7 +357,7 @@ function StateFeedbackPanel({
               type="button"
               onClick={() => setRating(value)}
               className="rounded p-0.5 transition hover:scale-110"
-              style={{ color: value <= rating ? T.star : "#fcfcfc" }}
+              style={{ color: value <= rating ? T.amber : "#cbd5e1" }}
               aria-label={`${value} од`}
             >
               <Star className="size-4" fill={value <= rating ? "currentColor" : "none"} />
@@ -463,7 +463,7 @@ function StateFeedbackPanel({
             <div key={item.id} className="rounded-lg px-3 py-2" style={{ background: "#ffffff", border: `1px solid ${T.border}` }}>
               <div className="mb-1 flex items-center justify-between gap-2">
                 <span className="truncate text-xs font-semibold" style={{ color: T.text }}>{item.userName}</span>
-                <span className="flex items-center gap-1 text-[10px]" style={{ color: T.star }}>
+                <span className="flex items-center gap-1 text-[10px]" style={{ color: T.amber }}>
                   <Star className="size-3" fill="currentColor" />
                   {item.rating}/5
                 </span>
