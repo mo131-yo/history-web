@@ -92,7 +92,7 @@ export function AtlasCharacterRpgModal({
               className="mt-1 text-lg font-bold"
               style={{ color: T.amber }}
             >
-              Чи Их Монголын үед хэн байх байсан бэ?
+              Чи Их Монголын улсын үед хэн байх байсан бэ?
             </h2>
           </div>
           <button
@@ -103,6 +103,7 @@ export function AtlasCharacterRpgModal({
               border: `1px solid ${T.border}`,
               background: 'rgba(12,96,169,0.05)',
               color: T.textSub,
+              borderRadius: '9999px',
             }}
           >
             ✕
