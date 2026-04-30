@@ -13,11 +13,10 @@
 
 export const sidebarTheme = {
   bg: '#fcfcfc', 
-  border: '#E5E7EB', 
+  border: '#2d5bb8', 
   amber: '#0c60a9', 
   amberDim: '#D97706', 
   amberGlow: 'rgba(245,158,11,0.2)',
-
   text: '#000000', 
   textMuted: '#3679c4', 
   textSub: '#a8a29e',

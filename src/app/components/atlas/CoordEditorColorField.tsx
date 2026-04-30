@@ -29,14 +29,14 @@ export function CoordEditorColorField({
       style={{
         border: `1px solid ${editorTheme.BORDER}`,
         background:
-          "linear-gradient(180deg, rgba(201,164,93,0.08), rgba(255,200,100,0.02))",
+          "#fcfcfc",
         boxShadow: "inset 0 1px 0 rgba(255,255,255,0.03)",
       }}
     >
       <div className="flex items-center justify-between gap-3 mb-3">
         <div>
           <p
-            className="text-[15px] font-bold uppercase tracking-[0.1em]"
+            className="text-[15px]  uppercase tracking-[0.1em]"
             style={{ color: editorTheme.TEXT_MUTED }}
           >
             Polygon өнгө
@@ -62,7 +62,7 @@ export function CoordEditorColorField({
             className="absolute inset-0 opacity-80"
             style={{
               background:
-                "linear-gradient(145deg, rgba(255,255,255,0.28), transparent 45%, rgba(0,0,0,0.14))",
+                "linear-gradient(145deg, rgba(255,255,255,0.28), transparent 45%, rgba(255, 0, 0, 0.14))",
             }}
           />
           <div

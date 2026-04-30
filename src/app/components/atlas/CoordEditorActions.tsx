@@ -44,22 +44,22 @@ export function CoordEditorActions({
     <>
       <div className="grid gap-2">
         <div className="grid grid-cols-2 gap-2">
-          <button type="button" onClick={isCreating ? onCancelCreate : onStartCreate} style={{ ...BTN_BASE, background: isCreating ? `${GOLD}20` : "rgba(139,108,53,0.15)", borderColor: isCreating ? `${GOLD}55` : BORDER, color: isCreating ? GOLD : TEXT_MAIN }}>
+          <button type="button" onClick={isCreating ? onCancelCreate : onStartCreate} style={{ ...BTN_BASE, background: isCreating ? `${INPUT_BG}` : "rgba(139,108,53,0.15)", borderColor: isCreating ? `${INPUT_BG}` : BORDER, color: isCreating ? GOLD : TEXT_MAIN }}>
             <WandSparkles className="size-3.5" />
             {isCreating ? "Цуцлах" : "Шинэ нутаг"}
           </button>
-          <button type="button" onClick={onDelete} disabled={!hasFeature || isCreating} style={{ ...BTN_BASE, borderColor: "#6b2020", background: "rgba(180,30,30,0.08)", color: "#c06060", opacity: !hasFeature || isCreating ? 0.35 : 1, cursor: !hasFeature || isCreating ? "not-allowed" : "pointer" }}>
+          <button type="button" onClick={onDelete} disabled={!hasFeature || isCreating} style={{ ...BTN_BASE, borderColor: "#d3dae6", background: "rgba(180,30,30,0.08)", color: "#c06060", opacity: !hasFeature || isCreating ? 0.35 : 1, cursor: !hasFeature || isCreating ? "not-allowed" : "pointer" }}>
             <Trash2 className="size-3.5" />
             Устгах
           </button>
         </div>
 
-        <button type="button" onClick={onToggleEditing} disabled={!hasFeature || isCreating} style={{ ...BTN_BASE, background: isEditing ? "rgba(56,180,220,0.12)" : INPUT_BG, borderColor: isEditing ? "#38bdf855" : BORDER, color: isEditing ? "#7dd3fc" : TEXT_MAIN, opacity: !hasFeature || isCreating ? 0.35 : 1, cursor: !hasFeature || isCreating ? "not-allowed" : "pointer" }}>
+        <button type="button" onClick={onToggleEditing} disabled={!hasFeature || isCreating} style={{ ...BTN_BASE, background: isEditing ? "rgba(56,180,220,0.12)" : INPUT_BG, borderColor: isEditing ? "#38bdf855" : BORDER, color: isEditing ? "#159edd" : TEXT_MAIN, opacity: !hasFeature || isCreating ? 0.35 : 1, cursor: !hasFeature || isCreating ? "not-allowed" : "pointer" }}>
           <Edit3 className="size-3.5" />
           {isEditing ? "Edit mode унтраах" : "Edit mode асаах"}
         </button>
 
-        <button type="button" onClick={onToggleAddPoint} disabled={!hasFeature || !isEditing || isCreating} style={{ ...BTN_BASE, background: addPointMode ? `${GOLD}15` : INPUT_BG, borderColor: addPointMode ? `${GOLD}44` : BORDER, color: addPointMode ? GOLD : TEXT_MAIN, opacity: !hasFeature || !isEditing || isCreating ? 0.35 : 1, cursor: !hasFeature || !isEditing || isCreating ? "not-allowed" : "pointer" }}>
+        <button type="button" onClick={onToggleAddPoint} disabled={!hasFeature || !isEditing || isCreating} style={{ ...BTN_BASE, background: addPointMode ? `${INPUT_BG}` : INPUT_BG, borderColor: addPointMode ? `${BORDER}` : BORDER, color: addPointMode ? GOLD : TEXT_MAIN, opacity: !hasFeature || !isEditing || isCreating ? 0.35 : 1, cursor: !hasFeature || !isEditing || isCreating ? "not-allowed" : "pointer" }}>
           <PlusCircle className="size-3.5" />
           {addPointMode ? "Add point идэвхтэй" : "Шинэ цэг нэмэх"}
         </button>
