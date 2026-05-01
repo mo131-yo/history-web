@@ -477,14 +477,6 @@ const infoCardStyle: React.CSSProperties = {
   transition: 'all 0.2s ease',
 };
 
-const infoIcon: React.CSSProperties = {
-  fontSize: 14,
-};
-const iconStyle: React.CSSProperties = {
-  color: '#64748b',
-  transition: 'all 0.25s ease',
-};
-
 export default function HistoryQuiz({
   mode,
   onClose,

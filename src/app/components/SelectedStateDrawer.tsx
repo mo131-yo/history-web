@@ -55,7 +55,7 @@ export default function SelectedStateDrawer({
   onClose: () => void;
   feedbackEditor?: FeedbackEditorState;
 }) {
-  const { insight, insightLoading, insightError, isCached } = useStateInsight(year, feature);
+  const { insight, insightLoading, insightError } = useStateInsight(year, feature);
   const { user } = useUser();
   const userName = user?.fullName ?? user?.username ?? user?.primaryEmailAddress?.emailAddress ?? "Зочин";
   const [insightExpanded, setInsightExpanded] = useState(false);
@@ -134,11 +134,6 @@ export default function SelectedStateDrawer({
             <div className="mb-2.5 flex items-center gap-2">
               <Sparkles className="size-4" style={{ color: T.amberDim }} />
               <p className="text-[12px] uppercase tracking-[0.2em]" style={{ color: T.textMuted }}>Түүхч тайлбар</p>
-              {isCached && !insightLoading && (
-                <span className="ml-auto rounded px-1.5 py-0.5 text-[7px] uppercase tracking-widest" style={{ border: `2px solid ${T.border}`, color: T.textMuted }}>
-                  cached
-                </span>
-              )}
             </div>
 
             {insightLoading ? (
@@ -348,7 +343,7 @@ function StateFeedbackPanel({
               type="button"
               onClick={() => setRating(value)}
               className="rounded p-0.5 transition hover:scale-110"
-              style={{ color: value <= rating ? T.amber : "#cbd5e1" }}
+              style={{ color: value <= rating ? "#f59e0b" : "#cbd5e1" }}
               aria-label={`${value} од`}
             >
               <Star className="size-4" fill={value <= rating ? "currentColor" : "none"} />
@@ -372,14 +367,14 @@ function StateFeedbackPanel({
             fontFamily: "var(--font-inter), Arial, sans-serif",
           }}
         />
-        <label className="flex items-center gap-2 rounded-lg px-3 py-2 text-xs" style={{ background: "rgba(12,96,169,0.04)", border: `1px solid ${T.border}`, color: T.textSub }}>
+        <label className="flex cursor-pointer items-center gap-2 rounded-lg px-3 py-2 text-xs font-semibold transition hover:opacity-90" style={{ background: includeCoordinates ? "rgba(12,96,169,0.10)" : "rgba(12,96,169,0.04)", border: `1px solid ${includeCoordinates ? `${T.amber}55` : T.border}`, color: includeCoordinates ? T.amber : T.textSub }}>
           <input
             type="checkbox"
             checked={includeCoordinates}
             onChange={(event) => handleCoordinateToggle(event.target.checked)}
             className="size-3 accent-green-600"
           />
-          Энэ улсын хилийн цэгүүдийг зураг дээр засаж санал болгох
+          Засах санал болгох
         </label>
         {includeCoordinates && (
           <div className="grid gap-2 rounded-lg px-3 py-2" style={{ background: "#ffffff", border: `1px solid ${T.border}` }}>
@@ -454,7 +449,7 @@ function StateFeedbackPanel({
             <div key={item.id} className="rounded-lg px-3 py-2" style={{ background: "#ffffff", border: `1px solid ${T.border}` }}>
               <div className="mb-1 flex items-center justify-between gap-2">
                 <span className="truncate text-xs font-semibold" style={{ color: T.text }}>{item.userName}</span>
-                <span className="flex items-center gap-1 text-[10px]" style={{ color: T.amber }}>
+                <span className="flex items-center gap-1 text-[10px]" style={{ color: "#f59e0b" }}>
                   <Star className="size-3" fill="currentColor" />
                   {item.rating}/5
                 </span>

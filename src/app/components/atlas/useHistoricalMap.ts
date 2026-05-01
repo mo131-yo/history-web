@@ -225,6 +225,9 @@ export function useHistoricalMap(
   const isCreatingRef = useRef(isCreating);
   const addPointModeRef = useRef(addPointMode);
   const draftRingRef = useRef(draftRing);
+  const feedbackPreviewRingRef = useRef<Array<[number, number]>>(
+    feedbackPreviewRing ?? [],
+  );
   const dragIndexRef = useRef<number | null>(null);
 
   const focusPaddingRef = useRef<HistoricalMapFocusPadding>({
@@ -247,6 +250,7 @@ export function useHistoricalMap(
     isCreatingRef.current = isCreating;
     addPointModeRef.current = addPointMode;
     draftRingRef.current = draftRing;
+    feedbackPreviewRingRef.current = feedbackPreviewRing ?? [];
   });
 
   useEffect(() => {
@@ -319,6 +323,16 @@ export function useHistoricalMap(
       );
 
       addHistoricalMapLayers(map, selectedSlugRef.current);
+      syncFeedbackPreview(
+        map,
+        true,
+        feedbackPreviewRingRef.current,
+      );
+      syncFeedbackReviewHighlight(
+        map,
+        true,
+        feedbackReviewSlugRef.current,
+      );
 
       if (collectionRef.current) {
         const source = map.getSource("atlas-states") as
@@ -664,16 +678,16 @@ function renderBattlePopup(properties: GeoJSON.GeoJsonProperties) {
 
       .mongol-atlas-battle-hover-shell .maplibregl-popup-content {
         padding: 0;
-        border: 1px solid rgba(248, 113, 113, 0.45);
+        border: 1px solid rgba(245, 158, 11, 0.75);
         border-radius: 999px;
-        background: rgba(127, 29, 29, 0.94);
-        box-shadow: 0 12px 34px rgba(15, 23, 42, 0.28);
+        background: rgba(15, 23, 42, 0.97);
+        box-shadow: 0 12px 34px rgba(15, 23, 42, 0.42), inset 0 1px 0 rgba(255,255,255,0.12);
         animation: battlePopupIn 150ms ease-out both;
       }
 
       .mongol-atlas-battle-hover-shell .maplibregl-popup-tip {
-        border-top-color: rgba(127, 29, 29, 0.94);
-        border-bottom-color: rgba(127, 29, 29, 0.94);
+        border-top-color: rgba(15, 23, 42, 0.97);
+        border-bottom-color: rgba(15, 23, 42, 0.97);
       }
 
       @keyframes battlePopupIn {
@@ -710,9 +724,9 @@ function renderBattlePopup(properties: GeoJSON.GeoJsonProperties) {
 
 function renderBattleHoverPopup(name: string) {
   return `
-    <div style="display:flex;align-items:center;gap:7px;padding:7px 11px;font-family:var(--font-inter),Arial,sans-serif;color:#fff7ed;">
-      <span style="font-size:15px;line-height:1;">⚔</span>
-      <span style="font-size:12px;font-weight:800;white-space:nowrap;">${escapeHtml(name)}</span>
+    <div style="display:flex;align-items:center;gap:7px;padding:7px 11px;font-family:var(--font-inter),Arial,sans-serif;color:#ffffff;text-shadow:0 1px 3px rgba(0,0,0,0.85);">
+      <span style="font-size:15px;line-height:1;color:#f59e0b;">⚔</span>
+      <span style="font-size:12px;font-weight:900;white-space:nowrap;letter-spacing:0.01em;">${escapeHtml(name)}</span>
     </div>
   `;
 }
