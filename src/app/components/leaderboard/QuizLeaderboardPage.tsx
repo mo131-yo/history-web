@@ -4,7 +4,9 @@ import { useEffect, useMemo, useState } from "react";
 import { 
   Loader2, Trophy, TrendingUp, Flame, Info,
   Medal,
-  Crown
+  Crown,
+  BookOpen,
+  ArrowLeft,
 } from "lucide-react";
 import { useUser } from "@clerk/nextjs"; 
 import { OlympicPodium } from "./Olympicpodium";
@@ -17,6 +19,14 @@ export type LeaderboardScore = {
   total?: number;         
   attemptsCount?: number; 
   selectedLevel?: number;
+  imageUrl?: string | null;
+};
+
+type WikiApiState = {
+  status: "loading" | "idle" | "error";
+  title: string;
+  extract: string;
+  thumbnail?: string | null;
 };
 
 export function QuizLeaderboardPage({
@@ -31,6 +41,7 @@ export function QuizLeaderboardPage({
   const [attempts, setAttempts] = useState<any[]>([]);
   const [status, setStatus] = useState<"loading" | "idle" | "error">("loading");
   const [category, setCategory] = useState<LeaderboardCategory>("all");
+  const [contentView, setContentView] = useState<"leaderboard" | "wiki">("leaderboard");
 
   useEffect(() => {
     const controller = new AbortController();
@@ -123,6 +134,10 @@ export function QuizLeaderboardPage({
           </div>
 
           <div className="bg-white rounded-[32px] p-6 shadow-sm border border-slate-100 flex flex-col flex-1 min-h-0 mb-4 overflow-hidden">
+            {contentView === "wiki" ? (
+              <WikiPanel onBack={() => setContentView("leaderboard")} />
+            ) : (
+              <>
             <div className="flex items-center justify-between mb-4 shrink-0">
               <div>
                 <h3 className="text-lg font-bold text-slate-800">Хэрэглэгчдийн эрэмбэлэлт</h3>
@@ -158,7 +173,7 @@ export function QuizLeaderboardPage({
                       <td className="px-4 py-3 bg-slate-50/50 group-hover:bg-transparent">
                         <div className="flex items-center gap-3">
                           <div className="w-8 h-8 rounded-lg bg-white flex items-center justify-center font-bold text-slate-400 text-[10px] shadow-sm border border-slate-100">
-                            {score.userName.substring(0, 2).toUpperCase()}
+                            <LeaderboardAvatar score={score} />
                           </div>
                           <span className="font-bold text-slate-700 text-xs truncate max-w-[120px]">
                             {score.userName}
@@ -176,6 +191,8 @@ export function QuizLeaderboardPage({
                 </tbody>
               </table>
             </div>
+              </>
+            )}
           </div>
         </div>
 
@@ -236,13 +253,16 @@ export function QuizLeaderboardPage({
     <p className="text-xs font-medium leading-relaxed text-amber-900/80">
       "Монголын нууц товчоо" бол Дэлхийн утга зохиолын өвд бүртгэгдсэн цорын ганц түүхэн дурсгалт бичиг юм.
     </p>
-    
-    <button className="mt-4 text-[10px] font-black text-amber-700 hover:text-amber-900 flex items-center gap-1 transition-colors">
+    <button
+      type="button"
+      onClick={() => setContentView("wiki")}
+      className="mt-4 text-[10px] font-black text-amber-700 hover:text-amber-900 flex items-center gap-1 transition-colors"
+    >
       ДЭЛГЭРЭНГҮЙ УНШИХ →
-    </button>
+      </button>
   </div>
 </div>
-{/* Powered by Section */}
+
 <div className="flex justify-center pt-6 mt-auto shrink-0">
   <p className="text-[10px] font-bold text-slate-300 uppercase tracking-[0.2em] flex items-center gap-2">
     <span className="w-8 h-[1px] bg-slate-200"></span>
@@ -269,6 +289,171 @@ export function QuizLeaderboardPage({
           background: #cbd5e1;
         }
       `}</style>
+    </div>
+  );
+}
+
+function LeaderboardAvatar({ score }: { score: LeaderboardScore }) {
+  if (score.imageUrl) {
+    return (
+      // eslint-disable-next-line @next/next/no-img-element
+      <img
+        src={score.imageUrl}
+        alt={score.userName}
+        className="h-full w-full rounded-lg object-cover"
+      />
+    );
+  }
+
+  return <>{score.userName.substring(0, 2).toUpperCase()}</>;
+}
+
+function WikiPanel({ onBack }: { onBack: () => void }) {
+  const [wiki, setWiki] = useState<WikiApiState>({
+    status: "loading",
+    title: "Монголын Нууц Товчоо",
+    extract: "",
+  });
+
+  useEffect(() => {
+    const controller = new AbortController();
+    const params = new URLSearchParams({
+      action: "query",
+      format: "json",
+      prop: "extracts|pageimages",
+      exintro: "0",
+      explaintext: "1",
+      piprop: "thumbnail",
+      pithumbsize: "640",
+      redirects: "1",
+      origin: "*",
+      titles: "Монголын_Нууц_Товчоо",
+    });
+
+    fetch(`https://mn.wikipedia.org/w/api.php?${params.toString()}`, {
+      signal: controller.signal,
+    })
+      .then((response) => {
+        if (!response.ok) throw new Error("wiki-failed");
+        return response.json() as Promise<{
+          query?: {
+            pages?: Record<
+              string,
+              {
+                title?: string;
+                extract?: string;
+                thumbnail?: { source?: string };
+              }
+            >;
+          };
+        }>;
+      })
+      .then((data) => {
+        const page = Object.values(data.query?.pages ?? {})[0];
+        if (!page?.extract) throw new Error("wiki-empty");
+        setWiki({
+          status: "idle",
+          title: page.title ?? "Монголын Нууц Товчоо",
+          extract: page.extract,
+          thumbnail: page.thumbnail?.source ?? null,
+        });
+      })
+      .catch((error) => {
+        if (error instanceof DOMException && error.name === "AbortError") return;
+        setWiki({
+          status: "error",
+          title: "Монголын Нууц Товчоо",
+          extract:
+            '"Монголын нууц товчоо" нь XIII зууны Монголын хамгийн чухал түүх-уран зохиолын эх сурвалжуудын нэг бөгөөд Чингис хааны угсаа, бага нас, тал нутгийн улс төр, Их Монгол Улс байгуулагдсан үйл явцыг өгүүлдэг.',
+        });
+      });
+
+    return () => controller.abort();
+  }, []);
+
+  const paragraphs = useMemo(
+    () =>
+      wiki.extract
+        .split(/\n+/)
+        .map((paragraph) => paragraph.trim())
+        .filter(Boolean)
+        .slice(0, 8),
+    [wiki.extract],
+  );
+
+  return (
+    <div className="flex h-full min-h-0 flex-col">
+      <div className="mb-5 flex items-center justify-between gap-3 shrink-0">
+        <div className="flex items-center gap-3">
+          <div className="grid size-10 place-items-center rounded-2xl bg-amber-100 text-amber-700">
+            <BookOpen size={19} />
+          </div>
+          <div>
+            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-amber-700">
+              Мэдлэгт нэмэр
+            </p>
+            <h3 className="text-lg font-black text-slate-800">
+              {wiki.title}
+            </h3>
+          </div>
+        </div>
+        <button
+          type="button"
+          onClick={onBack}
+          className="flex h-9 items-center gap-2 rounded-xl border border-slate-100 bg-slate-50 px-3 text-xs font-bold text-slate-500 transition hover:bg-blue-50 hover:text-blue-600"
+        >
+          <ArrowLeft size={14} />
+          Жагсаалт
+        </button>
+      </div>
+
+      <div className="min-h-0 flex-1 overflow-y-auto pr-2 custom-scrollbar">
+        <div className="rounded-3xl border border-amber-100 bg-gradient-to-br from-amber-50 to-white p-6">
+          {wiki.status === "loading" ? (
+            <div className="flex items-center gap-3 rounded-2xl border border-amber-100 bg-white/70 px-4 py-5 text-sm font-bold text-amber-800">
+              <Loader2 className="size-4 animate-spin" />
+              Wikipedia API-аас мэдээлэл уншиж байна...
+            </div>
+          ) : (
+            <>
+              {wiki.thumbnail && (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={wiki.thumbnail}
+                  alt={wiki.title}
+                  className="mb-5 max-h-56 w-full rounded-2xl border border-amber-100 object-cover shadow-sm"
+                />
+              )}
+
+              <div className="space-y-4">
+                {paragraphs.map((paragraph) => (
+                  <p
+                    key={paragraph}
+                    className="text-sm leading-7 text-slate-700"
+                  >
+                    {paragraph}
+                  </p>
+                ))}
+              </div>
+            </>
+          )}
+          <div className="mt-5 grid gap-3">
+            {[
+              "Чингис хааны угсаа гарвал, Есүхэй баатар, Өэлүн эхийн тухай өгүүлдэг.",
+              "Монгол аймгуудын холбоо, зөрчил, анд нөхөрлөл, төрийн байгуулалтын эхлэлийг харуулдаг.",
+              "Түүхэн эх сурвалж төдийгүй Монгол хэл, уран зохиолын үнэт өвд тооцогддог.",
+            ].map((item) => (
+              <div
+                key={item}
+                className="flex gap-3 rounded-2xl border border-amber-100 bg-white/75 px-4 py-3 text-sm leading-6 text-slate-600"
+              >
+                <span className="mt-2 size-1.5 shrink-0 rounded-full bg-amber-500" />
+                <span>{item}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

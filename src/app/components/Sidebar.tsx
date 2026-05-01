@@ -8,6 +8,7 @@ import {
   Check,
   ChevronDown,
   CircleHelp,
+  Crown,
   Globe,
   LayoutGrid,
   ListChecks,
@@ -28,7 +29,7 @@ import type { MapMode, SavedCharacterResult } from './atlas/types';
 import type { QuizMode } from './QuizModal';
 
 type SidebarNavItem = {
-  id: 'character' | 'quiz' | 'map';
+  id: 'character' | 'quiz' | 'map' | 'lineage';
   title: string;
   subtitle: string;
   icon: typeof CircleHelp;
@@ -48,10 +49,11 @@ type SidebarProps = {
   onOpenQuiz: (mode: QuizMode) => void;
   onOpenMap: () => void;
   onOpenLeaderboard: () => void;
+  onOpenLineage: () => void;
   onSelectSearchResult: (feature: AtlasStateFeature) => void;
-  currentView: 'map' | 'leaderboard';
+  currentView: 'map' | 'leaderboard' | 'lineage';
   characterResult: SavedCharacterResult | null;
-  pendingFeedbackCount: number;
+  pendingFeedbackCount?: number;
   quizEnabled: boolean;
   adminMode: boolean;
   collapsed: boolean;
@@ -68,10 +70,10 @@ export function Sidebar({
   onOpenQuiz,
   onOpenMap,
   onOpenLeaderboard,
+  onOpenLineage,
   onSelectSearchResult,
   currentView,
   characterResult,
-  pendingFeedbackCount,
   quizEnabled,
   adminMode,
   collapsed,
@@ -121,6 +123,18 @@ export function Sidebar({
         setMapExpanded((prev) => !prev);
       },
       active: currentView === 'map',
+    },
+    {
+      id: 'lineage',
+      title: 'Алтан Ураг',
+      subtitle: 'Их хаадын угсаа',
+      icon: Crown,
+      onClick: () => {
+        setQuizExpanded(false);
+        setMapExpanded(false);
+        onOpenLineage();
+      },
+      active: currentView === 'lineage',
     },
   ];
 
@@ -340,6 +354,7 @@ export function Sidebar({
     const isQuiz = item.id === "quiz";
     const isMap = item.id === "map";
     const isCharacter = item.id === "character";
+    const isLineage = item.id === "lineage";
     
     // Дэд цэс нээлттэй эсэхийг тодорхойлох
     const isOpen = (isQuiz && quizExpanded) || (isMap && mapExpanded);
@@ -351,7 +366,7 @@ export function Sidebar({
         {!collapsed && (
           <div className="flex items-center gap-2 px-2 mb-2">
             <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
-              {isCharacter ? 'Навигаци' : isQuiz ? 'Суралцах' : 'Газрын зураг'}
+              {isLineage ? 'Ургийн мод' : isCharacter ? 'Навигаци' : isQuiz ? 'Суралцах' : 'Газрын зураг'}
             </span>
           </div>
         )}
@@ -471,41 +486,11 @@ export function Sidebar({
   })}
 </nav>
 
-       {/* FOOTER SECTION: FEEDBACK & USER PANEL */}
+       {/* FOOTER SECTION: USER PANEL */}
 <div className="relative z-20 flex flex-col gap-4 pt-6 mt-auto">
   
   {!collapsed && (
     <div className="px-1 space-y-4">
-      {/* FEEDBACK / ADMIN SECTION */}
-      <div className="relative overflow-hidden group">
-        {adminMode ? (
-          <div className="transition-all duration-300 transform group-hover:translate-y-[-2px]">
-            <AdminFeedbackNotice pendingFeedbackCount={pendingFeedbackCount} />
-          </div>
-        ) : (
-          <button 
-            type="button"
-            onClick={() => console.log("Open Feedback")}
-            className="w-full p-3.5 rounded-[20px] bg-gradient-to-br from-white to-slate-50/50 border border-slate-200/80 flex items-center gap-3.5 hover:border-blue-400/50 hover:shadow-[0_8px_20px_-10px_rgba(59,130,246,0.2)] transition-all duration-300 active:scale-[0.97] group"
-          >
-            {/* Икон - зөөлөн цэнхэр туяатай */}
-            <div className="flex items-center justify-center text-blue-500 transition-transform duration-300 size-9 rounded-xl bg-blue-50/50 group-hover:scale-110">
-              <Bell size={18} className="drop-shadow-sm" />
-            </div>
-            
-            <div className="flex-1 text-left">
-              <p className="text-[11px] font-black text-slate-600 uppercase tracking-tight group-hover:text-blue-600 transition-colors">
-                Feedback review
-              </p>
-              <p className="text-[10px] text-slate-400 font-medium italic">
-                Системд туслах
-              </p>
-            </div>
-
-          </button>
-        )}
-      </div>
-
       {/* USER PANEL - Илүү цэвэрхэн тусгаарлагчтай */}
       {isLoaded && (
         <div className="relative">

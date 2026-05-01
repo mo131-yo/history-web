@@ -73,6 +73,14 @@ const HistoricalMap = dynamic(
   { ssr: false, loading: () => <MapLoader label="Түүхэн зураг" /> },
 );
 
+const LineageTree = dynamic(
+  () =>
+    import('@/app/components/lineage/LineageTree').then((m) => ({
+      default: m.default,
+    })),
+  { ssr: false, loading: () => <MapLoader label="Алтан Ураг" /> },
+);
+
 export default function AtlasApp() {
   const { user, isLoaded } = useUser();
   const adminMode = isLoaded && !!user;
@@ -83,7 +91,9 @@ export default function AtlasApp() {
   const [quizOpen, setQuizOpen] = useState(false);
   const [quizMode, setQuizMode] = useState<QuizMode>('grade');
   const [leaderboardVersion, setLeaderboardVersion] = useState(0);
-  const [currentView, setCurrentView] = useState<'map' | 'leaderboard'>('map');
+  const [currentView, setCurrentView] = useState<
+    'map' | 'leaderboard' | 'lineage'
+  >('map');
   const [timelineAutoPlaying, setTimelineAutoPlaying] = useState(false);
   const [liveCharacterResult, setLiveCharacterResult] =
     useState<SavedCharacterResult | null>(null);
@@ -416,6 +426,7 @@ export default function AtlasApp() {
           }}
           onOpenMap={() => setCurrentView('map')}
           onOpenLeaderboard={() => setCurrentView('leaderboard')}
+          onOpenLineage={() => setCurrentView('lineage')}
           onSelectSearchResult={(feature: {
             properties: { year: SetStateAction<number>; slug: any };
           }) => {
@@ -441,6 +452,10 @@ export default function AtlasApp() {
               version={leaderboardVersion}
               onStartQuiz={() => setQuizOpen(true)}
             />
+          ) : currentView === 'lineage' ? (
+            <div className="h-full overflow-auto bg-slate-50 p-4 md:p-6">
+              <LineageTree />
+            </div>
           ) : (
             <>
               <div className="absolute inset-x-0 top-0 bottom-[7.5rem] z-0 md:bottom-32 lg:bottom-[7.5rem]">

@@ -84,9 +84,18 @@ export function OlympicPodium({
                 {/* Аватар */}
                 <div className={`relative w-20 h-20 md:w-24 md:h-24 rounded-3xl border-4 flex items-center justify-center text-2xl font-black shadow-2xl rotate-3 hover:rotate-0 transition-transform duration-300 overflow-hidden bg-white/90 backdrop-blur-sm
                   ${isFirst ? 'border-yellow-400' : 'border-white/50'}`}>
-                  <span className="text-transparent bg-gradient-to-br from-slate-700 to-slate-900 bg-clip-text">
-                    {entry.userName?.substring(0, 2).toUpperCase()}
-                  </span>
+                  {entry.imageUrl ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={entry.imageUrl}
+                      alt={entry.userName}
+                      className="h-full w-full object-cover"
+                    />
+                  ) : (
+                    <span className="text-transparent bg-gradient-to-br from-slate-700 to-slate-900 bg-clip-text">
+                      {entry.userName?.substring(0, 2).toUpperCase()}
+                    </span>
+                  )}
                 </div>
 
                 {/* Ranking Badge - Гадна талд, баруун доод буланд */}
