@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { sql } from "@/lib/atlas-db-core";
+import { ensureUsersTable } from "@/lib/users-db";
 import { atlasApiErrorResponse } from "../../atlas/atlasApiErrors";
 
 const scoreSchema = z.object({
@@ -15,6 +16,7 @@ const categorySchema = z.enum(["grade", "knowledge", "all"]).default("grade");
 export async function GET(request: Request) {
   try {
     await ensureQuizAttemptTables();
+    await ensureUsersTable();
 
     const { searchParams } = new URL(request.url);
     const category = categorySchema.parse(searchParams.get("category") ?? "grade");
@@ -90,30 +92,32 @@ async function loadModeLeaderboard(category: "grade" | "knowledge") {
   return (await sql`
     WITH base AS (
       SELECT
-        clerk_user_id,
-        COALESCE(NULLIF(answers->>'userName', ''), 'Зочин') AS user_name,
-        quiz_id,
-        score,
-        total_questions AS total,
-        answers->>'mode' AS mode,
-        NULLIF(answers->>'selectedGrade', '')::integer AS selected_grade,
-        NULLIF(answers->>'selectedLevel', '')::integer AS selected_level,
-        created_at,
-        COUNT(*) OVER (PARTITION BY clerk_user_id) AS attempts_count,
-        FIRST_VALUE(score) OVER (
-          PARTITION BY clerk_user_id
-          ORDER BY created_at DESC
+        qa.clerk_user_id,
+        COALESCE(NULLIF(qa.answers->>'userName', ''), 'Зочин') AS user_name,
+        COALESCE(u.image_url, '') AS image_url,
+        qa.quiz_id,
+        qa.score,
+        qa.total_questions AS total,
+        qa.answers->>'mode' AS mode,
+        NULLIF(qa.answers->>'selectedGrade', '')::integer AS selected_grade,
+        NULLIF(qa.answers->>'selectedLevel', '')::integer AS selected_level,
+        qa.created_at,
+        COUNT(*) OVER (PARTITION BY qa.clerk_user_id) AS attempts_count,
+        FIRST_VALUE(qa.score) OVER (
+          PARTITION BY qa.clerk_user_id
+          ORDER BY qa.created_at DESC
         ) AS last_score,
-        FIRST_VALUE(total_questions) OVER (
-          PARTITION BY clerk_user_id
-          ORDER BY created_at DESC
+        FIRST_VALUE(qa.total_questions) OVER (
+          PARTITION BY qa.clerk_user_id
+          ORDER BY qa.created_at DESC
         ) AS last_total
-      FROM quiz_attempts
+      FROM quiz_attempts qa
+      LEFT JOIN users u ON u.clerk_user_id = qa.clerk_user_id
       WHERE
         CASE
           WHEN ${category} = 'knowledge'
-            THEN quiz_id = 'history-knowledge' OR answers->>'mode' = 'knowledge'
-          ELSE quiz_id LIKE 'history-level-%' OR quiz_id LIKE 'history-grade-%' OR answers->>'mode' = 'grade'
+            THEN qa.quiz_id = 'history-knowledge' OR qa.answers->>'mode' = 'knowledge'
+          ELSE qa.quiz_id LIKE 'history-level-%' OR qa.quiz_id LIKE 'history-grade-%' OR qa.answers->>'mode' = 'grade'
         END
     ),
     ranked AS (
@@ -133,11 +137,12 @@ async function loadModeLeaderboard(category: "grade" | "knowledge") {
       total,
       last_score,
       last_total,
-      attempts_count,
-      selected_grade,
-      selected_level,
-      quiz_id,
-      created_at::text
+        attempts_count,
+        selected_grade,
+        selected_level,
+        quiz_id,
+        COALESCE(image_url, '') AS image_url,
+        created_at::text
     FROM ranked
     WHERE rank_in_user = 1
     ORDER BY score DESC, total ASC, created_at DESC
@@ -149,39 +154,42 @@ async function loadAllQuizLeaderboard() {
   return (await sql`
     WITH user_attempts AS (
       SELECT
-        clerk_user_id,
-        COALESCE(NULLIF(answers->>'userName', ''), 'Зочин') AS user_name,
-        score,
-        total_questions,
-        NULLIF(answers->>'selectedGrade', '')::integer AS selected_grade,
-        NULLIF(answers->>'selectedLevel', '')::integer AS selected_level,
-        quiz_id,
-        created_at,
-        FIRST_VALUE(score) OVER (
-          PARTITION BY clerk_user_id
-          ORDER BY created_at DESC
+        qa.clerk_user_id,
+        COALESCE(NULLIF(qa.answers->>'userName', ''), 'Зочин') AS user_name,
+        COALESCE(u.image_url, '') AS image_url,
+        qa.score,
+        qa.total_questions,
+        NULLIF(qa.answers->>'selectedGrade', '')::integer AS selected_grade,
+        NULLIF(qa.answers->>'selectedLevel', '')::integer AS selected_level,
+        qa.quiz_id,
+        qa.created_at,
+        FIRST_VALUE(qa.score) OVER (
+          PARTITION BY qa.clerk_user_id
+          ORDER BY qa.created_at DESC
         ) AS last_score,
-        FIRST_VALUE(total_questions) OVER (
-          PARTITION BY clerk_user_id
-          ORDER BY created_at DESC
+        FIRST_VALUE(qa.total_questions) OVER (
+          PARTITION BY qa.clerk_user_id
+          ORDER BY qa.created_at DESC
         ) AS last_total,
-        FIRST_VALUE(quiz_id) OVER (
-          PARTITION BY clerk_user_id
-          ORDER BY created_at DESC
+        FIRST_VALUE(qa.quiz_id) OVER (
+          PARTITION BY qa.clerk_user_id
+          ORDER BY qa.created_at DESC
         ) AS last_quiz_id,
-        FIRST_VALUE(NULLIF(answers->>'selectedGrade', '')::integer) OVER (
-          PARTITION BY clerk_user_id
-          ORDER BY created_at DESC
+        FIRST_VALUE(NULLIF(qa.answers->>'selectedGrade', '')::integer) OVER (
+          PARTITION BY qa.clerk_user_id
+          ORDER BY qa.created_at DESC
         ) AS last_selected_grade,
-        FIRST_VALUE(NULLIF(answers->>'selectedLevel', '')::integer) OVER (
-          PARTITION BY clerk_user_id
-          ORDER BY created_at DESC
+        FIRST_VALUE(NULLIF(qa.answers->>'selectedLevel', '')::integer) OVER (
+          PARTITION BY qa.clerk_user_id
+          ORDER BY qa.created_at DESC
         ) AS last_selected_level
-      FROM quiz_attempts
+      FROM quiz_attempts qa
+      LEFT JOIN users u ON u.clerk_user_id = qa.clerk_user_id
     )
     SELECT
       clerk_user_id AS user_id,
       (ARRAY_AGG(user_name ORDER BY created_at DESC))[1] AS user_name,
+      (ARRAY_AGG(image_url ORDER BY created_at DESC))[1] AS image_url,
       0 AS year,
       SUM(score)::integer AS score,
       SUM(total_questions)::integer AS total,
@@ -211,6 +219,7 @@ type QuizScoreRow = {
   selected_grade?: number | null;
   selected_level?: number | null;
   quiz_id?: string | null;
+  image_url?: string | null;
   created_at: string;
 };
 
@@ -227,6 +236,7 @@ function toLeaderboardScore(row: QuizScoreRow) {
     selectedGrade: row.selected_grade ?? null,
     selectedLevel: row.selected_level ?? null,
     quizId: row.quiz_id ?? null,
+    imageUrl: row.image_url ?? null,
     createdAt: row.created_at,
   };
 }

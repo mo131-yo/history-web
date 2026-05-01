@@ -5,32 +5,32 @@ import { MapMode } from "./types";
 
 export function MapLoader({ label }: { label: string }) {
   return (
-    <div className="flex h-full w-full items-center justify-center" style={{ background: "#06040200" }}>
-      <div className="flex flex-col items-center gap-5">
+    <div className="flex h-full w-full items-center justify-center bg-slate-50/80">
+      <div className="flex flex-col items-center gap-4 rounded-3xl border border-blue-100 bg-white/90 px-8 py-7 shadow-[0_24px_70px_rgba(37,99,235,0.14)] backdrop-blur">
         <div className="relative h-14 w-14">
           <div
             className="absolute inset-0 animate-spin rounded-full"
             style={{
-              border: "1.5px solid transparent",
-              borderTopColor: "#c9a45d",
-              borderRightColor: "rgba(201,164,93,0.3)",
+              border: "2px solid transparent",
+              borderTopColor: "#2563eb",
+              borderRightColor: "rgba(37,99,235,0.22)",
               animationDuration: "1.4s",
             }}
           />
           <div
             className="absolute inset-2.5 animate-spin rounded-full"
             style={{
-              border: "1.5px solid transparent",
-              borderTopColor: "#8b6c35",
+              border: "2px solid transparent",
+              borderTopColor: "#93c5fd",
               animationDirection: "reverse",
               animationDuration: "2.1s",
             }}
           />
           <div className="absolute inset-0 flex items-center justify-center">
-            <div className="h-1.5 w-1.5 rounded-full" style={{ background: "#c9a45d", opacity: 0.7 }} />
+            <div className="h-2 w-2 rounded-full bg-blue-600 opacity-80" />
           </div>
         </div>
-        <p className="text-[9px] uppercase tracking-[0.45em]" style={{ color: "#5c4020", fontFamily: "var(--font-inter), Arial, sans-serif" }}>
+        <p className="text-[10px] font-black uppercase tracking-[0.28em] text-blue-600" style={{ fontFamily: "var(--font-inter), Arial, sans-serif" }}>
           {label} ачаалж байна
         </p>
       </div>

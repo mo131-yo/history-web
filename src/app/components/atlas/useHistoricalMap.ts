@@ -678,16 +678,17 @@ function renderBattlePopup(properties: GeoJSON.GeoJsonProperties) {
 
       .mongol-atlas-battle-hover-shell .maplibregl-popup-content {
         padding: 0;
-        border: 1px solid rgba(245, 158, 11, 0.75);
-        border-radius: 999px;
-        background: rgba(15, 23, 42, 0.97);
-        box-shadow: 0 12px 34px rgba(15, 23, 42, 0.42), inset 0 1px 0 rgba(255,255,255,0.12);
+        overflow: hidden;
+        border: 1px solid rgba(239, 68, 68, 0.34);
+        border-radius: 16px;
+        background: transparent;
+        box-shadow: 0 18px 48px rgba(127, 29, 29, 0.24);
         animation: battlePopupIn 150ms ease-out both;
       }
 
       .mongol-atlas-battle-hover-shell .maplibregl-popup-tip {
-        border-top-color: rgba(15, 23, 42, 0.97);
-        border-bottom-color: rgba(15, 23, 42, 0.97);
+        border-top-color: rgba(255, 247, 237, 0.98);
+        border-bottom-color: rgba(255, 247, 237, 0.98);
       }
 
       @keyframes battlePopupIn {
@@ -724,9 +725,25 @@ function renderBattlePopup(properties: GeoJSON.GeoJsonProperties) {
 
 function renderBattleHoverPopup(name: string) {
   return `
-    <div style="display:flex;align-items:center;gap:7px;padding:7px 11px;font-family:var(--font-inter),Arial,sans-serif;color:#ffffff;text-shadow:0 1px 3px rgba(0,0,0,0.85);">
-      <span style="font-size:15px;line-height:1;color:#f59e0b;">⚔</span>
-      <span style="font-size:12px;font-weight:900;white-space:nowrap;letter-spacing:0.01em;">${escapeHtml(name)}</span>
+    <style>
+      .mongol-atlas-battle-hover-shell .maplibregl-popup-content {
+        padding: 0;
+        overflow: hidden;
+        border: 1px solid rgba(239, 68, 68, 0.34);
+        border-radius: 16px;
+        background: transparent;
+        box-shadow: 0 18px 48px rgba(127, 29, 29, 0.24);
+      }
+
+      .mongol-atlas-battle-hover-shell .maplibregl-popup-tip {
+        border-top-color: rgba(255, 247, 237, 0.98);
+        border-bottom-color: rgba(255, 247, 237, 0.98);
+      }
+    </style>
+    <div style="position:relative;display:flex;align-items:center;gap:11px;min-width:260px;padding:14px 16px;font-family:var(--font-inter),Arial,sans-serif;background:linear-gradient(135deg,#fff7ed 0%,#ffffff 58%,#fee2e2 100%);color:#111827;">
+      <div style="position:absolute;inset:0;background:radial-gradient(circle at top left,rgba(239,68,68,0.18),transparent 42%);pointer-events:none;"></div>
+      <span style="position:relative;display:flex;height:36px;width:36px;flex:none;align-items:center;justify-content:center;border-radius:12px;background:#fee2e2;border:1px solid rgba(239,68,68,0.34);font-size:18px;color:#7f1d1d;">⚔</span>
+      <span style="position:relative;font-size:14px;font-weight:900;white-space:nowrap;letter-spacing:0.01em;color:#111827;">${escapeHtml(name)}</span>
     </div>
   `;
 }

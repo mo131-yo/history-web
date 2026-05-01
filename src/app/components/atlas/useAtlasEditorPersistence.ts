@@ -99,6 +99,8 @@ export function buildSaveGeometry(args: {
       if (!args.selectedFeature) throw new Error("no-feature");
       args.setCollection((current) => current ? { ...current, features: current.features.map((item) => item.properties.slug === feature.properties.slug ? feature : item) } : current);
       applySavedFeature(feature, args.setDraftRing, args.setForm, args.setSelectedVertexIndex);
+      args.setIsEditing(false);
+      args.setAddPointMode(false);
       finishSave(args.setSaveState);
     } catch (err) {
       args.setSaveState("error");
