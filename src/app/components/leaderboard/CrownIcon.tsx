@@ -1,37 +1,33 @@
-type CrownIconProps = {
-  size?: number;
-};
+import React from "react";
 
-export function CrownIcon({ size = 32 }: CrownIconProps) {
+// Props-ийн төрлийг тодорхойлж өгнө
+interface CrownIconProps {
+  size?: number;
+  className?: string;
+}
+
+export const CrownIcon = ({ size = 24, className = "" }: CrownIconProps) => {
   return (
     <svg
       width={size}
-      height={Math.round(size * 0.85)}
-      viewBox="0 0 32 27"
+      height={size}
+      viewBox="0 0 24 24"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
+      className={className}
     >
       <path
-        d="M2 22 L6 10 L12 18 L16 4 L20 18 L26 10 L30 22 Z"
-        fill="#ca8a04"
-        stroke="#a16207"
-        strokeWidth="1.2"
+        d="M5 15L3 6L8 9L12 3L16 9L21 6L19 15H5Z"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
         strokeLinejoin="round"
       />
-      <rect
-        x="2"
-        y="22"
-        width="28"
-        height="4"
-        rx="2"
-        fill="#ca8a04"
-        stroke="#a16207"
-        strokeWidth="1"
+      <path
+        d="M5 15C5 16.6569 8.13401 18 12 18C15.866 18 19 16.6569 19 15"
+        stroke="currentColor"
+        strokeWidth="2"
       />
-      <circle cx="16" cy="4" r="2.2" fill="#fbbf24" />
-      <circle cx="6" cy="10" r="1.8" fill="#fbbf24" />
-      <circle cx="26" cy="10" r="1.8" fill="#fbbf24" />
-      <rect x="6" y="23.5" width="20" height="1" rx="0.5" fill="#fde68a" opacity="0.5" />
     </svg>
   );
-}
+};

@@ -1,73 +1,23 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { BookOpenCheck, Clock3, Layers3, Loader2, Medal, RefreshCw, School, Trophy } from "lucide-react";
-import { sidebarTheme as T } from "../atlas/sidebarTheme";
+import { 
+  Loader2, Trophy, TrendingUp, Flame, Info,
+  Medal,
+  Crown
+} from "lucide-react";
+import { useUser } from "@clerk/nextjs"; 
 import { OlympicPodium } from "./Olympicpodium";
 
 export type LeaderboardCategory = "grade" | "knowledge" | "all";
-
 export type LeaderboardScore = {
-  userId: string;
+  userId: string;         
   userName: string;
-  year: number;
   score: number;
-  total: number;
-  lastScore: number;
-  lastTotal: number;
-  attemptsCount: number;
-  selectedGrade: number | null;
-  selectedLevel: number | null;
-  quizId: string | null;
-  createdAt: string;
+  total?: number;         
+  attemptsCount?: number; 
+  selectedLevel?: number;
 };
-
-type QuizAttemptHistory = {
-  id: string;
-  quizId: string;
-  mode: "grade" | "knowledge";
-  selectedGrade: number | null;
-  selectedLevel: number | null;
-  period: string;
-  score: number;
-  total: number;
-  passed: boolean;
-  createdAt: string;
-};
-
-const CATEGORIES: Array<{
-  id: LeaderboardCategory;
-  label: string;
-  subtitle: string;
-  statLabel: string;
-  tableMeta: string;
-  Icon: typeof School;
-}> = [
-  {
-    id: "grade",
-    label: "Level quiz",
-    subtitle: "Level 1-3-аас сонгож өгсөн quiz-ийн хамгийн сайн оноо",
-    statLabel: "Шилдэг level оноо",
-    tableMeta: "Level",
-    Icon: School,
-  },
-  {
-    id: "knowledge",
-    label: "Танин мэдэхүй",
-    subtitle: "1162-1300 оны ерөнхий мэдлэгийн quiz-ийн хамгийн сайн оноо",
-    statLabel: "Шилдэг мэдлэгийн оноо",
-    tableMeta: "Оролдлого",
-    Icon: BookOpenCheck,
-  },
-  {
-    id: "all",
-    label: "Бүх quiz",
-    subtitle: "Ангийн болон танин мэдэхүйн бүх quiz-ийн нийлбэр оноо",
-    statLabel: "Нийт оноо",
-    tableMeta: "Нийт quiz",
-    Icon: Layers3,
-  },
-];
 
 export function QuizLeaderboardPage({
   version,
@@ -76,381 +26,249 @@ export function QuizLeaderboardPage({
   version: number;
   onStartQuiz: () => void;
 }) {
+  const { user } = useUser(); 
   const [scores, setScores] = useState<LeaderboardScore[]>([]);
-  const [attempts, setAttempts] = useState<QuizAttemptHistory[]>([]);
+  const [attempts, setAttempts] = useState<any[]>([]);
   const [status, setStatus] = useState<"loading" | "idle" | "error">("loading");
-  const [historyStatus, setHistoryStatus] = useState<"loading" | "idle" | "login" | "error">("loading");
-  const [reloadKey, setReloadKey] = useState(0);
-  const [category, setCategory] = useState<LeaderboardCategory>("grade");
+  const [category, setCategory] = useState<LeaderboardCategory>("all");
 
   useEffect(() => {
     const controller = new AbortController();
     setStatus("loading");
-
-    fetch(`/api/quiz/leaderboard?category=${category}`, { signal: controller.signal })
-      .then((response) => {
-        if (!response.ok) throw new Error("Leaderboard failed");
-        return response.json() as Promise<{ scores?: LeaderboardScore[] }>;
-      })
-      .then((data) => {
-        setScores(data.scores ?? []);
-        setStatus("idle");
-      })
-      .catch((error) => {
-        if (error instanceof DOMException && error.name === "AbortError") return;
-        setScores([]);
-        setStatus("error");
-      });
+    
+    Promise.all([
+      fetch(`/api/quiz/leaderboard?category=${category}`, { signal: controller.signal }).then(res => res.json()),
+      fetch("/api/attempts", { signal: controller.signal }).then(res => res.json())
+    ])
+    .then(([leaderboardData, historyData]) => {
+      setScores(leaderboardData.scores ?? []);
+      setAttempts(historyData.attempts ?? []);
+      setStatus("idle");
+    })
+    .catch(() => setStatus("error"));
 
     return () => controller.abort();
-  }, [category, reloadKey, version]);
+  }, [category, version]);
 
-  useEffect(() => {
-    const controller = new AbortController();
-    setHistoryStatus("loading");
+  const topThree = useMemo(() => scores.slice(0, 3), [scores]);
 
-    fetch("/api/attempts", { signal: controller.signal })
-      .then((response) => {
-        if (response.status === 401) {
-          setAttempts([]);
-          setHistoryStatus("login");
-          return null;
-        }
-        if (!response.ok) throw new Error("History failed");
-        return response.json() as Promise<{ attempts?: QuizAttemptHistory[] }>;
-      })
-      .then((data) => {
-        if (!data) return;
-        setAttempts(data.attempts ?? []);
-        setHistoryStatus("idle");
-      })
-      .catch((error) => {
-        if (error instanceof DOMException && error.name === "AbortError") return;
-        setAttempts([]);
-        setHistoryStatus("error");
-      });
+  const daysSinceJoined = useMemo(() => {
+    if (!user?.createdAt) return 1;
+    const joinedDate = new Date(user.createdAt);
+    const today = new Date();
+    const diffTime = Math.abs(today.getTime() - joinedDate.getTime());
+    return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+  }, [user]);
 
-    return () => controller.abort();
-  }, [reloadKey, version]);
-
-  const bestScore = useMemo(() => scores[0], [scores]);
-  const remainingScores = scores.slice(3);
-  const activeCategory = CATEGORIES.find((item) => item.id === category) ?? CATEGORIES[0];
+  const progressStats = useMemo(() => {
+    if (attempts.length < 2) return { diff: 0, trend: "neutral" };
+    const latest = (attempts[0].score / (attempts[0].total || 1)) * 100;
+    const previous = (attempts[1].score / (attempts[1].total || 1)) * 100;
+    const diff = Math.round(latest - previous);
+    return { diff, trend: diff > 0 ? "up" : diff < 0 ? "down" : "neutral" };
+  }, [attempts]);
 
   return (
-    <div className="relative flex h-full min-h-screen flex-col overflow-y-auto px-4 py-5 sm:px-6 lg:min-h-0 lg:px-8">
-      <div className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-5">
-
-        <div
-          className="rounded-xl px-5 py-5"
-          style={{
-            background: T.bg,
-            border: `1px solid ${T.border}`,
-            boxShadow: "0 12px 34px rgba(12,96,169,0.08)",
-          }}
-        >
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <div className="flex items-center gap-3">
-              <div
-                className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg"
-                style={{ background: "rgba(12,96,169,0.08)", border: "1px solid rgba(12,96,169,0.24)" }}
-              >
-                <Trophy className="size-5" style={{ color: T.amber }} />
-              </div>
-              <div>
-                <h1 className="text-xl font-bold leading-tight sm:text-2xl" style={{ color: T.amber }}>
-                  Quiz Leaderboard
-                </h1>
-                <p className="mt-1 text-xs" style={{ color: T.textMuted }}>
-                  Бүх хэрэглэгчийн quiz онооны жагсаалт
-                </p>
-              </div>
-            </div>
-
-            <div className="flex gap-2">
-              <button
-                type="button"
-                onClick={() => setReloadKey((v) => v + 1)}
-                className="flex h-10 items-center gap-2 rounded-lg px-3 text-xs font-semibold uppercase tracking-widest"
-                style={{ background: "rgba(12,96,169,0.05)", border: `1px solid ${T.border}`, color: T.textMuted }}
-              >
-                <RefreshCw className="size-4" />
-                Refresh
-              </button>
-              <button
-                type="button"
-                onClick={onStartQuiz}
-                className="h-10 rounded-lg px-4 text-xs font-semibold uppercase tracking-widest"
-                style={{ background: T.amber, color: "#080502" }}
-              >
-                Шалгалт өгөх
-              </button>
-            </div>
-          </div>
-
-          {bestScore && (
-            <div className="mt-5 grid gap-3 sm:grid-cols-3">
-              <Stat label="Тэргүүлэгч" value={bestScore.userName} />
-              <Stat label={activeCategory.statLabel} value={`${bestScore.score}/${bestScore.total}`} />
-              <Stat label="Нийт тоглогч" value={String(scores.length)} />
-            </div>
-          )}
-        </div>
-
-        <div
-          className="overflow-hidden rounded-xl"
-          style={{ background: T.bg, border: `1px solid ${T.border}` }}
-        >
-          <div
-            className="px-5 py-4"
-            style={{ borderBottom: `1px solid ${T.border}` }}
-          >
-            <div className="flex flex-col gap-1">
-              <p className="text-[10px] font-bold uppercase tracking-[0.22em]" style={{ color: T.amber }}>
-                Онооны самбар
-              </p>
-              <p className="text-xs" style={{ color: T.textMuted }}>
-                {activeCategory.subtitle}
-              </p>
-            </div>
-
-            <div className="mt-4 grid gap-2 md:grid-cols-3">
-              {CATEGORIES.map((item) => {
-                const active = category === item.id;
-                const Icon = item.Icon;
-                return (
-                  <button
-                    key={item.id}
-                    type="button"
-                    onClick={() => setCategory(item.id)}
-                    className="rounded-lg px-3 py-3 text-left transition hover:opacity-85"
-                    style={{
-                      background: active ? "rgba(12,96,169,0.10)" : "rgba(12,96,169,0.04)",
-                      border: `1px solid ${active ? "rgba(12,96,169,0.35)" : T.border}`,
-                      color: active ? T.amber : T.text,
-                    }}
-                  >
-                    <span className="flex items-center gap-2 text-xs font-bold">
-                      <Icon className="size-3.5" />
-                      {item.label}
-                    </span>
-                    <span className="mt-1 block text-[10px]" style={{ color: T.textMuted }}>
-                      {item.subtitle}
-                    </span>
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-
-          {status === "loading" && (
-            <div className="flex min-h-[420px] flex-col items-center justify-center gap-4">
-              <Loader2 className="size-8 animate-spin" style={{ color: T.amber }} />
-              <p className="text-xs uppercase tracking-[0.22em]" style={{ color: T.textMuted }}>
-                Leaderboard ачаалж байна
-              </p>
-            </div>
-          )}
-
-          {status === "error" && (
-            <div className="flex min-h-[420px] items-center justify-center px-6 text-center">
-              <p className="text-sm" style={{ color: "#f08080" }}>
-                Leaderboard ачаалахад алдаа гарлаа.
-              </p>
-            </div>
-          )}
-
-          {status === "idle" && scores.length === 0 && (
-            <div className="flex min-h-[420px] flex-col items-center justify-center gap-3 px-6 text-center">
-              <Medal className="size-10" style={{ color: T.textMuted }} />
-              <p className="text-sm" style={{ color: T.text }}>
-                Одоогоор оноо алга.
-              </p>
-              <p className="max-w-sm text-xs leading-5" style={{ color: T.textMuted }}>
-                Эхний quiz-ээ өгсний дараа таны оноо энд бүх хэрэглэгчидтэй хамт харагдана.
-              </p>
-            </div>
-          )}
-
-          {status === "idle" && scores.length > 0 && (
-            <div>
-              <div className="px-5 pt-4">
-                <p className="text-[10px] font-bold uppercase tracking-[0.22em]" style={{ color: T.amber }}>
-                  {activeCategory.label}
-                </p>
-                <p className="mt-1 text-xs" style={{ color: T.textMuted }}>
-                  {activeCategory.subtitle}
-                </p>
-              </div>
-
-              <OlympicPodium scores={scores.slice(0, 3)} category={category} />
-
-              {remainingScores.length > 0 && (
-                <>
-                  <div
-                    className="grid grid-cols-[56px_1fr_90px_80px] gap-3 px-4 py-3 text-[10px] font-bold uppercase tracking-[0.18em] sm:grid-cols-[72px_1fr_110px_100px]"
-                    style={{
-                      color: T.textMuted,
-                      borderTop: `1px solid ${T.border}`,
-                      borderBottom: `1px solid ${T.border}`,
-                    }}
-                  >
-                    <span>Rank</span>
-                    <span>User</span>
-                    <span>{activeCategory.tableMeta}</span>
-                    <span className="text-right">Score</span>
-                  </div>
-
-                  {remainingScores.map((entry, index) => {
-                    const rank = index + 4;
-                    return (
-                      <div
-                        key={`${entry.userId}-${entry.createdAt}-${rank}`}
-                        className="grid grid-cols-[56px_1fr_90px_80px] items-center gap-3 px-4 py-4 transition-colors hover:bg-white/5 sm:grid-cols-[72px_1fr_110px_100px]"
-                        style={{ borderBottom: `1px solid ${T.border}` }}
-                      >
-                        <span
-                          className="text-sm font-bold tabular-nums"
-                          style={{ color: T.textMuted }}
-                        >
-                          #{rank}
-                        </span>
-                        <span className="min-w-0">
-                          <span
-                            className="block truncate text-sm font-semibold"
-                            style={{ color: T.text }}
-                          >
-                            {entry.userName}
-                          </span>
-                          <span
-                            className="mt-0.5 block truncate text-[10px]"
-                            style={{ color: T.textMuted }}
-                          >
-                            {new Date(entry.createdAt).toLocaleDateString()}
-                          </span>
-                        </span>
-                        <span className="text-xs tabular-nums" style={{ color: T.textSub }}>
-                          {formatLeaderboardMeta(entry, category)}
-                        </span>
-                        <span
-                          className="text-right text-sm font-bold tabular-nums"
-                          style={{ color: T.amber }}
-                        >
-                          {entry.score}/{entry.total}
-                        </span>
-                      </div>
-                    );
-                  })}
-                </>
-              )}
-            </div>
-          )}
-        </div>
-
-        <div
-          className="overflow-hidden rounded-xl"
-          style={{ background: T.bg, border: `1px solid ${T.border}` }}
-        >
-          <div
-            className="flex items-center justify-between gap-3 px-5 py-4"
-            style={{ borderBottom: `1px solid ${T.border}` }}
-          >
-            <div className="flex items-center gap-2">
-              <Clock3 className="size-4" style={{ color: T.amber }} />
-              <div>
-                <h2 className="text-sm font-bold" style={{ color: T.text }}>
-                  Миний quiz history
-                </h2>
-                <p className="text-[10px]" style={{ color: T.textMuted }}>
-                  Сүүлд өгсөн quiz-үүд болон DB-д хадгалсан оноо
-                </p>
-              </div>
-            </div>
-          </div>
-
-          {historyStatus === "loading" && (
-            <div className="flex items-center gap-2 px-5 py-5 text-xs" style={{ color: T.textSub }}>
-              <Loader2 className="size-3 animate-spin" />
-              History ачаалж байна
-            </div>
-          )}
-
-          {historyStatus === "login" && (
-            <p className="px-5 py-5 text-xs" style={{ color: T.textMuted }}>
-              Нэвтэрсний дараа өөрийн quiz history энд харагдана.
-            </p>
-          )}
-
-          {historyStatus === "error" && (
-            <p className="px-5 py-5 text-xs" style={{ color: "#f08080" }}>
-              Quiz history ачаалахад алдаа гарлаа.
-            </p>
-          )}
-
-          {historyStatus === "idle" && attempts.length === 0 && (
-            <p className="px-5 py-5 text-xs" style={{ color: T.textMuted }}>
-              Одоогоор хадгалсан quiz history алга.
-            </p>
-          )}
-
-          {historyStatus === "idle" && attempts.length > 0 && (
-            <div className="divide-y" style={{ borderColor: T.border }}>
-              {attempts.slice(0, 10).map((attempt) => (
-                <div
-                  key={attempt.id}
-                  className="grid grid-cols-[1fr_72px_86px] items-center gap-3 px-5 py-3"
-                  style={{ borderTop: `1px solid ${T.border}` }}
+    
+    <div className="h-screen bg-[#f8faff] p-4 md:p-6 lg:p-8 font-sans overflow-hidden flex flex-col">
+      <div className="max-w-[1200px] mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8 w-full flex-1 min-h-0">
+        
+        {/* LEFT COLUMN */}
+        <div className="flex flex-col min-h-0 space-y-6 lg:col-span-8">
+         
+          <div className="flex flex-col justify-between gap-4 shrink-0 md:flex-row md:items-center">
+            <h1 className="text-2xl font-extrabold text-[#1e293b]">Онооны жагсаалт</h1>
+            <div className="flex bg-[#e2e8f0]/60 p-1 rounded-full w-fit">
+              {[
+                { id: "grade", label: "Түвшин тогтоох" },
+                { id: "knowledge", label: "Танин мэдэхүй" },
+                { id: "all", label: "Нийт" }
+              ].map((item) => (
+                <button
+                  key={item.id}
+                  onClick={() => setCategory(item.id as LeaderboardCategory)}
+                  className={`px-6 py-2 rounded-full text-sm font-semibold transition-all ${
+                    category === item.id 
+                    ? "bg-[#0047cc] text-white shadow-md" 
+                    : "text-[#64748b] hover:text-[#1e293b]"
+                  }`}
                 >
-                  <span className="min-w-0">
-                    <span className="block truncate text-xs font-semibold" style={{ color: T.text }}>
-                      {attempt.mode === "knowledge"
-                        ? "Танин мэдэхүйн quiz"
-                        : `Level ${attempt.selectedLevel ?? attempt.selectedGrade ?? "-"}`}
-                    </span>
-                    <span className="mt-0.5 block truncate text-[10px]" style={{ color: T.textMuted }}>
-                      {new Date(attempt.createdAt).toLocaleString()}
-                    </span>
-                  </span>
-                  <span className="text-xs" style={{ color: attempt.passed ? "#86efac" : T.textMuted }}>
-                    {attempt.passed ? "Давсан" : "Дутуу"}
-                  </span>
-                  <span className="text-right text-sm font-bold tabular-nums" style={{ color: T.amber }}>
-                    {attempt.score}/{attempt.total}
-                  </span>
-                </div>
+                  {item.label}
+                </button>
               ))}
             </div>
-          )}
+          </div>
+
+         
+          <div className="relative shrink-0">
+            <div className="absolute z-10 flex items-center justify-between pointer-events-none top-6 left-8 right-8">
+                <div className="flex items-center gap-2 px-4 py-2 border shadow-sm bg-white/60 backdrop-blur-sm rounded-2xl border-white/40">
+                  <Medal size={16} className="text-amber-500" />
+                  <span className="text-xs font-black tracking-wider uppercase text-slate-700">Шилдэг 3</span>
+                </div>
+                <div className="flex items-center gap-2 px-4 py-2 border shadow-sm bg-white/60 backdrop-blur-sm rounded-2xl border-white/40">
+                  <Crown size={16} className="text-yellow-500" />
+                  <span className="text-xs font-black tracking-wider uppercase text-slate-700">Тэргүүлэгчид</span>
+                </div>
+             </div>
+             {status === "loading" ? (
+               <div className="h-[280px] flex items-center justify-center bg-white/50 rounded-[32px] border border-dashed border-[#e2e8f0]">
+                 <Loader2 className="animate-spin text-[#0047cc]" />
+               </div>
+             ) : (
+               <div className="bg-white/40 backdrop-blur-md rounded-[32px] border border-white/20 shadow-sm overflow-hidden">
+                 <OlympicPodium scores={topThree} category={category} />
+               </div>
+             )}
+          </div>
+
+          <div className="bg-white rounded-[32px] p-6 shadow-sm border border-slate-100 flex flex-col flex-1 min-h-0 mb-4 overflow-hidden">
+            <div className="flex items-center justify-between mb-4 shrink-0">
+              <div>
+                <h3 className="text-lg font-bold text-slate-800">Хэрэглэгчдийн эрэмбэлэлт</h3>
+                <p className="text-xs text-slate-500">
+Нийт хэрэглэгч • <span className="font-bold text-slate-800">{scores.length}</span>
+</p>
+              </div>
+              <div className="p-2 rounded-full bg-slate-50">
+                <Info size={18} className="text-slate-300" />
+              </div>
+            </div>
+
+           
+            <div className="flex-1 min-h-0 pr-2 overflow-x-hidden overflow-y-auto custom-scrollbar">
+              <table className="w-full text-left border-separate border-spacing-y-2">
+                <thead className="sticky top-0 z-20 bg-white">
+                  <tr className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                    <th className="px-4 py-2">Байр</th>
+                    <th className="px-4 py-2">Хэрэглэгч</th>
+                    <th className="px-4 py-2 text-center">Түвшин</th>
+                    <th className="px-4 py-2 text-right">оноо</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {scores.slice(3).map((score, index) => (
+                    <tr 
+                      key={score.userId || index} 
+                      className="transition-colors group hover:bg-blue-50/50"
+                    >
+                      <td className="px-4 py-3 bg-slate-50/50 rounded-l-2xl group-hover:bg-transparent">
+                        <span className="text-xs font-bold text-slate-400">#{index + 4}</span>
+                      </td>
+                      <td className="px-4 py-3 bg-slate-50/50 group-hover:bg-transparent">
+                        <div className="flex items-center gap-3">
+                          <div className="w-8 h-8 rounded-lg bg-white flex items-center justify-center font-bold text-slate-400 text-[10px] shadow-sm border border-slate-100">
+                            {score.userName.substring(0, 2).toUpperCase()}
+                          </div>
+                          <span className="font-bold text-slate-700 text-xs truncate max-w-[120px]">
+                            {score.userName}
+                          </span>
+                        </div>
+                      </td>
+                      <td className="px-4 py-3 text-center bg-slate-50/50 group-hover:bg-transparent">
+                        <span className="text-[10px] px-2 py-1 bg-white rounded-md border border-slate-100 font-bold text-slate-500 italic">Lvl {score.selectedLevel || 1}</span>
+                      </td>
+                      <td className="px-4 py-3 text-sm font-black text-right bg-slate-50/50 rounded-r-2xl group-hover:bg-transparent text-slate-800">
+                        {score.score.toLocaleString()}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
         </div>
-      </div>        
+
+        {/* RIGHT COLUMN */}
+        <div className="lg:col-span-4 shrink-0">
+          <div className="bg-white rounded-[32px] p-6 shadow-sm border border-[#e2e8f0] sticky top-0">
+            <h3 className="text-xl font-bold text-[#1e293b] mb-6">Таны ахиц</h3>
+            <div className="space-y-4">
+              <div className="flex items-center justify-between p-4 bg-[#f8faff] rounded-2xl border border-[#edf2f7]">
+                <div className="flex items-center gap-3">
+                  <div className={`p-2 rounded-xl ${progressStats.trend === "up" ? "bg-green-100 text-green-600" : progressStats.trend === "down" ? "bg-red-100 text-red-600" : "bg-blue-100/50 text-blue-600"}`}>
+                    <TrendingUp size={20} className={progressStats.trend === "down" ? "rotate-180" : ""} />
+                  </div>
+                  <div>
+                    <p className="text-[10px] text-[#94a3b8] font-black uppercase tracking-wider">Мэдлэгийн өөрчлөлт</p>
+                    <p className={`text-lg font-black ${progressStats.trend === "up" ? "text-green-600" : progressStats.trend === "down" ? "text-red-600" : "text-[#1e293b]"}`}>
+                      {progressStats.diff > 0 ? `+${progressStats.diff}` : progressStats.diff}%
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex items-center justify-between p-4 bg-[#f8faff] rounded-2xl border border-[#edf2f7]">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 text-orange-600 bg-orange-100/50 rounded-xl">
+                    <Flame size={20}/>
+                  </div>
+                  <div>
+                    <p className="text-[10px] text-[#94a3b8] font-black uppercase tracking-wider">Тууштай судлаач</p>
+                    <p className="text-lg font-black text-[#1e293b]">{daysSinceJoined} Хоног</p>
+                  </div>
+                </div>
+                
+              </div>
+            </div>
+
+            <button 
+              onClick={onStartQuiz} 
+              className="w-full mt-8 bg-[#0038a8] text-white py-4 rounded-2xl font-bold shadow-lg shadow-blue-100 active:scale-[0.98] transition-transform"
+            >
+              Түүхийн аялал эхлэх
+            </button>
+          </div>
+          <div className="mt-6 bg-gradient-to-br from-amber-50 to-orange-50 rounded-[24px] p-5 border border-amber-100/50 shadow-sm relative overflow-hidden group">
+  {/* Чимэглэлийн дүрс */}
+  <div className="absolute transition-transform -right-2 -bottom-2 opacity-10 group-hover:scale-110">
+    <Trophy size={80} />
+  </div>
+  
+  <div className="relative z-10">
+    <div className="flex items-center gap-2 mb-3">
+      <div className="p-1.5 bg-amber-200/50 rounded-lg text-amber-700">
+        <Info size={14} />
+      </div>
+      <h4 className="text-[11px] font-black text-amber-800 uppercase tracking-wider">Мэдлэгт нэмэр</h4>
+    </div>
+    
+    <p className="text-xs font-medium leading-relaxed text-amber-900/80">
+      "Монголын нууц товчоо" бол Дэлхийн утга зохиолын өвд бүртгэгдсэн цорын ганц түүхэн дурсгалт бичиг юм.
+    </p>
+    
+    <button className="mt-4 text-[10px] font-black text-amber-700 hover:text-amber-900 flex items-center gap-1 transition-colors">
+      ДЭЛГЭРЭНГҮЙ УНШИХ →
+    </button>
+  </div>
+</div>
+{/* Powered by Section */}
+<div className="flex justify-center pt-6 mt-auto shrink-0">
+  <p className="text-[10px] font-bold text-slate-300 uppercase tracking-[0.2em] flex items-center gap-2">
+    <span className="w-8 h-[1px] bg-slate-200"></span>
+    Powered by <span className="transition-colors cursor-default text-slate-400 hover:text-blue-500">Kung-Fu Developers</span>
+    <span className="w-8 h-[1px] bg-slate-200"></span>
+  </p>
+</div>
+        </div>
+      </div>
+
+     
+      <style jsx>{`
+        .custom-scrollbar::-webkit-scrollbar {
+          width: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+          background: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+          background: #e2e8f0;
+          border-radius: 10px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+          background: #cbd5e1;
+        }
+      `}</style>
     </div>
   );
-}
-
-function Stat({ label, value }: { label: string; value: string }) {
-  return (
-    <div
-      className="rounded-lg px-4 py-3"
-      style={{ background: "rgba(12,96,169,0.04)", border: `1px solid ${T.border}` }}
-    >
-      <p className="text-[10px] uppercase tracking-[0.18em]" style={{ color: T.textMuted }}>
-        {label}
-      </p>
-      <p className="mt-1 truncate text-sm font-bold" style={{ color: T.text }}>
-        {value}
-      </p>
-    </div>
-  );
-}
-
-function formatLeaderboardMeta(entry: LeaderboardScore, category: LeaderboardCategory) {
-  if (category === "grade") {
-    return entry.selectedLevel ? `Level ${entry.selectedLevel}` : "Level -";
-  }
-
-  if (category === "knowledge") {
-    return `${entry.attemptsCount} оролдлого`;
-  }
-
-  return `${entry.attemptsCount} quiz`;
 }
