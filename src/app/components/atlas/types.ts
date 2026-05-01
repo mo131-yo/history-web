@@ -80,6 +80,8 @@ export type SharedMapProps = {
   isCreating: boolean;
   addPointMode: boolean;
   draftRing: Array<[number, number]>;
+  feedbackPreviewRing?: Array<[number, number]>;
+  feedbackReviewSlug?: string | null;
   onDraftRingChange: (ring: Array<[number, number]>) => void;
   selectedVertexIndex: number | null;
   onSelectVertex: (index: number | null) => void;

@@ -179,9 +179,7 @@ import maplibregl from "maplibre-gl";
 import {
   createDraftPolygon,
   createEmptyEventCollection,
-  createFlagCollection,
   createVertexCollection,
-  loadFlagImages,
 } from "./historicalMapGeo";
 import { createBattleCollection } from "./historicalBattleMockData";
 
@@ -199,19 +197,17 @@ export function addHistoricalMapSources(
     });
   }
 
-  const flagCollection = createFlagCollection(collection);
-  void loadFlagImages(map, flagCollection);
   addGeneratedBattleMarkerIcon(map);
-
-  if (!map.getSource("state-flags")) {
-    map.addSource("state-flags", {
-      type: "geojson",
-      data: flagCollection,
-    });
-  }
 
   if (!map.getSource("draft-polygon")) {
     map.addSource("draft-polygon", {
+      type: "geojson",
+      data: createDraftPolygon([]),
+    });
+  }
+
+  if (!map.getSource("feedback-polygon")) {
+    map.addSource("feedback-polygon", {
       type: "geojson",
       data: createDraftPolygon([]),
     });
@@ -314,45 +310,6 @@ export function addHistoricalMapLayers(
     });
   }
 
-  if (!map.getLayer("state-flags")) {
-    map.addLayer({
-      id: "state-flags",
-      type: "symbol",
-      source: "state-flags",
-      layout: {
-        "text-field": ["format", "⚑", { "font-scale": 1.1 }, "\n", {}, ["get", "flagLabel"], { "font-scale": 0.58 }],
-        "text-font": ["Open Sans Bold"],
-        "text-size": [
-          "interpolate",
-          ["linear"],
-          ["zoom"],
-          2,
-          15,
-          4,
-          18,
-          6,
-          22,
-        ],
-        "text-line-height": 0.95,
-        "text-anchor": "bottom",
-        "text-offset": [0, -0.25],
-        "text-allow-overlap": true,
-        "text-ignore-placement": true,
-      },
-      paint: {
-        "text-color": [
-          "case",
-          ["==", ["get", "slug"], selectedSlug ?? ""],
-          "#fff4db",
-          "#facc15",
-        ],
-        "text-halo-color": "rgba(5,6,8,0.96)",
-        "text-halo-width": 2,
-        "text-halo-blur": 0.6,
-      },
-    });
-  }
-
   if (!map.getLayer("battle-events")) {
     map.addLayer({
       id: "battle-events",
@@ -400,11 +357,11 @@ export function addHistoricalMapLayers(
           ["linear"],
           ["zoom"],
           1.5,
-          0.48,
+          0.62,
           3,
-          0.68,
+          0.86,
           5,
-          0.92,
+          1.12,
         ],
         "icon-anchor": "center",
         "icon-allow-overlap": true,
@@ -415,6 +372,19 @@ export function addHistoricalMapLayers(
   }
 
   if (!map.getLayer("states-selected-outline")) {
+    if (!map.getLayer("states-selected-fill")) {
+      map.addLayer({
+        id: "states-selected-fill",
+        type: "fill",
+        source: "atlas-states",
+        filter: ["==", ["get", "slug"], selectedSlug ?? ""],
+        paint: {
+          "fill-color": "#f59e0b",
+          "fill-opacity": 0.28,
+        },
+      });
+    }
+
     map.addLayer({
       id: "states-selected-outline",
       type: "line",
@@ -422,8 +392,71 @@ export function addHistoricalMapLayers(
       filter: ["==", ["get", "slug"], selectedSlug ?? ""],
       paint: {
         "line-color": "#f59e0b",
-        "line-width": 3.5,
+        "line-width": 5.5,
         "line-opacity": 1,
+        "line-blur": 0.35,
+      },
+    });
+  }
+
+  if (!map.getLayer("feedback-preview-halo")) {
+    map.addLayer({
+      id: "feedback-preview-halo",
+      type: "line",
+      source: "feedback-polygon",
+      paint: {
+        "line-color": "#ffffff",
+        "line-width": 8,
+        "line-opacity": 0.95,
+        "line-blur": 0.8,
+      },
+    });
+  }
+
+  if (!map.getLayer("feedback-preview-fill")) {
+    map.addLayer({
+      id: "feedback-preview-fill",
+      type: "fill",
+      source: "feedback-polygon",
+      paint: {
+        "fill-color": "#10b981",
+        "fill-opacity": 0.38,
+      },
+    });
+  }
+
+  if (!map.getLayer("feedback-preview-outline")) {
+    map.addLayer({
+      id: "feedback-preview-outline",
+      type: "line",
+      source: "feedback-polygon",
+      paint: {
+        "line-color": "#059669",
+        "line-width": 4.8,
+        "line-dasharray": [1.15, 0.55],
+        "line-opacity": 0.98,
+      },
+    });
+  }
+
+  if (!map.getLayer("feedback-preview-label")) {
+    map.addLayer({
+      id: "feedback-preview-label",
+      type: "symbol",
+      source: "feedback-polygon",
+      layout: {
+        "text-field": "USER-ИЙН POLYGON",
+        "text-font": ["Open Sans Bold"],
+        "text-size": ["interpolate", ["linear"], ["zoom"], 2, 11, 5, 16],
+        "text-letter-spacing": 0.08,
+        "text-allow-overlap": true,
+        "symbol-placement": "point",
+      },
+      paint: {
+        "text-color": "#047857",
+        "text-halo-color": "rgba(255,255,255,0.92)",
+        "text-halo-width": 2.6,
+        "text-halo-blur": 0.4,
       },
     });
   }
@@ -474,15 +507,18 @@ export function addHistoricalMapLayers(
       source: "atlas-states",
       filter: ["==", ["get", "slug"], ""],
       paint: {
-        "line-color": "#38bdf8",
-        "line-width": 2.5,
+        "line-color": "#0ea5e9",
+        "line-width": 4,
         "line-opacity": 0.95,
+        "line-blur": 0.25,
       },
     });
   }
 
   if (map.getLayer("draft-vertices")) {
-    if (map.getLayer("state-flags")) map.moveLayer("state-flags");
+    if (map.getLayer("feedback-preview-halo")) map.moveLayer("feedback-preview-halo");
+    if (map.getLayer("feedback-preview-outline")) map.moveLayer("feedback-preview-outline");
+    if (map.getLayer("feedback-preview-label")) map.moveLayer("feedback-preview-label");
     if (map.getLayer("battle-markers")) map.moveLayer("battle-markers");
     map.moveLayer("draft-vertices");
   }
@@ -502,13 +538,21 @@ function addGeneratedBattleMarkerIcon(map: MapLibreMap) {
   if (!context) return;
 
   context.clearRect(0, 0, size, size);
-  context.font = "700 58px 'Apple Color Emoji', 'Segoe UI Emoji', 'Noto Color Emoji', Arial, sans-serif";
+  context.beginPath();
+  context.arc(size / 2, size / 2, 36, 0, Math.PI * 2);
+  context.fillStyle = "rgba(248,250,252,0.92)";
+  context.fill();
+  context.lineWidth = 5;
+  context.strokeStyle = "rgba(239,68,68,0.92)";
+  context.stroke();
+
+  context.font = "800 62px 'Apple Color Emoji', 'Segoe UI Emoji', 'Noto Color Emoji', Arial, sans-serif";
   context.textAlign = "center";
   context.textBaseline = "middle";
-  context.lineWidth = 7;
+  context.lineWidth = 9;
   context.strokeStyle = "rgba(5,6,8,0.96)";
   context.strokeText("⚔️", size / 2, size / 2 + 2);
-  context.fillStyle = "#f8c15c";
+  context.fillStyle = "#ef4444";
   context.fillText("⚔️", size / 2, size / 2 + 2);
 
   map.addImage(BATTLE_MARKER_ICON_ID, context.getImageData(0, 0, size, size), {

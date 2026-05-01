@@ -1,43 +1,9 @@
 import maplibregl, { type GeoJSONSource } from "maplibre-gl";
 import type {
   AtlasEventFeatureCollection,
-  AtlasFeatureCollection,
-  AtlasStateFeature,
 } from "@/lib/types";
 
 type MapLibreMap = InstanceType<typeof maplibregl.Map>;
-
-const CLOUDINARY_CLOUD_NAME = "dzljgphud";
-const FLAG_PUBLIC_IDS_BY_SLUG: Record<string, string> = {
-  "golden-horde": "atlas-flags/golden-horde",
-  "golden-horde-frontier": "atlas-flags/golden-horde",
-  "jin-dynasty": "atlas-flags/jin-dynasty",
-  "western-xia": "atlas-flags/western-xia",
-  "delhi-sultanate": "atlas-flags/delhi-sultanate",
-  "ilkhanate": "atlas-flags/ilkhanate",
-  "ilkhanate-frontier": "atlas-flags/ilkhanate",
-  "great-mongol-state": "atlas-flags/great-mongol-state",
-  "khamag-mongol": "atlas-flags/khamag-mongol",
-  "mongol-empire": "atlas-flags/mongol-empire",
-  "uighur-idiqut": "atlas-flags/uighur-idiqut",
-  "qara-khitai": "atlas-flags/qara-khitai",
-  "khwarazm": "atlas-flags/khwarazm",
-  "chagatai-khanate": "atlas-flags/chagatai-khanate",
-  "yuan-dynasty": "atlas-flags/yuan-dynasty",
-  "song-dynasty": "atlas-flags/song-dynasty",
-  "mamluk-sultanate": "atlas-flags/mamluk-sultanate",
-};
-
-type FlagProperties = {
-  slug: string;
-  name: string;
-  flagAsset: string;
-  flagUrl: string;
-  flagLabel: string;
-};
-
-export type FlagFeature = GeoJSON.Feature<GeoJSON.Point, FlagProperties>;
-export type FlagFeatureCollection = GeoJSON.FeatureCollection<GeoJSON.Point, FlagProperties>;
 
 export function normalizeLngLatLike(value: unknown): [number, number] | null {
   if (Array.isArray(value) && value.length >= 2) {
@@ -139,50 +105,6 @@ export function createEmptyEventCollection(): AtlasEventFeatureCollection {
   };
 }
 
-export function createFlagCollection(
-  collection: AtlasFeatureCollection | GeoJSON.FeatureCollection | null | undefined,
-): FlagFeatureCollection {
-  const features = (collection?.features ?? [])
-    .map((feature) => createFlagFeature(feature as AtlasStateFeature))
-    .filter((feature): feature is FlagFeature => Boolean(feature));
-
-  return {
-    type: "FeatureCollection",
-    features,
-  };
-}
-
-export function getRequiredFlagImages(collection: FlagFeatureCollection) {
-  const images = new Map<string, string>();
-
-  for (const feature of collection.features) {
-    const { flagAsset, flagUrl } = feature.properties;
-    if (flagAsset && flagUrl) images.set(`flag-${flagAsset}`, flagUrl);
-  }
-
-  return Array.from(images, ([id, url]) => ({ id, url }));
-}
-
-export async function loadFlagImages(
-  map: MapLibreMap,
-  collection: FlagFeatureCollection,
-) {
-  const images = getRequiredFlagImages(collection);
-
-  await Promise.all(
-    images.map(async ({ id, url }) => {
-      if (map.hasImage(id)) return;
-
-      try {
-        const response = await map.loadImage(url);
-        if (!map.hasImage(id)) map.addImage(id, response.data);
-      } catch {
-        // Flag assets may be uploaded later; missing images should never break the map.
-      }
-    }),
-  );
-}
-
 // export function safeSetData(
 //   map: maplibregl.Map,
 //   sourceId: string,
@@ -201,53 +123,4 @@ export function safeSetData(
 ) {
   const source = map.getSource(sourceId) as GeoJSONSource | undefined;
   source?.setData(data);
-}
-
-function createFlagFeature(feature: AtlasStateFeature): FlagFeature | null {
-  const center =
-    normalizeLngLatLike(feature.properties.center) ||
-    getFeatureCenter(feature as GeoJSON.Feature<GeoJSON.Polygon>);
-  if (!center) return null;
-
-  const slug = feature.properties.slug;
-  const flag = getFlagMetadata(feature);
-  if (!flag?.url || !flag.asset) return null;
-
-  return {
-    type: "Feature",
-    geometry: {
-      type: "Point",
-      coordinates: center,
-    },
-    properties: {
-      slug,
-      name: feature.properties.name,
-      flagAsset: flag.asset,
-      flagUrl: flag.url,
-      flagLabel: flag.label ?? `${feature.properties.name} далбаа`,
-    },
-  };
-}
-
-function getFlagMetadata(feature: AtlasStateFeature) {
-  const flag = feature.properties.metadata?.flag;
-  if (flag?.url && flag.asset) {
-    return {
-      asset: flag.asset,
-      url: flag.url,
-      label: flag.label,
-    };
-  }
-
-  const publicId = FLAG_PUBLIC_IDS_BY_SLUG[feature.properties.slug];
-  if (!publicId) return null;
-
-  const asset = publicId.split("/").at(-1) ?? feature.properties.slug;
-
-  return {
-    asset,
-    publicId,
-    url: `https://res.cloudinary.com/${CLOUDINARY_CLOUD_NAME}/image/upload/f_auto,q_auto/${publicId}.png`,
-    label: `${feature.properties.name} далбаа`,
-  };
 }

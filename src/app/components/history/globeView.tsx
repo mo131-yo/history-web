@@ -125,39 +125,6 @@ export function renderGlobeStaticLabel(
     return element;
   }
 
-  if (label.kind === 'flag' && label.flagUrl) {
-    const element = document.createElement('div');
-    const image = document.createElement('img');
-    const isSelected = label.slug === selectedSlug;
-
-    image.src = label.flagUrl;
-    image.alt = label.flagLabel ?? `${label.text} далбаа`;
-    image.loading = 'lazy';
-    image.decoding = 'async';
-    image.onerror = () => {
-      element.style.display = 'none';
-    };
-
-    image.style.display = 'block';
-    image.style.width = isSelected ? '34px' : '28px';
-    image.style.height = isSelected ? '22px' : '18px';
-    image.style.objectFit = 'cover';
-    image.style.borderRadius = '3px';
-    image.style.border = isSelected
-      ? '1px solid rgba(255,244,219,0.92)'
-      : '1px solid rgba(201,164,93,0.62)';
-    image.style.boxShadow =
-      '0 2px 7px rgba(0,0,0,0.72), 0 0 10px rgba(201,164,93,0.22)';
-
-    element.appendChild(image);
-    element.title = image.alt;
-    element.style.pointerEvents = 'none';
-    element.style.userSelect = 'none';
-    element.style.transform = 'translate(-50%, -115%)';
-
-    return element;
-  }
-
   const element = document.createElement('div');
   const isSelected = label.slug === selectedSlug;
   const isHovered = label.slug === hoveredSlug;

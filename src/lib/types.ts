@@ -7,13 +7,6 @@ export interface AtlasMetadata {
   governance?: string;
   notableEvents?: string[];
   strategicFocus?: string;
-  flag?: {
-    type?: string;
-    asset?: string;
-    publicId?: string;
-    url?: string;
-    label?: string;
-  };
 }
 
 export interface AtlasEventMetadata {

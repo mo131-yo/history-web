@@ -46,27 +46,47 @@ export function useAtlasCollection(
   setLoadError: (value: string | null) => void,
 ) {
   useEffect(() => {
-    setLoadError(null);
-    fetch(`/api/atlas/states?year=${year}`)
-      .then(async (response) => {
-        if (!response.ok) throw new Error();
-        return response.json();
-      })
-      .then((data: AtlasFeatureCollection) => {
-        setCollection(data);
-        setSelectedSlug((current) => {
-          const exists = data.features.some(
-            (feature) => feature.properties.slug === current,
-          );
-          return exists ? current : (data.features[0]?.properties.slug ?? null);
+    let cancelled = false;
+
+    const loadCollection = (resetUi = true) => {
+      setLoadError(null);
+      fetch(`/api/atlas/states?year=${year}`)
+        .then(async (response) => {
+          if (!response.ok) throw new Error();
+          return response.json();
+        })
+        .then((data: AtlasFeatureCollection) => {
+          if (cancelled) return;
+          setCollection(data);
+          setSelectedSlug((current) => {
+            const exists = data.features.some(
+              (feature) => feature.properties.slug === current,
+            );
+            return exists
+              ? current
+              : (data.features[0]?.properties.slug ?? null);
+          });
+          if (resetUi) resetUiState();
+        })
+        .catch(() => {
+          if (cancelled) return;
+          setCollection(null);
+          setSelectedSlug(null);
+          setLoadError('Газрын зураг ачаалагдсангүй.');
         });
-        resetUiState();
-      })
-      .catch(() => {
-        setCollection(null);
-        setSelectedSlug(null);
-        setLoadError('Газрын зураг ачаалагдсангүй.');
-      });
+    };
+
+    loadCollection(true);
+
+    const refresh = () => loadCollection(false);
+    const timer = window.setInterval(refresh, 15000);
+    window.addEventListener('mongol-atlas:states-refresh', refresh);
+
+    return () => {
+      cancelled = true;
+      window.clearInterval(timer);
+      window.removeEventListener('mongol-atlas:states-refresh', refresh);
+    };
   }, [year, resetUiState, setCollection, setLoadError, setSelectedSlug]);
 }
 

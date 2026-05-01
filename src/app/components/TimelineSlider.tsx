@@ -1,6 +1,14 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties, type FormEvent } from "react";
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type CSSProperties,
+  type FormEvent,
+} from "react";
 import { Pause, Play, Search } from "lucide-react";
 
 type TimelineSliderProps = {
@@ -10,6 +18,8 @@ type TimelineSliderProps = {
   isAutoPlaying?: boolean;
   onAutoToggle?: () => void;
 };
+
+const AUTOPLAY_DELAY_MS = 1800;
 
 export default function TimelineSlider({
   years,
@@ -23,6 +33,8 @@ export default function TimelineSlider({
   const animationFrameRef = useRef<number | null>(null);
   const pendingYearRef = useRef<number | null>(null);
   const [yearQuery, setYearQuery] = useState(String(currentYear));
+  const [localAutoPlaying, setLocalAutoPlaying] = useState(false);
+  const autoPlaying = isAutoPlaying ?? localAutoPlaying;
 
   const { safeYears, currentIndex, maxIndex, progress, startYear, endYear } =
     useMemo(() => {
@@ -62,30 +74,44 @@ export default function TimelineSlider({
     setYearQuery(String(currentYear));
   }, [currentYear]);
 
-  const commitYearChange = useCallback((nextYear: number) => {
-    if (nextYear === currentYear) {
-      pendingYearRef.current = null;
-      if (animationFrameRef.current !== null) {
-        window.cancelAnimationFrame(animationFrameRef.current);
+  useEffect(() => {
+    if (!autoPlaying || safeYears.length <= 1) return;
+
+    const intervalId = window.setInterval(() => {
+      const nextIndex = currentIndex >= maxIndex ? 0 : currentIndex + 1;
+      onYearChange(safeYears[nextIndex] ?? currentYear);
+    }, AUTOPLAY_DELAY_MS);
+
+    return () => window.clearInterval(intervalId);
+  }, [autoPlaying, currentIndex, currentYear, maxIndex, onYearChange, safeYears]);
+
+  const commitYearChange = useCallback(
+    (nextYear: number) => {
+      if (nextYear === currentYear) {
+        pendingYearRef.current = null;
+        if (animationFrameRef.current !== null) {
+          window.cancelAnimationFrame(animationFrameRef.current);
+          animationFrameRef.current = null;
+        }
+        return;
+      }
+
+      pendingYearRef.current = nextYear;
+
+      if (animationFrameRef.current !== null) return;
+
+      animationFrameRef.current = window.requestAnimationFrame(() => {
         animationFrameRef.current = null;
-      }
-      return;
-    }
+        const pendingYear = pendingYearRef.current;
+        pendingYearRef.current = null;
 
-    pendingYearRef.current = nextYear;
-
-    if (animationFrameRef.current !== null) return;
-
-    animationFrameRef.current = window.requestAnimationFrame(() => {
-      animationFrameRef.current = null;
-      const pendingYear = pendingYearRef.current;
-      pendingYearRef.current = null;
-
-      if (pendingYear !== null) {
-        onYearChange(pendingYear);
-      }
-    });
-  }, [currentYear, onYearChange]);
+        if (pendingYear !== null) {
+          onYearChange(pendingYear);
+        }
+      });
+    },
+    [currentYear, onYearChange],
+  );
 
   const handleRangeChange = (value: string) => {
     const nextIndex = Math.min(Math.max(Number(value), 0), maxIndex);
@@ -113,6 +139,16 @@ export default function TimelineSlider({
     setYearQuery(String(nearestYear));
   };
 
+  const handleAutoToggle = () => {
+    if (isAutoPlaying === undefined) {
+      setLocalAutoPlaying((playing) => !playing);
+    }
+
+    if (onAutoToggle) {
+      onAutoToggle();
+    }
+  };
+
   const sliderStyle = {
     "--timeline-progress": `${progress}%`,
   } as CSSProperties;
@@ -122,14 +158,14 @@ export default function TimelineSlider({
   } as CSSProperties;
 
   return (
-    <div className="w-full min-w-0 overflow-hidden rounded-xl border border-amber-500/15 bg-slate-950/88 px-3 py-2 shadow-[0_-8px_28px_rgba(0,0,0,0.36)] backdrop-blur-xl sm:px-4">
+    <div className="w-full min-w-0 overflow-hidden rounded-xl border border-blue-500/30 bg-white/90 px-3 py-2.5 shadow-[0_-10px_34px_rgba(30,64,175,0.16)] backdrop-blur-xl sm:px-4">
       <div className="flex items-center justify-between gap-3">
         <div className="shrink-0">
-          <p className="text-[8px] uppercase tracking-[0.22em] text-stone-500">
+          <p className="text-[8px] font-bold uppercase tracking-[0.22em] text-blue-700">
             Timeline
           </p>
           <h3
-            className="mt-0.5 text-lg text-stone-200"
+            className="mt-0.5 text-lg font-semibold text-slate-800"
             style={{ fontFamily: "var(--font-inter), Arial, sans-serif" }}
           >
             {currentYear} он
@@ -139,7 +175,7 @@ export default function TimelineSlider({
         <div className="flex items-center gap-2">
           <form
             onSubmit={handleYearSearch}
-            className="hidden h-8 items-center gap-1.5 rounded-full border border-amber-500/20 bg-stone-900/70 px-2.5 sm:flex"
+            className="hidden h-8 items-center gap-1.5 rounded-lg border border-blue-500/30 bg-blue-50/80 px-2.5 sm:flex"
           >
             <input
               type="number"
@@ -147,8 +183,8 @@ export default function TimelineSlider({
               min={startYear}
               max={endYear}
               value={yearQuery}
-              onChange={(event: { target: { value: string } }) => setYearQuery(event.target.value)}
-              className="h-6 w-16 bg-transparent text-xs font-semibold tabular-nums text-stone-100 outline-none placeholder:text-stone-500"
+              onChange={(event) => setYearQuery(event.target.value)}
+              className="h-6 w-16 bg-transparent text-xs font-semibold tabular-nums text-slate-800 outline-none placeholder:text-blue-400"
               style={{ fontFamily: "var(--font-inter), Arial, sans-serif" }}
               placeholder="Он хайх"
               aria-label="Оноор хайх"
@@ -156,7 +192,7 @@ export default function TimelineSlider({
             />
             <button
               type="submit"
-              className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-amber-200 transition hover:bg-amber-500/15"
+              className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md text-blue-700 transition hover:bg-blue-200/60"
               aria-label="Оноор хайх"
               title="Оноор хайх"
             >
@@ -171,23 +207,27 @@ export default function TimelineSlider({
 
           <button
             type="button"
-            onClick={onAutoToggle}
-            className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full border transition ${
-              isAutoPlaying
-                ? "border-amber-300 bg-amber-400 text-slate-950 shadow-[0_0_24px_rgba(245,158,11,0.55)]"
-                : "border-amber-500/25 bg-stone-900/70 text-amber-200 hover:border-amber-400/70 hover:bg-amber-500/15"
+            onClick={handleAutoToggle}
+            className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border transition ${
+              autoPlaying
+                ? "border-blue-500 bg-blue-600 text-white shadow-[0_0_22px_rgba(37,99,235,0.35)]"
+                : "border-blue-500/30 bg-blue-50/80 text-blue-700 hover:border-blue-500/70 hover:bg-blue-100"
             }`}
-            title={isAutoPlaying ? "Auto зогсоох" : "Auto тоглуулах"}
-            aria-label={isAutoPlaying ? "Auto зогсоох" : "Auto тоглуулах"}
+            title={autoPlaying ? "Автоматаар тоглуулахыг зогсоох" : "Автоматаар тоглуулах"}
+            aria-label={autoPlaying ? "Автоматаар тоглуулахыг зогсоох" : "Автоматаар тоглуулах"}
           >
-            {isAutoPlaying ? <Pause size={14} fill="currentColor" /> : <Play size={14} fill="currentColor" />}
+            {autoPlaying ? (
+              <Pause size={14} fill="currentColor" />
+            ) : (
+              <Play size={14} fill="currentColor" />
+            )}
           </button>
 
-          <div className="rounded-lg border border-amber-500/20 bg-amber-500/10 px-2.5 py-1 text-right">
-            <p className="text-[7px] uppercase tracking-[0.18em] text-amber-500">
+          <div className="rounded-lg border border-blue-500/30 bg-blue-50/90 px-2.5 py-1 text-right shadow-inner shadow-white/70">
+            <p className="text-[7px] font-bold uppercase tracking-[0.18em] text-blue-700">
               Одоогийн
             </p>
-            <p className="text-xs font-semibold text-stone-200">
+            <p className="text-xs font-semibold text-slate-800">
               {currentIndex + 1}/{safeYears.length}
             </p>
           </div>
@@ -197,7 +237,7 @@ export default function TimelineSlider({
       <div className="mt-2 grid gap-1.5">
         <form
           onSubmit={handleYearSearch}
-          className="flex h-8 items-center gap-2 rounded-full border border-amber-500/20 bg-stone-900/70 px-3 sm:hidden"
+          className="flex h-8 items-center gap-2 rounded-lg border border-blue-500/30 bg-blue-50/80 px-3 sm:hidden"
         >
           <input
             type="number"
@@ -205,8 +245,8 @@ export default function TimelineSlider({
             min={startYear}
             max={endYear}
             value={yearQuery}
-            onChange={(event: { target: { value: string } }) => setYearQuery(event.target.value)}
-            className="min-w-0 flex-1 bg-transparent text-xs font-semibold tabular-nums text-stone-100 outline-none placeholder:text-stone-500"
+            onChange={(event) => setYearQuery(event.target.value)}
+            className="min-w-0 flex-1 bg-transparent text-xs font-semibold tabular-nums text-slate-800 outline-none placeholder:text-blue-400"
             style={{ fontFamily: "var(--font-inter), Arial, sans-serif" }}
             placeholder="Он хайх"
             aria-label="Оноор хайх"
@@ -214,7 +254,7 @@ export default function TimelineSlider({
           />
           <button
             type="submit"
-            className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-amber-200 transition hover:bg-amber-500/15"
+            className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md text-blue-700 transition hover:bg-blue-200/60"
             aria-label="Оноор хайх"
             title="Оноор хайх"
           >
@@ -227,9 +267,9 @@ export default function TimelineSlider({
           </datalist>
         </form>
 
-        <div className="flex items-center justify-between text-[10px] text-stone-400">
+        <div className="flex items-center justify-between text-[10px] font-medium text-slate-500">
           <span>Эхлэл {startYear}</span>
-          <span className="rounded-full bg-amber-500 px-2 py-0.5 font-semibold text-slate-950 shadow-[0_0_14px_rgba(245,158,11,0.42)]">
+          <span className="rounded-full bg-blue-600 px-2 py-0.5 font-semibold text-white shadow-[0_0_14px_rgba(37,99,235,0.32)]">
             {currentYear}
           </span>
           <span>Төгсгөл {endYear}</span>
@@ -242,23 +282,26 @@ export default function TimelineSlider({
             max={maxIndex}
             step={1}
             value={currentIndex}
-            onChange={(event: { target: { value: string; }; }) => handleRangeChange(event.target.value)}
+            onChange={(event) => handleRangeChange(event.target.value)}
             className="timeline-range w-full"
             style={sliderStyle}
             aria-label="Timeline year selector"
           />
           <div
-            className="pointer-events-none absolute top-1/2 h-7 w-px -translate-y-1/2 bg-stone-200/70 shadow-[0_0_14px_rgba(245,158,11,0.8)] transition-[left] duration-150 ease-out"
+            className="pointer-events-none absolute top-1/2 h-7 w-px -translate-y-1/2 bg-blue-700/75 shadow-[0_0_14px_rgba(37,99,235,0.65)] transition-[left] duration-150 ease-out"
             style={markerStyle}
           />
         </div>
       </div>
 
       <div className="relative mt-1.5 min-w-0">
-        <div className="pointer-events-none absolute inset-y-0 left-0 z-10 w-6 bg-linear-to-r from-slate-950/95 to-transparent" />
-        <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-6 bg-linear-to-l from-slate-950/95 to-transparent" />
+        <div className="pointer-events-none absolute inset-y-0 left-0 z-10 w-6 bg-linear-to-r from-white/95 to-transparent" />
+        <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-6 bg-linear-to-l from-white/95 to-transparent" />
 
-        <div ref={scrollRef} className="timeline-years-scroll w-full min-w-0 overflow-x-auto overflow-y-hidden overscroll-x-contain">
+        <div
+          ref={scrollRef}
+          className="timeline-years-scroll w-full min-w-0 overflow-x-auto overflow-y-hidden overscroll-x-contain"
+        >
           <div className="flex w-max max-w-none gap-1.5 px-1">
             {safeYears.map((year) => {
               const active = year === currentYear;
@@ -271,8 +314,8 @@ export default function TimelineSlider({
                   onClick={() => commitYearChange(year)}
                   className={`shrink-0 rounded-full px-3 py-1.5 text-xs transition ${
                     active
-                      ? "bg-amber-500 text-slate-950 shadow-[0_0_18px_rgba(245,158,11,0.45)]"
-                      : "border border-stone-700/60 bg-stone-900/45 text-stone-300 hover:border-amber-500/40 hover:bg-amber-500/10 hover:text-amber-200"
+                      ? "bg-blue-600 text-white shadow-[0_0_18px_rgba(37,99,235,0.32)]"
+                      : "border border-blue-500/25 bg-blue-50/70 text-slate-700 hover:border-blue-500/60 hover:bg-blue-100 hover:text-blue-800"
                   }`}
                 >
                   {year}
@@ -282,6 +325,61 @@ export default function TimelineSlider({
           </div>
         </div>
       </div>
+
+      <style jsx global>{`
+        .timeline-range {
+          height: 8px;
+          appearance: none;
+          border-radius: 999px;
+          background: linear-gradient(
+            to right,
+            #2563eb 0%,
+            #2563eb var(--timeline-progress),
+            rgba(37, 99, 235, 0.16) var(--timeline-progress),
+            rgba(37, 99, 235, 0.16) 100%
+          );
+          outline: none;
+        }
+
+        .timeline-range::-webkit-slider-thumb {
+          height: 16px;
+          width: 16px;
+          appearance: none;
+          border: 2px solid #ffffff;
+          border-radius: 999px;
+          background: #2563eb;
+          box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.16);
+          cursor: pointer;
+        }
+
+        .timeline-range::-moz-range-thumb {
+          height: 16px;
+          width: 16px;
+          border: 2px solid #ffffff;
+          border-radius: 999px;
+          background: #2563eb;
+          box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.16);
+          cursor: pointer;
+        }
+
+        .timeline-years-scroll {
+          scrollbar-color: rgba(37, 99, 235, 0.42) rgba(37, 99, 235, 0.08);
+        }
+
+        .timeline-years-scroll::-webkit-scrollbar {
+          height: 8px;
+        }
+
+        .timeline-years-scroll::-webkit-scrollbar-track {
+          border-radius: 999px;
+          background: rgba(37, 99, 235, 0.08);
+        }
+
+        .timeline-years-scroll::-webkit-scrollbar-thumb {
+          border-radius: 999px;
+          background: rgba(37, 99, 235, 0.42);
+        }
+      `}</style>
     </div>
   );
 }

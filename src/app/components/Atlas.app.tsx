@@ -8,10 +8,10 @@ import {
   type SetStateAction,
 } from 'react';
 import { useUser } from '@clerk/nextjs';
-import type { AtlasEventFeatureCollection } from '@/lib/types';
+import type { AtlasEventFeatureCollection, AtlasStateFeature } from '@/lib/types';
 import SelectedStateDrawer from '@/app/components/SelectedStateDrawer';
 import { AtlasEventDrawer } from '@/app/components/AtlasEventDrawer';
-import { Sidebar } from '@/app/components/Sidebar';
+import { AdminFeedbackNotice, Sidebar } from '@/app/components/Sidebar';
 import { AtlasCharacterRpgModal } from './atlas/AtlasCharacterRpgModal';
 import { AtlasHeader } from './atlas/AtlasHeader';
 import { AtlasLayerToggle } from './atlas/AtlasLayerToggle';
@@ -23,6 +23,37 @@ import { QuizLeaderboardPage } from './leaderboard/QuizLeaderboardPage';
 import type { AtlasLayerVisibility, SavedCharacterResult } from './atlas/types';
 import { useAtlasEditor } from './atlas/useAtlasEditor';
 import { ensureEditableRing } from '@/lib/geometry';
+
+type PendingFeedbackPreview = {
+  id: string;
+  slug: string;
+  year: number;
+  stateName: string;
+  proposedGeometry?: GeoJSON.Polygon | null;
+};
+
+async function reviewFeedbackWithDraft(
+  id: string,
+  draftRing: Array<[number, number]>,
+) {
+  const response = await fetch('/api/atlas/feedback', {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      id,
+      action: 'approve',
+      proposedCoordinates: draftRing,
+    }),
+  });
+
+  if (!response.ok) throw new Error('Feedback approve failed');
+
+  const data = (await response.json()) as {
+    feature?: AtlasStateFeature | null;
+  };
+
+  return data.feature ?? null;
+}
 
 const CoordEditor = dynamic(() => import('@/app/components/CoordEditor'), {
   ssr: false,
@@ -73,8 +104,14 @@ export default function AtlasApp() {
   const [feedbackDraftRing, setFeedbackDraftRing] = useState<
     Array<[number, number]>
   >([]);
+  const [feedbackPreviewRing, setFeedbackPreviewRing] = useState<
+    Array<[number, number]>
+  >([]);
   const [feedbackSelectedVertexIndex, setFeedbackSelectedVertexIndex] =
     useState<number | null>(null);
+  const [reviewingFeedbackId, setReviewingFeedbackId] = useState<string | null>(
+    null,
+  );
   const storedCharacterResultRaw = useSyncExternalStore(
     subscribeCharacterResult,
     readCharacterResultRawSnapshot,
@@ -103,6 +140,7 @@ export default function AtlasApp() {
     loadError,
     sharedMapProps,
     coordEditorProps,
+    applyFeatureUpdate,
   } = useAtlasEditor(year, adminMode);
 
   useEffect(() => {
@@ -138,6 +176,8 @@ export default function AtlasApp() {
   }, [battleEvents, year]);
 
   useEffect(() => {
+    if (reviewingFeedbackId) return;
+
     const coordinates = selectedFeature?.geometry.coordinates[0] as
       | Array<[number, number]>
       | undefined;
@@ -145,7 +185,8 @@ export default function AtlasApp() {
     setFeedbackAddPointMode(false);
     setFeedbackSelectedVertexIndex(null);
     setFeedbackDraftRing(coordinates ? ensureEditableRing(coordinates) : []);
-  }, [selectedFeature?.properties.slug, year]);
+    setFeedbackPreviewRing([]);
+  }, [reviewingFeedbackId, selectedFeature?.properties.slug, year]);
 
   useEffect(() => {
     if (!timelineAutoPlaying || currentView !== 'map' || years.length < 2)
@@ -246,18 +287,62 @@ export default function AtlasApp() {
   );
 
   const visibleMapProps =
-    !adminMode && feedbackEditing
+    feedbackEditing
       ? {
           ...sharedMapProps,
           isEditing: true,
           isCreating: false,
           addPointMode: feedbackAddPointMode,
           draftRing: feedbackDraftRing,
+          feedbackPreviewRing,
+          feedbackReviewSlug: selectedFeature?.properties.slug ?? null,
           onDraftRingChange: setFeedbackDraftRing,
           selectedVertexIndex: feedbackSelectedVertexIndex,
           onSelectVertex: setFeedbackSelectedVertexIndex,
         }
       : sharedMapProps;
+
+  const previewFeedbackGeometry = (item: PendingFeedbackPreview) => {
+    if (!item.proposedGeometry?.coordinates?.[0]) return;
+
+    setCurrentView('map');
+    setYear(item.year);
+    setSelectedSlug(item.slug, { focus: true, year: item.year });
+    setReviewingFeedbackId(item.id);
+    const nextRing = ensureEditableRing(
+      item.proposedGeometry.coordinates[0] as Array<[number, number]>,
+    );
+    setFeedbackPreviewRing(nextRing);
+    setFeedbackDraftRing(nextRing);
+    setFeedbackEditing(false);
+    setFeedbackAddPointMode(false);
+    setFeedbackSelectedVertexIndex(null);
+  };
+
+  const stopFeedbackReview = () => {
+    setReviewingFeedbackId(null);
+    setFeedbackEditing(false);
+    setFeedbackAddPointMode(false);
+    setFeedbackPreviewRing([]);
+    setFeedbackDraftRing([]);
+    setFeedbackSelectedVertexIndex(null);
+  };
+
+  const startFeedbackEdit = () => {
+    setFeedbackDraftRing((current) =>
+      current.length ? current : feedbackPreviewRing,
+    );
+    setFeedbackEditing(true);
+    setFeedbackAddPointMode(false);
+    setFeedbackSelectedVertexIndex(null);
+  };
+
+  const handleFeedbackReviewed = (feature?: AtlasStateFeature | null) => {
+    if (feature) applyFeatureUpdate(feature);
+    setPendingFeedbackCount((count) => Math.max(0, count - 1));
+    stopFeedbackReview();
+    window.dispatchEvent(new CustomEvent('mongol-atlas:states-refresh'));
+  };
 
   const selectedEvent = useMemo(
     () =>
@@ -270,12 +355,25 @@ export default function AtlasApp() {
   const mapSceneProps = useMemo(
     () => ({
       ...visibleMapProps,
+      feedbackPreviewRing: feedbackEditing ? [] : feedbackPreviewRing,
+      feedbackReviewSlug: reviewingFeedbackId
+        ? selectedFeature?.properties.slug ?? null
+        : null,
       battleEvents,
       selectedEventSlug,
       onSelectEvent: setSelectedEventSlug,
       layerVisibility,
     }),
-    [battleEvents, layerVisibility, selectedEventSlug, visibleMapProps],
+    [
+      battleEvents,
+      feedbackEditing,
+      feedbackPreviewRing,
+      layerVisibility,
+      reviewingFeedbackId,
+      selectedEventSlug,
+      selectedFeature?.properties.slug,
+      visibleMapProps,
+    ],
   );
 
   return (
@@ -351,20 +449,46 @@ export default function AtlasApp() {
                 )}
               </div>
 
-              <AtlasHeader
-                adminMode={adminMode}
-                collectionCount={collection?.features.length ?? null}
-              />
+              <div className="pointer-events-none absolute inset-x-4 top-4 z-30 flex items-start justify-between gap-3">
+                <div className="pointer-events-auto flex w-fit flex-col gap-2">
+                  <AtlasHeader
+                    adminMode={adminMode}
+                    collectionCount={collection?.features.length ?? null}
+                  />
 
-              <AtlasLayerToggle
-                value={layerVisibility}
-                onChange={(key, next) =>
-                  setLayerVisibility((current) => ({
-                    ...current,
-                    [key]: next,
-                  }))
-                }
-              />
+                  <AtlasLayerToggle
+                    value={layerVisibility}
+                    onChange={(key, next) =>
+                      setLayerVisibility((current) => ({
+                        ...current,
+                        [key]: next,
+                      }))
+                    }
+                  />
+                </div>
+
+                {adminMode && (
+                  <div className="pointer-events-auto w-full max-w-[320px]">
+                    <AdminFeedbackNotice
+                      activeFeedbackId={reviewingFeedbackId}
+                      addPointMode={feedbackAddPointMode}
+                      draftRing={feedbackDraftRing}
+                      editingFeedback={feedbackEditing}
+                      pendingFeedbackCount={pendingFeedbackCount}
+                      onApproveEdited={(id) =>
+                        reviewFeedbackWithDraft(id, feedbackDraftRing)
+                      }
+                      onCancelPreview={stopFeedbackReview}
+                      onStartEdit={startFeedbackEdit}
+                      onPreviewGeometry={previewFeedbackGeometry}
+                      onReviewed={handleFeedbackReviewed}
+                      onToggleAddPoint={() =>
+                        setFeedbackAddPointMode((value) => !value)
+                      }
+                    />
+                  </div>
+                )}
+              </div>
 
               <AtlasEventDrawer
                 event={selectedEvent}
