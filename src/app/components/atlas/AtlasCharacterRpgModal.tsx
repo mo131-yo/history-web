@@ -1,9 +1,10 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { sidebarTheme as T } from './sidebarTheme';
 import { AtlasCharacterQuiz } from './AtlasCharacterQuiz';
 import { AtlasCharacterResult } from './AtlasCharacterResult';
+import { X, Sparkles, ShieldCheck } from 'lucide-react';
 import {
   applyRoleScores,
   buildSavedCharacter,
@@ -27,9 +28,12 @@ export function AtlasCharacterRpgModal({
 }) {
   const [step, setStep] = useState(0);
   const [scores, setScores] = useState(createBaseScores);
-  const [result, setResult] = useState<ReturnType<
-    typeof resolveBestRole
-  > | null>(null);
+  const [result, setResult] = useState<ReturnType<typeof resolveBestRole> | null>(null);
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   function choose(optionScores: RoleScore) {
     const nextScores = applyRoleScores(scores, optionScores);
@@ -57,69 +61,99 @@ export function AtlasCharacterRpgModal({
     setResult(null);
   }
 
+  if (!isMounted) return null;
+
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4"
-      style={{
-        background:
-          'radial-gradient(circle at 50% 20%, rgba(12,96,169,0.14), transparent 35%), rgba(252,252,252,0.82)',
-        backdropFilter: 'blur(8px)',
-      }}
+      className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6"
       role="dialog"
       aria-modal="true"
     >
+   
+      <div 
+        className="absolute inset-0 transition-opacity duration-500 bg-slate-900/40 backdrop-blur-md"
+        onClick={onClose}
+      />
+
+
       <div
-        className="w-full max-w-[620px] overflow-hidden rounded-2xl"
+        className="relative w-full max-w-[680px] overflow-hidden rounded-[32px] bg-white shadow-[0_32px_64px_-16px_rgba(0,0,0,0.2)] animate-in fade-in zoom-in-95 duration-300"
         style={{
-          background: T.bg,
-          border: `1px solid ${T.border}`,
-          boxShadow: '0 30px 80px rgba(12,96,169,0.16)',
           fontFamily: 'var(--font-inter), Arial, sans-serif',
         }}
       >
-        <div
-          className="flex items-center justify-between px-5 py-4"
-          style={{ borderBottom: `1px solid ${T.border}` }}
-        >
-          <div>
-            <div
-              className="text-[10px] uppercase tracking-[0.35em]"
-              style={{ color: T.textMuted }}
-            >
-              {isGuest ? 'Зочин тоглогч' : userName} · 1162–1300
+
+        <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-blue-600 via-amber-400 to-red-500" />
+
+      
+        <div className="relative px-8 pt-10 pb-6 border-b border-slate-50 bg-gradient-to-b from-slate-50/50 to-transparent">
+          <div className="flex items-start justify-between">
+            <div className="space-y-1.5">
+              <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-blue-50 border border-blue-100/50">
+                  <Sparkles size={12} className="text-blue-600" />
+                  <span className="text-[10px] font-black text-blue-600 uppercase tracking-wider">
+                    {isGuest ? 'Зочин тоглогч' : userName}
+                  </span>
+                </div>
+                <span className="text-[10px] font-bold text-slate-300 uppercase tracking-widest">
+                  1162–1300 Oн
+                </span>
+              </div>
+              
+              <h2 className="text-2xl font-black leading-tight sm:text-3xl text-slate-800">
+                Их Монгол Улсад <br />
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-700 to-blue-500">
+                   чи хэн байх байсан бэ?
+                </span>
+              </h2>
             </div>
-            <h2
-              className="mt-1 text-lg font-bold"
-              style={{ color: T.amber }}
+
+            <button
+              onClick={onClose}
+              className="p-2 transition-all rounded-2xl bg-slate-100 text-slate-400 hover:bg-red-50 hover:text-red-500 active:scale-90"
             >
-              Чи Их Монголын улсын үед хэн байх байсан бэ?
-            </h2>
+              <X size={20} strokeWidth={2.5} />
+            </button>
           </div>
-          <button
-            type="button"
-            onClick={onClose}
-            className="rounded-lg h-9 w-9"
-            style={{
-              border: `1px solid ${T.border}`,
-              background: 'rgba(12,96,169,0.05)',
-              color: T.textSub,
-              borderRadius: '9999px',
-            }}
-          >
-            ✕
-          </button>
+          
+          
+          {!result && (
+            <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-slate-100">
+              <div 
+                className="h-full transition-all duration-500 ease-out bg-blue-600"
+                style={{ width: `${((step + 1) / 10) * 100}%` }} 
+              />
+            </div>
+          )}
         </div>
 
-        {!result ? (
-          <AtlasCharacterQuiz step={step} onChoose={choose} />
-        ) : (
-          <AtlasCharacterResult
-            result={result}
-            userName={userName}
-            onClose={onClose}
-            onRestart={restart}
-          />
-        )}
+      
+        <div className="relative p-8 min-h-[400px] max-h-[70vh] overflow-y-auto custom-scrollbar">
+          {!result ? (
+            <div className="duration-500 animate-in slide-in-from-bottom-4">
+              <AtlasCharacterQuiz step={step} onChoose={choose} />
+            </div>
+          ) : (
+            <div className="duration-700 animate-in zoom-in-95">
+              <AtlasCharacterResult
+                result={result}
+                userName={userName}
+                onClose={onClose}
+                onRestart={restart}
+              />
+            </div>
+          )}
+        </div>
+
+       
+        <div className="flex items-center justify-between px-8 py-4 bg-slate-50/80">
+          <div className="flex items-center gap-2 grayscale opacity-40">
+             <ShieldCheck size={16} className="text-slate-600" />
+             <span className="text-[10px] font-bold text-slate-500 uppercase tracking-tighter">Mongol • Atlas</span>
+          </div>
+        
+        </div>
       </div>
     </div>
   );
