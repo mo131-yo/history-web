@@ -2,7 +2,7 @@
 
 import { useClerk, useUser } from '@clerk/nextjs';
 import type { AtlasStateFeature } from '@/lib/types';
-import { useEffect, useState, type ReactNode } from 'react';
+import { useEffect, useState } from 'react';
 import {
   Bell,
   Check,
@@ -495,21 +495,13 @@ export function Sidebar({
             
             <div className="flex-1 text-left">
               <p className="text-[11px] font-black text-slate-600 uppercase tracking-tight group-hover:text-blue-600 transition-colors">
-                Coordinate feedback
+                Feedback review
               </p>
               <p className="text-[10px] text-slate-400 font-medium italic">
                 Системд туслах
               </p>
             </div>
 
-            {pendingFeedbackCount > 0 && (
-              <div className="relative flex items-center justify-center">
-                <span className="absolute bg-blue-400 rounded-full animate-ping size-3 opacity-20"></span>
-                <span className="relative size-5 rounded-lg bg-blue-600 flex items-center justify-center text-[10px] font-bold text-white">
-                  {pendingFeedbackCount}
-                </span>
-              </div>
-            )}
           </button>
         )}
       </div>
@@ -663,7 +655,7 @@ export function AdminFeedbackNotice({
       >
         <Bell className="size-4 shrink-0" />
         <span className="flex-1 min-w-0 text-xs font-semibold truncate">
-          Coordinate feedback
+          Feedback review
         </span>
         <span
           className="rounded-full px-2 py-0.5 text-[10px] font-bold"
@@ -989,63 +981,5 @@ export function AdminFeedbackNotice({
         </div>
       )}
     </div>
-  );
-}
-
-function QuizMenuButton({
-  icon,
-  label,
-  active = false,
-  onClick,
-}: {
-  icon: ReactNode;
-  label: string;
-  active?: boolean;
-  onClick: () => void;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className="flex h-10 items-center gap-2 rounded-lg px-3 text-left text-[11px] font-semibold transition-colors hover:bg-white/5"
-      style={{
-        background: active ? T.bg : T.bg,
-        border: active ? `1px solid ${T.amber}55` : `1px solid ${T.border}`,
-        color: active ? T.amber : T.textSub,
-      }}
-    >
-      <span className="shrink-0" style={{ color: T.amber }}>
-        {icon}
-      </span>
-      <span className="truncate">{label}</span>
-    </button>
-  );
-}
-
-function MapModeButton({
-  active,
-  icon,
-  label,
-  onClick,
-}: {
-  active: boolean;
-  icon: ReactNode;
-  label: string;
-  onClick: () => void;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className="flex h-10 items-center justify-center gap-2 rounded-lg text-[10px] font-semibold uppercase tracking-widest transition-colors"
-      style={{
-        background: active ? T.amber : T.textMuted + '80',
-        border: active ? `1px solid ${T.amber}55` : `1px solid ${T.border}`,
-        color: active ? T.bg : T.bg,
-      }}
-    >
-      {icon}
-      {label}
-    </button>
   );
 }

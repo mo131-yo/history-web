@@ -3,7 +3,6 @@
 import React from "react";
 import { LeaderboardScore, LeaderboardCategory } from "./QuizLeaderboardPage";
 import { CrownIcon } from "./CrownIcon";
-import { MedalIcon } from "./Medalicon";
 
 type PodiumConfig = {
   dataIdx: number;

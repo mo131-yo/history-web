@@ -306,6 +306,7 @@ export default function AtlasApp() {
     if (!item.proposedGeometry?.coordinates?.[0]) return;
 
     setCurrentView('map');
+    setMapMode('historical');
     setYear(item.year);
     setSelectedSlug(item.slug, { focus: true, year: item.year });
     setReviewingFeedbackId(item.id);
