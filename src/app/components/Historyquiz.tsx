@@ -512,6 +512,7 @@ export default function HistoryQuiz({
   const [usedIds, setUsedIds] = useState<Set<string>>(new Set());
   const [currentQ, setCurrentQ] = useState<Question | null>(null);
   const [answers, setAnswers] = useState<QuizAnswer[]>([]);
+  
   const [hoveredLevel, setHoveredLevel] = useState<number | null>(null);
   const resetLevels = () => {
     setUnlockedLevels([1]);
@@ -736,20 +737,32 @@ export default function HistoryQuiz({
 
   const nextQuestion = () => {
     const nextIdx = qIndex + 1;
+if (nextIdx >= TOTAL) {
 
-    if (nextIdx >= TOTAL) {
-      if (selectedLevel === 1) {
-        setUnlockedLevels((prev) => (prev.includes(2) ? prev : [...prev, 2]));
-      }
 
-      if (selectedLevel === 2) {
-        setUnlockedLevels((prev) => (prev.includes(3) ? prev : [...prev, 3]));
-      }
+  if (correct >= 6) {
 
-      setScreen('result');
-      saveAttempt();
-      return;
+    if (selectedLevel === 1) {
+      setUnlockedLevels((prev) =>
+        prev.includes(2) ? prev : [...prev, 2]
+      );
     }
+
+    if (selectedLevel === 2) {
+      setUnlockedLevels((prev) =>
+        prev.includes(3) ? prev : [...prev, 3]
+      );
+    }
+
+  }
+  if (correct < 6) {
+  alert('6 оноо авч байж дараагийн түвшин нээгдэнэ!');
+}
+
+  setScreen('result');
+  saveAttempt();
+  return;
+}
 
     setQIndex(nextIdx);
     setAnswered(false);
@@ -835,9 +848,10 @@ export default function HistoryQuiz({
         background: `radial-gradient(circle at 50% 0%, rgba(12,96,169,0.10), transparent 34%), ${T.bg}`,
         display: 'flex',
         justifyContent: 'center',
-        alignItems: 'flex-start',
+        alignItems: 'center',
         padding: '2rem 1rem 3rem',
         fontFamily: 'var(--font-inter), Arial, sans-serif',
+        
       }}
     >
       <div style={{ width: '100%', maxWidth: 580 }}>
@@ -1167,23 +1181,54 @@ export default function HistoryQuiz({
                         </section>
                       );
                     })}
-                    <button
-                      onClick={resetLevels}
-                      style={{
-                        width: '100%',
-                        marginTop: 16,
-                        padding: '12px',
-                        borderRadius: 12,
-                        border: 'none',
-                        background: 'rgba(239,68,68,0.1)',
-                        color: '#dc2626',
-                        fontWeight: 600,
-                        cursor: 'pointer',
-                        transition: 'all 0.25s ease',
-                      }}
-                    >
-                      Түвшин тогтоох тест дахин эхлүүлэх
-                    </button>
+                   {unlockedLevels.includes(3) && (
+  <button
+  onClick={resetLevels}
+  style={{
+    width: '60%',
+    margin: '16px auto 0',
+    display: 'block',
+    marginTop: 16,
+    padding: '14px',
+    borderRadius: 14,
+    border: 'none',
+
+    background: 'linear-gradient(135deg, #3b82f6, #2563eb)', // 🔵 BLUE
+    color: '#fff',
+
+    fontWeight: 700,
+    letterSpacing: 0.3,
+    cursor: 'pointer',
+
+    boxShadow: '0 10px 25px rgba(37,99,235,0.25)',
+    transition: 'all 0.25s cubic-bezier(.4,0,.2,1)',
+  }}
+
+  onMouseEnter={(e) => {
+    e.currentTarget.style.transform = 'translateY(-4px) scale(1.02)';
+    e.currentTarget.style.boxShadow =
+      '0 20px 40px rgba(37,99,235,0.4)';
+    e.currentTarget.style.filter = 'brightness(1.1)';
+  }}
+
+  onMouseLeave={(e) => {
+    e.currentTarget.style.transform = 'translateY(0) scale(1)';
+    e.currentTarget.style.boxShadow =
+      '0 10px 25px rgba(37,99,235,0.25)';
+    e.currentTarget.style.filter = 'brightness(1)';
+  }}
+
+  onMouseDown={(e) => {
+    e.currentTarget.style.transform = 'scale(0.95)';
+  }}
+
+  onMouseUp={(e) => {
+    e.currentTarget.style.transform = 'translateY(-4px) scale(1.02)';
+  }}
+>
+   Түвшин тогтоох тест дахин эхлүүлэх
+</button>
+)}
                   </div>
                 </div>
               )}
@@ -1265,7 +1310,7 @@ export default function HistoryQuiz({
                 {onClose && (
                   <button
                     onClick={() => {
-                      setScreen('grade'); // 👈 level сонгох руу буцна
+                      setScreen('grade'); 
                     }}
                     style={{
                       padding: '6px 12px',

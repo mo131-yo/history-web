@@ -9,6 +9,7 @@ import {
   ChevronDown,
   CircleHelp,
   Globe,
+  LayoutGrid,
   ListChecks,
   Map,
   MapPinned,
@@ -246,281 +247,294 @@ export function Sidebar({
           collapsed ? 'items-center' : ''
         }`}
       >
-        {!collapsed && (
-          <label
-            className="flex items-center h-10 gap-2 px-3 rounded-lg shrink-0"
-            style={{ background: T.bg, border: `1px solid ${T.border}` }}
-          >
-            <Search
-              className="size-4 shrink-0"
-              style={{ color: T.textMuted }}
-            />
-            <input
-              value={search}
-              onChange={(event) => onSearchChange(event.target.value)}
-              placeholder="Улс эсвэл он хайх"
-              className="flex-1 min-w-0 text-xs bg-transparent outline-none placeholder:opacity-45"
-              style={{
-                color: T.text,
-                fontFamily: 'var(--font-inter), Arial, sans-serif',
-                background: T.bg,
-              }}
-            />
-          </label>
-        )}
+     {!collapsed && (
+  <div className="relative px-1 group shrink-0">
+    <label
+      className="flex items-center gap-3 px-4 transition-all duration-200 bg-white border shadow-sm h-11 rounded-2xl group-focus-within:border-blue-400 group-focus-within:ring-4 group-focus-within:ring-blue-50/50 group-hover:border-slate-300 border-slate-200"
+    >
+      <Search
+        className="transition-colors duration-200 size-4 shrink-0 text-slate-400 group-focus-within:text-blue-500"
+      />
+      <input
+        value={search}
+        onChange={(event) => onSearchChange(event.target.value)}
+        placeholder="Улс хайх..."
+        className="flex-1 min-w-0 text-sm font-medium bg-transparent outline-none text-slate-700 placeholder:text-slate-400"
+        style={{
+          fontFamily: 'var(--font-inter), Arial, sans-serif',
+        }}
+      />
+      
+      {search.length > 0 && (
+        <button 
+          onClick={() => onSearchChange("")}
+          className="p-1 transition-colors rounded-full hover:bg-slate-100"
+        >
+          <XCircle className="size-3.5 text-slate-300 hover:text-slate-500" />
+        </button>
+      )}
+    </label>
+  </div>
+)}
 
-        {!collapsed && trimmedSearch.length >= 2 && (
-          <div
-            className="p-2 overflow-y-auto rounded-lg max-h-72 shrink-0"
-            style={{ background: T.bg, border: `1px solid ${T.border}` }}
-          >
-            {/^\d{3,4}$/.test(trimmedSearch) && searchResults.length > 0 && (
-              <p
-                className="px-2 pb-2 text-[10px] font-semibold uppercase tracking-[0.14em]"
-                style={{ color: T.textMuted }}
-              >
-                {trimmedSearch} оны бүх улс
-              </p>
-            )}
+{!collapsed && (
+  <div className="relative px-1 shrink-0"> 
+  
 
-            {searchStatus === 'loading' && (
-              <p className="px-2 py-3 text-xs" style={{ color: T.text }}>
-                Хайж байна...
-              </p>
-            )}
 
-            {searchStatus === 'error' && (
-              <p className="px-2 py-3 text-xs" style={{ color: '#f08080' }}>
-                Хайлт амжилтгүй боллоо.
-              </p>
-            )}
+    {trimmedSearch.length >= 2 && (
+      <div
+        className="absolute top-[calc(100%+8px)] left-1 right-1 z-[100] overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl animate-in fade-in slide-in-from-top-2 duration-200"
+      >
+        <div className="max-h-[400px] overflow-y-auto p-1.5 custom-scrollbar bg-white">
+          {searchStatus === 'loading' && (
+            <div className="flex items-center gap-2 px-3 py-4">
+              <div className="border-2 border-blue-500 rounded-full size-3 border-t-transparent animate-spin" />
+              <p className="text-xs font-medium text-slate-400">Хайж байна...</p>
+            </div>
+          )}
 
-            {searchStatus === 'idle' && searchResults.length === 0 && (
-              <p className="px-2 py-3 text-xs" style={{ color: T.text }}>
-                Тохирох улс олдсонгүй.
-              </p>
-            )}
+          {searchStatus === 'idle' && searchResults.length === 0 && (
+            <p className="px-3 py-4 text-xs italic font-medium text-slate-400">
+              Тохирох улс олдсонгүй.
+            </p>
+          )}
 
+          <div className="grid gap-1">
             {searchResults.map((feature) => (
               <button
                 key={`${feature.properties.year}-${feature.properties.slug}`}
                 type="button"
-                onClick={() => onSelectSearchResult(feature)}
-                className="w-full rounded-md px-2.5 py-2 text-left transition-colors hover:bg-white/5"
+                onClick={() => {
+                  onSelectSearchResult(feature);
+                  onSearchChange(""); 
+                }}
+                className="group w-full rounded-xl px-3 py-2.5 text-left transition-all hover:bg-blue-50 active:scale-[0.98]"
               >
-                <span className="flex items-center justify-between gap-2">
-                  <span
-                    className="text-sm font-semibold truncate"
-                    style={{ color: T.text }}
-                  >
+                <div className="flex items-center justify-between gap-2">
+                  <span className="text-sm font-bold text-slate-700 group-hover:text-blue-600">
                     {feature.properties.name}
                   </span>
-                  <span
-                    className="shrink-0 text-[10px] tabular-nums"
-                    style={{ color: T.amber }}
-                  >
+                  <span className="shrink-0 rounded-md bg-blue-50 px-1.5 py-0.5 text-[10px] font-black text-blue-500">
                     {feature.properties.year}
                   </span>
-                </span>
-
-                <span
-                  className="mt-0.5 block truncate text-[10px]"
-                  style={{ color: T.textSub }}
-                >
-                  {feature.properties.leader} · {feature.properties.capital}
-                </span>
-
-                <span
-                  className="mt-1 line-clamp-2 block text-[10px] leading-4"
-                  style={{ color: T.textMuted }}
-                >
+                </div>
+                <div className="mt-1 flex items-center gap-1.5 text-[10px] text-slate-400">
+                  <span className="font-medium truncate">{feature.properties.leader}</span>
+                </div>
+                <p className="mt-1 line-clamp-1 text-[10px] text-slate-400 group-hover:text-slate-500 italic">
                   {feature.properties.summary}
-                </span>
+                </p>
               </button>
             ))}
           </div>
+        </div>
+      </div>
+    )}
+  </div>
+)}
+
+       <nav className={`flex flex-col gap-5 relative z-20 ${collapsed ? "items-center" : ""}`}>
+  {navItems.map((item) => {
+    const Icon = item.icon;
+    const isQuiz = item.id === "quiz";
+    const isMap = item.id === "map";
+    const isCharacter = item.id === "character";
+    
+    // Дэд цэс нээлттэй эсэхийг тодорхойлох
+    const isOpen = (isQuiz && quizExpanded) || (isMap && mapExpanded);
+    const isActive = item.active || isOpen;
+
+    return (
+      <div key={item.id} className="w-full">
+        {/* Хэсгийн гарчиг (Collapsed биш үед харагдана) */}
+        {!collapsed && (
+          <div className="flex items-center gap-2 px-2 mb-2">
+            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+              {isCharacter ? 'Навигаци' : isQuiz ? 'Суралцах' : 'Газрын зураг'}
+            </span>
+          </div>
         )}
 
-        <nav
-          className={`flex flex-1 flex-col gap-2 ${
-            collapsed ? 'items-center' : ''
-          }`}
+        <button
+          type="button"
+          onClick={() => {
+            if (isQuiz) {
+              setMapExpanded(false); // Quiz дээр дарахад Map-ыг хаана
+              setQuizExpanded(!quizExpanded);
+            } else if (isMap) {
+              setQuizExpanded(false); // Map дээр дарахад Quiz-ийг хаана
+              setMapExpanded(!mapExpanded);
+              onOpenMap();
+            } else {
+              item.onClick();
+            }
+          }}
+          disabled={item.disabled}
+          className={`flex w-full items-center transition-all duration-200 active:scale-[0.98] ${
+            collapsed ? "h-12 justify-center rounded-xl" : "p-3 rounded-2xl border min-h-[60px]"
+          } ${
+            isActive 
+              ? "bg-white border-blue-200 shadow-md ring-4 ring-blue-50" 
+              : "bg-white/50 border-slate-100 hover:bg-white hover:border-slate-200"
+          } disabled:opacity-40`}
         >
-          {navItems.map((item) => {
-            const Icon = item.icon;
-            const isMap = item.id === 'map';
-            const isQuiz = item.id === 'quiz';
-            const hasCharacterIcon = item.id === 'character' && item.iconText;
+          <div className={`flex items-center ${collapsed ? "justify-center" : "gap-4"}`}>
+            {/* Икон контейнер */}
+            <div className={`flex items-center justify-center rounded-xl transition-all ${
+              collapsed ? "size-10" : "size-11"
+            } ${
+              isActive 
+                ? "bg-blue-600 text-white shadow-lg shadow-blue-100" 
+                : "bg-white border border-slate-100 text-slate-400 shadow-sm"
+            }`}>
+              {item.iconText ? (
+                <span className="text-xl leading-none">{item.iconText}</span>
+              ) : (
+                <Icon size={isQuiz ? 22 : 20} />
+              )}
+            </div>
 
-            return (
-              <div key={item.id} className={collapsed ? 'w-11' : 'w-full'}>
-                {hasCharacterIcon && !collapsed && (
-                  <div className="flex items-center gap-2 px-2 mb-1">
-                    <CircleHelp
-                      className="size-3"
-                      style={{ color: T.textMuted }}
-                    />
-                    <span
-                      className="text-[10px] font-semibold uppercase tracking-wider"
-                      style={{ color: T.textMuted }}
-                    >
-                      Навигаци
-                    </span>
-                  </div>
-                )}
-
-                {isQuiz && !collapsed && (
-                  <div className="flex items-center gap-2 px-2 mb-1">
-                    <Trophy className="size-3" style={{ color: T.textMuted }} />
-                    <span
-                      className="text-[10px] font-semibold uppercase tracking-wider"
-                      style={{ color: T.textMuted }}
-                    >
-                      Суралцах
-                    </span>
-                  </div>
-                )}
-
-                {isMap && !collapsed && (
-                  <div className="flex items-center gap-2 px-2 mb-1">
-                    <Map className="size-3" style={{ color: T.textMuted }} />
-                    <span
-                      className="text-[10px] font-semibold uppercase tracking-wider"
-                      style={{ color: T.textMuted }}
-                    >
-                      Газрын зураг
-                    </span>
-                  </div>
-                )}
-
-                <button
-                  type="button"
-                  onClick={item.onClick}
-                  disabled={item.disabled}
-                  className={`group flex w-full items-center rounded-lg transition-all duration-150 disabled:cursor-not-allowed disabled:opacity-45 ${
-                    collapsed
-                      ? 'h-11 justify-center'
-                      : 'min-h-12 justify-between gap-3 px-3'
-                  }`}
-                  style={{
-                    background: item.active ? T.bg : T.bg,
-                    border: item.active
-                      ? `1px solid ${T.amber}44`
-                      : `1px solid ${T.border}`,
-                    color: item.active ? T.amber : T.amber,
-                    boxShadow: item.active
-                      ? '0 0 18px rgba(245,158,11,0.08)'
-                      : 'none',
-                  }}
-                  title={collapsed ? item.title : undefined}
-                >
-                  <span
-                    className={`flex min-w-0 items-center ${
-                      collapsed ? 'justify-center' : 'gap-3'
-                    }`}
-                  >
-                    {hasCharacterIcon ? (
-                      <span
-                        className="flex items-center justify-center text-base leading-none rounded-full size-6 shrink-0"
-                        style={{
-                          background: T.amber,
-                          border: `1px solid ${T.amber}35`,
-                          boxShadow: '0 0 14px rgba(245,158,11,0.12)',
-                        }}
-                        aria-hidden="true"
-                      >
-                        {item.iconText}
-                      </span>
-                    ) : (
-                      <Icon className="size-5 shrink-0" />
-                    )}
-
-                    {!collapsed && (
-                      <span className="min-w-0 text-left">
-                        <span
-                          className="block text-sm font-semibold leading-tight truncate"
-                          style={{ color: T.text }}
-                        >
-                          {item.title}
-                        </span>
-                        <span
-                          className="mt-0.5 block truncate text-[10px]"
-                          style={{ color: T.textSub, background: T.bg }}
-                        >
-                          {item.subtitle}
-                        </span>
-                      </span>
-                    )}
-                  </span>
-
-                  {!collapsed && (isQuiz || isMap) && (
-                    <ChevronDown
-                      className="transition-transform duration-150 size-4 shrink-0"
-                      style={{
-                        color: T.textMuted,
-                        transform:
-                          (isQuiz && quizExpanded) || (isMap && mapExpanded)
-                            ? 'rotate(180deg)'
-                            : 'rotate(0deg)',
-                      }}
-                    />
-                  )}
-                </button>
-
-                {isQuiz && !collapsed && quizExpanded && (
-                  <div className="grid gap-2 mt-2">
-                    <QuizMenuButton
-                      icon={<ListChecks className="size-4" />}
-                      label="Мэдлэгээ сорих"
-                      onClick={() => onOpenQuiz('knowledge')}
-                    />
-                    <QuizMenuButton
-                      icon={
-                        <Trophy className="size-4" style={{ color: T.amber }} />
-                      }
-                      label="Level сонгох"
-                      onClick={() => onOpenQuiz('grade')}
-                    />
-                    <QuizMenuButton
-                      icon={<Medal className="size-4" />}
-                      label="Leaderboard"
-                      active={currentView === 'leaderboard'}
-                      onClick={onOpenLeaderboard}
-                    />
-                  </div>
-                )}
-
-                {isMap && !collapsed && mapExpanded && (
-                  <div className="grid grid-cols-2 gap-2 mt-2">
-                    <MapModeButton
-                      active={mapMode === 'globe'}
-                      icon={<Globe className="size-4" />}
-                      label="3D"
-                      onClick={() => onMapModeChange('globe')}
-                    />
-                    <MapModeButton
-                      active={mapMode === 'historical'}
-                      icon={<MapPinned className="size-4" />}
-                      label="Flat"
-                      onClick={() => onMapModeChange('historical')}
-                    />
-                  </div>
-                )}
+            {!collapsed && (
+              <div className="overflow-hidden text-left">
+                <p className={`text-sm font-bold leading-tight truncate ${isActive ? "text-slate-900" : "text-slate-600"}`}>
+                  {item.title}
+                </p>
+                <p className="mt-0.5 text-[10px] font-medium text-slate-400 truncate">
+                  {item.subtitle}
+                </p>
               </div>
-            );
-          })}
-        </nav>
+            )}
+          </div>
 
-        {isLoaded && !collapsed && (
-          <SidebarUserPanel
-            adminMode={adminMode}
-            user={user}
-            syncStatus={userSyncStatus}
-            onSignIn={() => openSignIn()}
-            onSignUp={() => openSignUp()}
-            onSignOut={() => signOut({ redirectUrl: '/' })}
-          />
+          {!collapsed && (isQuiz || isMap) && (
+            <ChevronDown 
+              size={14} 
+              className={`ml-auto transition-transform duration-300 ${
+                isOpen ? "rotate-180 text-blue-500" : "text-slate-300"
+              }`} 
+            />
+          )}
+        </button>
+
+        {/* QUIZ ДЭД ЦЭС */}
+        {!collapsed && isQuiz && quizExpanded && (
+          <div className="mt-2.5 ml-4 pl-4 border-l-2 border-blue-100 grid gap-1 animate-in slide-in-from-left-2 duration-200">
+            <button 
+              onClick={() => onOpenQuiz('knowledge')}
+              className="flex items-center gap-3 p-2.5 rounded-xl text-xs font-bold text-slate-500 hover:bg-blue-50 hover:text-blue-600 transition-all"
+            >
+              <ListChecks size={14} /> Мэдлэгээ сорих
+            </button>
+            <button 
+              onClick={() => onOpenQuiz('grade')}
+              className="flex items-center gap-3 p-2.5 rounded-xl text-xs font-bold text-slate-500 hover:bg-blue-50 hover:text-blue-600 transition-all"
+            >
+              <LayoutGrid size={14} /> Level сонгох
+            </button>
+            <button 
+              onClick={onOpenLeaderboard}
+              className={`flex items-center gap-3 p-2.5 rounded-xl text-xs font-bold transition-all ${
+                currentView === 'leaderboard' ? "bg-blue-50 text-blue-600" : "text-slate-500 hover:bg-blue-50 hover:text-blue-600"
+              }`}
+            >
+              <Medal size={14} /> Leaderboard
+            </button>
+          </div>
         )}
+
+        {/* MAP ДЭД ЦЭС */}
+        {!collapsed && isMap && mapExpanded && (
+          <div className="mt-2.5 ml-4 pl-4 border-l-2 border-blue-100 grid grid-cols-2 gap-2 animate-in slide-in-from-left-2 duration-200">
+            <button 
+              onClick={() => onMapModeChange('globe')}
+              className={`flex flex-col items-center justify-center p-2.5 rounded-xl border transition-all ${
+                mapMode === 'globe' ? "bg-blue-50 border-blue-200 text-blue-600 shadow-sm" : "bg-white border-slate-100 text-slate-400 hover:border-slate-200"
+              }`}
+            >
+              <Globe size={14} />
+              <span className="text-[10px] font-bold mt-1.5">3D Map</span>
+            </button>
+            <button 
+              onClick={() => onMapModeChange('historical')}
+              className={`flex flex-col items-center justify-center p-2.5 rounded-xl border transition-all ${
+                mapMode === 'historical' ? "bg-blue-50 border-blue-200 text-blue-600 shadow-sm" : "bg-white border-slate-100 text-slate-400 hover:border-slate-200"
+              }`}
+            >
+              <MapPinned size={14} />
+              <span className="text-[10px] font-bold mt-1.5">Flat Map</span>
+            </button>
+          </div>
+        )}
+      </div>
+    );
+  })}
+</nav>
+
+       {/* FOOTER SECTION: FEEDBACK & USER PANEL */}
+<div className="relative z-20 flex flex-col gap-4 pt-6 mt-auto">
+  
+  {!collapsed && (
+    <div className="px-1 space-y-4">
+      {/* FEEDBACK / ADMIN SECTION */}
+      <div className="relative overflow-hidden group">
+        {adminMode ? (
+          <div className="transition-all duration-300 transform group-hover:translate-y-[-2px]">
+            <AdminFeedbackNotice pendingFeedbackCount={pendingFeedbackCount} />
+          </div>
+        ) : (
+          <button 
+            type="button"
+            onClick={() => console.log("Open Feedback")}
+            className="w-full p-3.5 rounded-[20px] bg-gradient-to-br from-white to-slate-50/50 border border-slate-200/80 flex items-center gap-3.5 hover:border-blue-400/50 hover:shadow-[0_8px_20px_-10px_rgba(59,130,246,0.2)] transition-all duration-300 active:scale-[0.97] group"
+          >
+            {/* Икон - зөөлөн цэнхэр туяатай */}
+            <div className="flex items-center justify-center text-blue-500 transition-transform duration-300 size-9 rounded-xl bg-blue-50/50 group-hover:scale-110">
+              <Bell size={18} className="drop-shadow-sm" />
+            </div>
+            
+            <div className="flex-1 text-left">
+              <p className="text-[11px] font-black text-slate-600 uppercase tracking-tight group-hover:text-blue-600 transition-colors">
+                Coordinate feedback
+              </p>
+              <p className="text-[10px] text-slate-400 font-medium italic">
+                Системд туслах
+              </p>
+            </div>
+
+            {pendingFeedbackCount > 0 && (
+              <div className="relative flex items-center justify-center">
+                <span className="absolute bg-blue-400 rounded-full animate-ping size-3 opacity-20"></span>
+                <span className="relative size-5 rounded-lg bg-blue-600 flex items-center justify-center text-[10px] font-bold text-white">
+                  {pendingFeedbackCount}
+                </span>
+              </div>
+            )}
+          </button>
+        )}
+      </div>
+
+      {/* USER PANEL - Илүү цэвэрхэн тусгаарлагчтай */}
+      {isLoaded && (
+        <div className="relative">
+          {/* Чимэглэлийн нарийн зураас */}
+          <div className="absolute inset-x-4 -top-2 h-[1px] bg-gradient-to-r from-transparent via-slate-200 to-transparent"></div>
+          
+          <div className="rounded-[24px] bg-white/40 backdrop-blur-md border border-white/60 p-1">
+            <SidebarUserPanel
+              adminMode={adminMode}
+              user={user}
+              syncStatus={userSyncStatus}
+              onSignIn={() => openSignIn()}
+              onSignUp={() => openSignUp()}
+              onSignOut={() => signOut({ redirectUrl: '/' })}
+            />
+          </div>
+        </div>
+      )}
+    </div>
+  )}
+</div>
       </div>
     </aside>
   );
